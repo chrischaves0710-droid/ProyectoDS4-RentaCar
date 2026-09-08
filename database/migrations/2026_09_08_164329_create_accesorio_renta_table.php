@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('accesorio_renta', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('renta_id')->constrained('rentas')->onDelete('cascade');
+            $table->foreignId('accesorio_id')->constrained('accesorios')->onDelete('cascade');
+            $table->integer('cantidad');
+            $table->decimal('precio_diario', 8, 2);
+            $table->decimal('subtotal', 8, 2);
             $table->timestamps();
         });
     }

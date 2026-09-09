@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\VehiculosController;
+use App\Http\Controllers\Api\VehiculosController;
 use App\Http\Controllers\Api\RentaController;
 use App\Http\Controllers\Api\AccesorioController;
 

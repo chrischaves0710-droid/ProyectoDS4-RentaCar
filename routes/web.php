@@ -1,9 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\VehiculosController;
-use App\Http\Controllers\Api\RentaController;
 use App\Http\Controllers\Api\AccesorioController;
+use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\RentaController;
+use App\Http\Controllers\Api\VehiculosController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -17,3 +18,6 @@ Route::resource('accesorios', AccesorioController::class);
 
 // Rutas para el CRUD de Rentas
 Route::resource('rentas', RentaController::class);
+
+// Rutas para el CRUD de Categorías
+Route::resource('categorias', CategoriaController::class);

@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\Api\AccesorioController;
 use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\ClienteController;
+use App\Http\Controllers\Api\EstadoController;
 use App\Http\Controllers\Api\RentaController;
 use App\Http\Controllers\Api\VehiculosController;
-use App\Http\Controllers\Api\ClienteController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -19,6 +20,9 @@ Route::resource('accesorios', AccesorioController::class);
 
 // Rutas para el CRUD de Rentas
 Route::resource('rentas', RentaController::class);
+
+// Rutas para el CRUD de Estados
+Route::resource('estados', EstadoController::class);
 
 // Rutas para el CRUD de Categorías
 Route::resource('categorias', CategoriaController::class);

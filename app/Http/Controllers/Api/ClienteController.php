@@ -37,7 +37,7 @@ class ClienteController extends Controller
             'nombre1' => 'required|string|max:255',
             'nombre2' => 'nullable|string|max:255',
             'apellido1' => 'required|string|max:255',
-            'apellido2' => 'required|string|max:255',
+            'apellido2' => 'nullable|string|max:255',
             'anno_nacimiento' => 'required|integer|min:1900|max:' . date('Y'),
             'telefono' => 'required|string|max:255',
             'correo' => 'required|email|max:255|unique:clientes,correo',
@@ -71,7 +71,7 @@ class ClienteController extends Controller
             'nombre1' => 'required|string|max:255',
             'nombre2' => 'nullable|string|max:255',
             'apellido1' => 'required|string|max:255',
-            'apellido2' => 'required|string|max:255',
+            'apellido2' => 'nullable|string|max:255',
             'anno_nacimiento' => 'required|integer|min:1900|max:' . date('Y'),
             'telefono' => 'required|string|max:255',
             'correo' => [

@@ -13,8 +13,8 @@ class EstadoFactory extends Factory
     public function definition(): array
     {
         return [
-            // Usamos un elemento aleatorio o único coherente con el dominio de vehículos
-            'nombre' => $this->faker->unique()->randomElement(['Disponible', 'Alquilado', 'En Mantenimiento', 'Inactivo']),
+            // Se usa un elemento aleatorio 
+            'nombre' => $this->faker->randomElement(['Disponible', 'Rentado', 'En Mantenimiento', 'Fuera de Servicio']),
         ];
     }
 }

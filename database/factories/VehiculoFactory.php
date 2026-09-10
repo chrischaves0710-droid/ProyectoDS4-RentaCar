@@ -8,18 +8,20 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class VehiculoFactory extends Factory
 {
-    //  datos ficticios para la tabla 
+    /**
+     * Define los datos ficticios para la tabla vehiculos.
+     */
     public function definition(): array
     {
         return [
-            // formato de 3 letras y 3 numeros en mayuscula
+            // Formato de 3 letras y 3 números en mayúscula
             'placa' => strtoupper(fake()->unique()->bothify('???-###')),
 
-            // lista de marcas
+            // Lista de marcas
             'marca' => fake()->randomElement(['Toyota', 'Hyundai', 'Nissan', 'Suzuki', 'Honda', 'Mitsubishi']),
 
-            // lista de modelos
-            'modelo' => fake()->randomElement(['Corolla', 'Elantra', 'Yaris', 'Civic', 'Tucson', 'RAV4', 'Jimny', 'Swift', 'Outlander', 'Versa  ']),
+            // Lista de modelos
+            'modelo' => fake()->randomElement(['Corolla', 'Elantra', 'Yaris', 'Civic', 'Tucson', 'RAV4', 'Jimny', 'Swift', 'Outlander', 'Versa']),
 
             // Años entre 2018 y 2025
             'anno' => fake()->numberBetween(2018, 2025),
@@ -27,11 +29,9 @@ class VehiculoFactory extends Factory
             // Kilometraje aleatorio entre 5,000 y 120,000 km
             'kilometraje' => fake()->numberBetween(5000, 120000),
 
-            // crea o asocia automáticamente una categoría
-            'categoria_id' => Categoria::factory(),
-
-            //crea o asocia automáticamente un estado
-            'estado_id' => Estado::factory(),
+            // Reutiliza categorías y estados existentes creados por sus Seeders
+            'categoria_id' => Categoria::inRandomOrder()->first()?->id ?? Categoria::factory(),
+            'estado_id' => Estado::inRandomOrder()->first()?->id ?? Estado::factory(),
         ];
     }
 }

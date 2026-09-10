@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Accesorio;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -10,24 +11,23 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class AccesorioFactory extends Factory
 {
     /**
-     * Define the model's default state.
+     * 
+     *
+     * @var string
+     */
+    protected $model = Accesorio::class;
+
+    /**
+     * Define el estado por defecto del modelo.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
-            // Simula nombres de accesorios de vehículos reales
-            'nombre' => fake()->randomElement([
-                'Silla de bebé para auto',
-                'GPS Navegador',
-                'Portabicicletas',
-                'Cadena para nieve',
-                'Rack de techo (Portaequipaje)',
-                'Cargador rápido USB-C',
-                'Seguro de colisión extra'
-            ]),
-            // Genera un precio decimal entre 5.00 y 50.00
+            // Genera un nombre de 2 palabras único con inicial mayúscula
+            'nombre' => ucfirst(fake()->unique()->words(2, true)),
+            // Genera un precio aleatorio entre 5.00 y 50.00 con 2 decimales
             'precio_unitario' => fake()->randomFloat(2, 5, 50),
         ];
     }

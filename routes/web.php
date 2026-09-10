@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CategoriaController;
 use App\Http\Controllers\Api\ClienteController;
 use App\Http\Controllers\Api\EstadoController;
 use App\Http\Controllers\Api\RentaController;
+use App\Http\Controllers\Api\ReporteController;
 use App\Http\Controllers\Api\VehiculosController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,20 +13,17 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Rutas para el CRUD de vehiculos
-    Route::resource('vehiculos', VehiculosController::class);
-
-// Rutas para el CRUD de Accesorios
+// Rutas CRUD API
+Route::resource('vehiculos', VehiculosController::class);
 Route::resource('accesorios', AccesorioController::class);
-
-// Rutas para el CRUD de Rentas
 Route::resource('rentas', RentaController::class);
-
-// Rutas para el CRUD de Estados
 Route::resource('estados', EstadoController::class);
-
-// Rutas para el CRUD de Categorías
 Route::resource('categorias', CategoriaController::class);
-
-// Rutas para el CRUD de Clientes
 Route::apiResource('clientes', ClienteController::class);
+
+// Rutas de reportes y consultas
+Route::prefix('reportes')->group(function () {
+    Route::get('/scopes', [ReporteController::class, 'obtenerRentasVigentesPorMonto']);
+    Route::get('/group-by', [ReporteController::class, 'obtenerIngresosYTotalesPorVehiculo']);
+    Route::get('/pivote', [ReporteController::class, 'obtenerEstadisticasAccesoriosRenta']);
+});

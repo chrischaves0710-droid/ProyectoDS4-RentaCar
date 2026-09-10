@@ -27,8 +27,6 @@ class Renta extends Model
         'monto_total' => 'decimal:2',
     ];
 
-   
-
     public function cliente()
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
@@ -39,12 +37,22 @@ class Renta extends Model
         return $this->belongsTo(Vehiculo::class, 'vehiculo_id');
     }
 
-    
-
     public function accesorios()
     {
         return $this->belongsToMany(Accesorio::class, 'accesorio_renta', 'renta_id', 'accesorio_id')
                     ->withPivot('cantidad', 'precio_diario', 'subtotal')
                     ->withTimestamps();
+    }
+
+    // Filtra rentas vigentes a la fecha actual
+    public function scopeConFechaFinVigente($query)
+    {
+        return $query->where('fecha_fin', '>=', now());
+    }
+
+    // Filtra rentas que igualen o superen un monto
+    public function scopeConMontoMinimo($query, float $monto)
+    {
+        return $query->where('monto_total', '>=', $monto);
     }
 }

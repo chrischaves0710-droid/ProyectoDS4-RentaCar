@@ -3,53 +3,43 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreClienteRequest;
+use App\Http\Requests\UpdateClienteRequest;
 use App\Models\Cliente;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
     /**
-     * Muestra una lista paginada de clientes con filtro de búsqueda opcional.
+     * Muestra una lista paginada de clientes.
      */
     public function index(Request $request)
     {
-        $q = $request->input('q'); // Filtro de busqueda
+        $q = $request->input('q');
 
         $clientes = Cliente::when($q, function ($query, $q) {
-                return $query->where('nombre1', 'like', "%$q%")
-                             ->orWhere('cedula', 'like', "%$q%")
-                             ->orWhere('correo', 'like', "%$q%");
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(25);
+            return $query->where('nombre1', 'like', "%$q%")
+                         ->orWhere('cedula', 'like', "%$q%")
+                         ->orWhere('correo', 'like', "%$q%");
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(25);
 
         return $clientes;
     }
 
     /**
-     * Guarda un nuevo cliente en la BD.
+     * Guarda un nuevo cliente.
      */
-    public function store(Request $request)
+    public function store(StoreClienteRequest $request)
     {
-        $validatedData = $request->validate([
-            'cedula' => 'required|string|max:255|unique:clientes,cedula',
-            'nombre1' => 'required|string|max:255',
-            'nombre2' => 'nullable|string|max:255',
-            'apellido1' => 'required|string|max:255',
-            'apellido2' => 'nullable|string|max:255',
-            'anno_nacimiento' => 'required|integer|min:1900|max:' . date('Y'),
-            'telefono' => 'required|string|max:255',
-            'correo' => 'required|email|max:255|unique:clientes,correo',
-        ]);
-
-        $cliente = Cliente::create($validatedData);
+        $cliente = Cliente::create($request->validated());
 
         return $cliente;
     }
 
     /**
-     * Muestra la info.
+     * Muestra la información de un cliente.
      */
     public function show(Cliente $cliente)
     {
@@ -57,32 +47,11 @@ class ClienteController extends Controller
     }
 
     /**
-     * Actualiza la info.
+     * Actualiza la información de un cliente.
      */
-    public function update(Request $request, Cliente $cliente)
+    public function update(UpdateClienteRequest $request, Cliente $cliente)
     {
-        $validatedData = $request->validate([
-            'cedula' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('clientes', 'cedula')->ignore($cliente->id),
-            ],
-            'nombre1' => 'required|string|max:255',
-            'nombre2' => 'nullable|string|max:255',
-            'apellido1' => 'required|string|max:255',
-            'apellido2' => 'nullable|string|max:255',
-            'anno_nacimiento' => 'required|integer|min:1900|max:' . date('Y'),
-            'telefono' => 'required|string|max:255',
-            'correo' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('clientes', 'correo')->ignore($cliente->id),
-            ],
-        ]);
-
-        $cliente->update($validatedData);
+        $cliente->update($request->validated());
 
         return $cliente;
     }
@@ -94,6 +63,8 @@ class ClienteController extends Controller
     {
         $cliente->delete();
 
-        return response()->json(['message' => 'Cliente eliminado correctamente']);
+        return response()->json([
+            'message' => 'Cliente eliminado correctamente'
+        ]);
     }
 }

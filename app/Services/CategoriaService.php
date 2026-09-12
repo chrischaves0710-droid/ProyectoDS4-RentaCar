@@ -2,32 +2,36 @@
 
 namespace App\Services;
 
-use App\Exceptions\CategoriaException;
+use App\Exceptions\BusinessRuleException;
 use App\Models\Categoria;
+use App\Models\Vehiculo;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class CategoriaService
 {
-    public function listarConFiltro(?string $busqueda = null, int $perPage = 25): LengthAwarePaginator
+    public function listarConFiltros(?string $q = null, string $sortBy = 'created_at', string $sortDir = 'desc', int $perPage = 15): LengthAwarePaginator
     {
-        return Categoria::when($busqueda, function ($query, $q) {
+        $perPage = min(max($perPage, 1), 50);
+
+        $allowedSorts = ['nombre', 'created_at', 'id'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'created_at';
+        }
+
+        return Categoria::when($q, function ($query, $q) {
                 return $query->where('nombre', 'like', "%{$q}%");
             })
-            ->orderBy('created_at', 'desc')
+            ->orderBy($sortBy, strtolower($sortDir) === 'asc' ? 'asc' : 'desc')
+            ->orderBy('nombre', 'asc')
             ->paginate($perPage);
     }
 
     public function crear(array $data): Categoria
     {
-        // REGLA DE NEGOCIO 1: Longitud mínima del nombre
-        if (strlen(trim($data['nombre'])) < 3) {
-            throw new CategoriaException('El nombre de la categoría debe contener al menos 3 caracteres.');
-        }
-
-        // REGLA DE NEGOCIO 2: Bloqueo de palabras no permitidas
-        if (str_contains(strtolower($data['nombre']), 'prohibido')) {
-            throw new CategoriaException('El nombre de la categoría contiene términos no permitidos.');
+        // Regla 1: Restricción de palabras reservadas
+        if (str_contains(strtolower($data['nombre']), 'mantenimiento') || str_contains(strtolower($data['nombre']), 'inactivo')) {
+            throw new BusinessRuleException('No se pueden registrar categorías marcadas como reservadas o inactivas.');
         }
 
         return DB::transaction(function () use ($data) {
@@ -37,9 +41,14 @@ class CategoriaService
 
     public function actualizar(Categoria $categoria, array $data): Categoria
     {
-        // REGLA DE NEGOCIO 3: Protección de la categoría principal del sistema
-        if ($categoria->id === 1) {
-            throw new CategoriaException('La categoría base del sistema no puede ser modificada.');
+        // Regla 2: Bloqueo de edición por vehículos en rentas activas
+        $vehiculosEnRenta = Vehiculo::where('categoria_id', $categoria->id)
+            ->whereHas('rentas', function ($query) {
+                $query->where('fecha_fin', '>=', now());
+            })->exists();
+
+        if ($vehiculosEnRenta) {
+            throw new BusinessRuleException('No se puede modificar la categoría porque tiene vehículos en rentas activas.');
         }
 
         return DB::transaction(function () use ($categoria, $data) {
@@ -50,9 +59,14 @@ class CategoriaService
 
     public function eliminar(Categoria $categoria): bool
     {
-        // REGLA DE NEGOCIO 4: Integridad referencial (Categorias -> Vehiculos)
-        if (method_exists($categoria, 'vehiculos') && $categoria->vehiculos()->count() > 0) {
-            throw new CategoriaException('No se puede eliminar la categoría porque existen vehículos asociados a ella.');
+        // Regla 3: Integridad referencial con vehículos
+        if ($categoria->vehiculos()->count() > 0) {
+            throw new BusinessRuleException('No se puede eliminar la categoría porque tiene vehículos asociados.');
+        }
+
+        // Regla 4: Protección de la categoría base del sistema
+        if ($categoria->id === 1) {
+            throw new BusinessRuleException('La categoría principal del sistema está protegida y no se puede eliminar.');
         }
 
         return DB::transaction(function () use ($categoria) {

@@ -20,7 +20,7 @@ class CategoriaController extends Controller
     {
         $q = $request->input('q');
 
-        $categorias = $this->categoriaService->listarConFiltro($q);
+        $categorias = $this->categoriaService->listarConFiltros($q);
 
         return $categorias;
     }

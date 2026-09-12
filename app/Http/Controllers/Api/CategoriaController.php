@@ -7,38 +7,51 @@ use App\Http\Requests\StoreCategoriaRequest;
 use App\Http\Requests\UpdateCategoriaRequest;
 use App\Models\Categoria;
 use App\Services\CategoriaService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CategoriaController extends Controller
 {
-    public function __construct(
-        protected CategoriaService $categoriaService
-    ) {}
+    public function __construct(protected CategoriaService $categoriaService)
+    {
+        $this->categoriaService = $categoriaService;
+    }
 
     public function index(Request $request)
     {
-        return $this->categoriaService->listarConFiltro($request->input('q'));
+        $q = $request->input('q');
+
+        $categorias = $this->categoriaService->listarConFiltro($q);
+
+        return $categorias;
     }
 
-    public function store(StoreCategoriaRequest $request): Categoria
+    public function store(StoreCategoriaRequest $request)
     {
-        return $this->categoriaService->crear($request->validated());
+        $validatedData = $request->validated();
+
+        $categoria = $this->categoriaService->crear($validatedData);
+
+        return $categoria;
     }
 
-    public function show(Categoria $categoria): Categoria
+    public function show(Categoria $categoria)
     {
         return $categoria;
     }
 
-    public function update(UpdateCategoriaRequest $request, Categoria $categoria): Categoria
+    public function update(UpdateCategoriaRequest $request, Categoria $categoria)
     {
-        return $this->categoriaService->actualizar($categoria, $request->validated());
+        $validatedData = $request->validated();
+
+        $categoria = $this->categoriaService->actualizar($categoria, $validatedData);
+
+        return $categoria;
     }
 
-    public function destroy(Categoria $categoria): JsonResponse
+    public function destroy(Categoria $categoria)
     {
         $this->categoriaService->eliminar($categoria);
+
         return response()->json(['message' => 'Categoría eliminada correctamente']);
     }
 }

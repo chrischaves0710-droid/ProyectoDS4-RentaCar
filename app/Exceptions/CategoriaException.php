@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 
-class CategoriaException extends Exception
+class BusinessRuleException extends Exception
 {
     public function render($request)
     {

@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Exceptions\BusinessRuleException;
+use App\Exceptions\CategoriaException;
 use App\Models\Categoria;
 use App\Models\Cliente;
 use App\Models\Renta;
@@ -25,7 +25,7 @@ class CategoriaServiceTest extends TestCase
 
     public function test_regla_1_no_permite_crear_categoria_reservada()
     {
-        $this->expectException(BusinessRuleException::class);
+        $this->expectException(CategoriaException::class);
         $this->service->crear(['nombre' => 'En Mantenimiento']);
     }
 
@@ -41,7 +41,7 @@ class CategoriaServiceTest extends TestCase
             'fecha_fin'   => now()->addDays(5),
         ]);
 
-        $this->expectException(BusinessRuleException::class);
+        $this->expectException(CategoriaException::class);
         $this->service->actualizar($categoria, ['nombre' => 'Nuevo Nombre']);
     }
 
@@ -50,7 +50,7 @@ class CategoriaServiceTest extends TestCase
         $categoria = Categoria::factory()->create();
         Vehiculo::factory()->create(['categoria_id' => $categoria->id]);
 
-        $this->expectException(BusinessRuleException::class);
+        $this->expectException(CategoriaException::class);
         $this->service->eliminar($categoria);
     }
 
@@ -58,7 +58,7 @@ class CategoriaServiceTest extends TestCase
     {
         $categoria = Categoria::factory()->create(['id' => 1]);
 
-        $this->expectException(BusinessRuleException::class);
+        $this->expectException(CategoriaException::class);
         $this->service->eliminar($categoria);
     }
 }

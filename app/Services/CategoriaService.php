@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Exceptions\BusinessRuleException;
+use App\Exceptions\CategoriaException;
 use App\Models\Categoria;
 use App\Models\Vehiculo;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -31,7 +31,7 @@ class CategoriaService
     {
         // Regla 1: Restricción de palabras reservadas
         if (str_contains(strtolower($data['nombre']), 'mantenimiento') || str_contains(strtolower($data['nombre']), 'inactivo')) {
-            throw new BusinessRuleException('No se pueden registrar categorías marcadas como reservadas o inactivas.');
+            throw new CategoriaException('No se pueden registrar categorías marcadas como reservadas o inactivas.');
         }
 
         return DB::transaction(function () use ($data) {
@@ -48,7 +48,7 @@ class CategoriaService
             })->exists();
 
         if ($vehiculosEnRenta) {
-            throw new BusinessRuleException('No se puede modificar la categoría porque tiene vehículos en rentas activas.');
+            throw new CategoriaException('No se puede modificar la categoría porque tiene vehículos en rentas activas.');
         }
 
         return DB::transaction(function () use ($categoria, $data) {
@@ -61,12 +61,12 @@ class CategoriaService
     {
         // Regla 3: Integridad referencial con vehículos
         if ($categoria->vehiculos()->count() > 0) {
-            throw new BusinessRuleException('No se puede eliminar la categoría porque tiene vehículos asociados.');
+            throw new CategoriaException('No se puede eliminar la categoría porque tiene vehículos asociados.');
         }
 
         // Regla 4: Protección de la categoría base del sistema
         if ($categoria->id === 1) {
-            throw new BusinessRuleException('La categoría principal del sistema está protegida y no se puede eliminar.');
+            throw new CategoriaException('La categoría principal del sistema está protegida y no se puede eliminar.');
         }
 
         return DB::transaction(function () use ($categoria) {

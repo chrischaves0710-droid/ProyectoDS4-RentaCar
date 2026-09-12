@@ -35,26 +35,31 @@ class CategoriaServiceTest extends TestCase
     public function regla_2_no_permite_modificar_categoria_con_vehiculo_en_renta_activa()
     {
         $categoria = Categoria::create(['nombre' => 'SUV Premium']);
+        
         $cliente = Cliente::create([
-            'cedula' => '12345678',
-            'nombre1' => 'Juan',
-            'apellido1' => 'Perez',
-            'correo' => 'juan@example.com'
+            'cedula'          => '12345678',
+            'nombre1'         => 'Juan',
+            'apellido1'       => 'Perez',
+            'correo'          => 'juan@example.com',
+            'anno_nacimiento' => 1995,
         ]);
+
         $vehiculo = Vehiculo::create([
-            'placa' => 'ABC-123',
-            'modelo' => '2023',
-            'anno' => 2023,
-            'kilometraje' => 50000,
-            'categoria_id' => $categoria->id
+            'placa'        => 'ABC-123',
+            'marca'        => 'Toyota',
+            'modelo'       => 'Corolla',
+            'anno'         => 2023,
+            'kilometraje'  => 50000,
+            'categoria_id' => $categoria->id,
         ]);
+
         Renta::create([
-            'vehiculo_id' => $vehiculo->id,
-            'cliente_id' => $cliente->id,
-            'fecha_inicio' => now(),
-            'fecha_fin' => now()->addDays(5),
+            'vehiculo_id'   => $vehiculo->id,
+            'cliente_id'    => $cliente->id,
+            'fecha_inicio'  => now(),
+            'fecha_fin'     => now()->addDays(5),
             'precio_diario' => 50,
-            'monto_total' => 250
+            'monto_total'   => 250,
         ]);
 
         $this->expectException(CategoriaException::class);
@@ -65,12 +70,14 @@ class CategoriaServiceTest extends TestCase
     public function regla_3_no_permite_eliminar_categoria_con_vehiculos()
     {
         $categoria = Categoria::create(['nombre' => 'Sedan']);
+
         Vehiculo::create([
-            'placa' => 'XYZ-789',
-            'modelo' => '2022',
-            'anno' => 2022,
-            'kilometraje' => 10000,
-            'categoria_id' => $categoria->id
+            'placa'        => 'XYZ-789',
+            'marca'        => 'Honda',
+            'modelo'       => 'Civic',
+            'anno'         => 2022,
+            'kilometraje'  => 10000,
+            'categoria_id' => $categoria->id,
         ]);
 
         $this->expectException(CategoriaException::class);

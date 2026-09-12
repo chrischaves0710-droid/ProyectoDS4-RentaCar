@@ -3,76 +3,69 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreEstadoRequest;
+use App\Http\Requests\UpdateEstadoRequest;
 use App\Models\Estado;
+use App\Services\EstadoService;
 use Illuminate\Http\Request;
 
 class EstadoController extends Controller
 {
-    // Listar todos los estados
-    public function index()
+    public function __construct(protected EstadoService $estadoService)
     {
-        return response()->json(Estado::all(), 200);
+        
     }
 
-    // Crear un nuevo estado
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255|unique:estados,nombre',
-        ]);
+        $query = Estado::query();
 
-        $estado = Estado::create($validated);
-
-        return response()->json([
-            'message' => 'Estado creado con éxito',
-            'data' => $estado
-        ], 201);
-    }
-
-    // Mostrar un estado específico
-    public function show($id)
-    {
-        $estado = Estado::find($id);
-
-        if (!$estado) {
-            return response()->json(['message' => 'Estado no encontrado'], 404);
+        if ($request->filled('nombre')) {
+            $query->where('nombre', 'like', $request->nombre . '%');
         }
 
+        $sort = $request->input('sort', 'id');
+        $direction = $request->input('direction', 'asc');
+
+        if (!in_array($sort, ['id', 'nombre'])) {
+            $sort = 'id';
+        }
+
+        if (!in_array($direction, ['asc', 'desc'])) {
+            $direction = 'asc';
+        }
+
+        return $query->orderBy($sort, $direction)
+            ->paginate(min($request->integer('per_page', 15), 50));
+    }
+
+    public function store(StoreEstadoRequest $request)
+    {
+        return response()->json(
+            $this->estadoService->crear($request->validated()),
+            201
+        );
+    }
+
+    public function show(Estado $estado)
+    {
         return response()->json($estado, 200);
     }
 
-    // Actualizar un estado
-    public function update(Request $request, $id)
+    public function update(UpdateEstadoRequest $request, Estado $estado)
     {
-        $estado = Estado::find($id);
-
-        if (!$estado) {
-            return response()->json(['message' => 'Estado no encontrado'], 404);
-        }
-
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255|unique:estados,nombre,' . $id,
-        ]);
-
-        $estado->update($validated);
-
-        return response()->json([
-            'message' => 'Estado actualizado con éxito',
-            'data' => $estado
-        ], 200);
+        return response()->json(
+            $this->estadoService->actualizar($estado, $request->validated()),
+            200
+        );
     }
 
-    // Eliminar un estado
-    public function destroy($id)
+    public function destroy(Estado $estado)
     {
-        $estado = Estado::find($id);
+        $this->estadoService->eliminar($estado);
 
-        if (!$estado) {
-            return response()->json(['message' => 'Estado no encontrado'], 404);
-        }
-
-        $estado->delete();
-
-        return response()->json(['message' => 'Estado eliminado con éxito'], 200);
+        return response()->json([
+            'message' => 'Estado eliminado con éxito'
+        ], 200);
     }
 }

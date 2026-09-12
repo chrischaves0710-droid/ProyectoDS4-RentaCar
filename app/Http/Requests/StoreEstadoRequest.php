@@ -23,10 +23,10 @@ class StoreEstadoRequest extends FormRequest
     {
         return [
             'nombre.required' => 'El nombre del estado es obligatorio.',
-            'nombre.string'   => 'El formato del nombre debe ser texto.',
-            'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
-            'nombre.max'      => 'El nombre no puede superar los 50 caracteres.',
-            'nombre.unique'   => 'Ya existe un estado registrado con este nombre.',
+            'nombre.string' => 'El nombre debe ser una cadena de texto.',
+            'nombre.min' => 'El nombre debe tener al menos 3 caracteres.',
+            'nombre.max' => 'El nombre no puede tener más de 50 caracteres.',
+            'nombre.unique' => 'Ya existe un estado registrado con este nombre.',
         ];
     }
 }

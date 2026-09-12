@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateEstadoRequest extends FormRequest
 {
@@ -14,9 +14,15 @@ class UpdateEstadoRequest extends FormRequest
 
     public function rules(): array
     {
+        $estado = $this->route('estado');
+
         return [
-            // Ignora el ID actual para la regla unique
-            'nombre' => 'required|string|min:3|max:50|unique:estados,nombre,' . $this->route('estado'),
+            'nombre' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('estados', 'nombre')->ignore($estado->id),
+            ],
         ];
     }
 
@@ -24,10 +30,10 @@ class UpdateEstadoRequest extends FormRequest
     {
         return [
             'nombre.required' => 'El nombre del estado es obligatorio.',
-            'nombre.string'   => 'El formato del nombre debe ser texto.',
-            'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
-            'nombre.max'      => 'El nombre no puede superar los 50 caracteres.',
-            'nombre.unique'   => 'Ya existe otro estado registrado con este nombre.',
+            'nombre.string' => 'El nombre debe ser una cadena de texto.',
+            'nombre.min' => 'El nombre debe tener al menos 3 caracteres.',
+            'nombre.max' => 'El nombre no puede tener más de 50 caracteres.',
+            'nombre.unique' => 'Ya existe otro estado registrado con este nombre.',
         ];
     }
 }

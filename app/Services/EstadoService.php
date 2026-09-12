@@ -24,6 +24,7 @@ class EstadoService
     {
         $tieneVehiculos = Vehiculo::where('estado_id', $estado->id)->exists();
 
+        // Regla de negocio: No se puede eliminar un estado si tiene vehículos asociados.
         if ($tieneVehiculos) {
             throw new CategoriaException(
                 'No se puede eliminar el estado porque tiene vehículos asociados.'

@@ -8,6 +8,7 @@ use App\Models\Cliente;
 use App\Models\Estado;
 use App\Models\Renta;
 use App\Models\Vehiculo;
+use App\Services\CategoriaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -16,18 +17,18 @@ class CategoriaServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $service;
+    protected CategoriaService $service;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = app(\App\Services\CategoriaService::class);
+        $this->service = app(CategoriaService::class);
     }
 
     #[Test]
     public function regla_1_no_permite_crear_categoria_reservada()
     {
-        $this->expectException(CategoriaException::class);
+        $this->expectException(categoriaException::class);
         $this->service->crear(['nombre' => 'En Mantenimiento']);
     }
 
@@ -36,7 +37,7 @@ class CategoriaServiceTest extends TestCase
     {
         $categoria = Categoria::create(['nombre' => 'SUV Premium']);
         $estado = Estado::create(['nombre' => 'Disponible']);
-        
+
         $cliente = Cliente::create([
             'cedula'          => '12345678',
             'nombre1'         => 'Juan',
@@ -48,6 +49,7 @@ class CategoriaServiceTest extends TestCase
 
         $vehiculo = Vehiculo::create([
             'placa'        => 'ABC-123',
+            'marca'        => 'Toyota',
             'modelo'       => 'Corolla',
             'anno'         => 2023,
             'kilometraje'  => 50000,
@@ -64,7 +66,7 @@ class CategoriaServiceTest extends TestCase
             'monto_total'   => 250,
         ]);
 
-        $this->expectException(CategoriaException::class);
+        $this->expectException(categoriaException::class);
         $this->service->actualizar($categoria, ['nombre' => 'Nuevo Nombre']);
     }
 
@@ -76,6 +78,7 @@ class CategoriaServiceTest extends TestCase
 
         Vehiculo::create([
             'placa'        => 'XYZ-789',
+            'marca'        => 'Honda',
             'modelo'       => 'Civic',
             'anno'         => 2022,
             'kilometraje'  => 10000,
@@ -83,7 +86,7 @@ class CategoriaServiceTest extends TestCase
             'estado_id'    => $estado->id,
         ]);
 
-        $this->expectException(CategoriaException::class);
+        $this->expectException(categoriaException::class);
         $this->service->eliminar($categoria);
     }
 
@@ -93,7 +96,7 @@ class CategoriaServiceTest extends TestCase
         $categoria = Categoria::create(['nombre' => 'Categoria Base']);
         $categoria->id = 1;
 
-        $this->expectException(CategoriaException::class);
+        $this->expectException(categoriaException::class);
         $this->service->eliminar($categoria);
     }
 }

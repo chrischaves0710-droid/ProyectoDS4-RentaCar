@@ -3,76 +3,42 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCategoriaRequest;
+use App\Http\Requests\UpdateCategoriaRequest;
 use App\Models\Categoria;
+use App\Services\CategoriaService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class CategoriaController extends Controller
 {
-    /**
-     * Muestra una lista paginada de categorías con filtro de búsqueda opcional.
-     */
+    public function __construct(
+        protected CategoriaService $categoriaService
+    ) {}
+
     public function index(Request $request)
     {
-        $q = $request->input('q'); // Filtro por nombre de la categoría
-
-        $categorias = Categoria::when($q, function ($query, $q) {
-                return $query->where('nombre', 'like', "%$q%");
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(25);
-
-        return $categorias;
+        return $this->categoriaService->listarConFiltro($request->input('q'));
     }
 
-    /**
-     * Guarda una nueva categoría en la base de datos.
-     */
-    public function store(Request $request)
+    public function store(StoreCategoriaRequest $request): Categoria
     {
-        $validatedData = $request->validate([
-            'nombre' => 'required|string|max:255|unique:categorias,nombre',
-        ]);
-
-        $categoria = Categoria::create($validatedData);
-
-        return $categoria;
+        return $this->categoriaService->crear($request->validated());
     }
 
-    /**
-     * Muestra la información de una categoría específica.
-     */
-    public function show(Categoria $categoria)
+    public function show(Categoria $categoria): Categoria
     {
         return $categoria;
     }
 
-    /**
-     * Actualiza la información de una categoría existente.
-     */
-    public function update(Request $request, Categoria $categoria)
+    public function update(UpdateCategoriaRequest $request, Categoria $categoria): Categoria
     {
-        $validatedData = $request->validate([
-            'nombre' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('categorias', 'nombre')->ignore($categoria->id),
-            ],
-        ]);
-
-        $categoria->update($validatedData);
-
-        return $categoria;
+        return $this->categoriaService->actualizar($categoria, $request->validated());
     }
 
-    /**
-     * Elimina una categoría.
-     */
-    public function destroy(Categoria $categoria)
+    public function destroy(Categoria $categoria): JsonResponse
     {
-        $categoria->delete();
-
+        $this->categoriaService->eliminar($categoria);
         return response()->json(['message' => 'Categoría eliminada correctamente']);
     }
 }

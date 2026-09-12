@@ -28,7 +28,7 @@ class CategoriaServiceTest extends TestCase
     #[Test]
     public function regla_1_no_permite_crear_categoria_reservada()
     {
-        $this->expectException(categoriaException::class);
+        $this->expectException(CategoriaException::class);
         $this->service->crear(['nombre' => 'En Mantenimiento']);
     }
 
@@ -66,7 +66,7 @@ class CategoriaServiceTest extends TestCase
             'monto_total'   => 250,
         ]);
 
-        $this->expectException(categoriaException::class);
+        $this->expectException(CategoriaException::class);
         $this->service->actualizar($categoria, ['nombre' => 'Nuevo Nombre']);
     }
 
@@ -86,7 +86,7 @@ class CategoriaServiceTest extends TestCase
             'estado_id'    => $estado->id,
         ]);
 
-        $this->expectException(categoriaException::class);
+        $this->expectException(CategoriaException::class);
         $this->service->eliminar($categoria);
     }
 
@@ -96,7 +96,7 @@ class CategoriaServiceTest extends TestCase
         $categoria = Categoria::create(['nombre' => 'Categoria Base']);
         $categoria->id = 1;
 
-        $this->expectException(categoriaException::class);
+        $this->expectException(CategoriaException::class);
         $this->service->eliminar($categoria);
     }
 }

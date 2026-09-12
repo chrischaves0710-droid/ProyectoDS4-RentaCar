@@ -1,106 +1,91 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreVehiculoRequest;
+use App\Http\Requests\UpdateVehiculoRequest;
 use App\Models\Vehiculo;
+use App\Services\VehiculoService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
-class VehiculosController extends Controller
+class VehiculoController extends Controller
 {
+    public function __construct(protected VehiculoService $vehiculoService){}
+
     /**
-     * Muestra una lista paginada de vehículos con filtros opcionales.
+     * Listado paginado con filtros combinables, ordenamiento por 2 campos y límite máximo.
      */
     public function index(Request $request)
-    {
-        // Captura los parámetros de búsqueda de la petición
-        $estadoId = $request->input('estado_id');
-        $categoriaId = $request->input('categoria_id');
-        $q = $request->input('q'); // Filtro por placa, marca o modelo
+{
+    // registros por página a un máximo de 50 (10 por defecto)
+    $limit = min((int) $request->input('limit', 10), 50);
 
-        $vehiculos = Vehiculo::with(['categoria', 'estado'])
-            ->when($estadoId, function ($query, $estadoId) {
-                return $query->where('estado_id', $estadoId);
-            })
-            ->when($categoriaId, function ($query, $categoriaId) {
-                return $query->where('categoria_id', $categoriaId);
-            })
-            ->when($q, function ($query, $q) {
-                return $query->where('placa', 'like', "$q%")
-                    ->orWhere('marca', 'like', "%$q%")
-                    ->orWhere('modelo', 'like', "%$q%");
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(25);
+    // para que el campo a ordenar sea uno permitido; si es inválido, usa 'created_at' por defecto
+    $sortBy = in_array($request->input('sort_by'), ['marca', 'anno', 'precio_diario', 'created_at']) 
+        ? $request->input('sort_by') 
+        : 'created_at';
 
-        return $vehiculos;
-    }
+    // dirección del orden: solo acepta 'asc', cualquier otra cosa será 'desc'
+    $order = $request->input('order', 'desc') === 'asc' ? 'asc' : 'desc';
+
+    $vehiculos = Vehiculo::with('categoria') // Carga la relación de categoría para evitar consultas innecesarias
+        // Aplica este filtro de categoría solo si viene en la peticion
+        ->when($request->input('categoria_id'), fn($q, $cat) => $q->where('categoria_id', $cat))
+        
+        // Aplica búsqueda solo si enviaron el parámetro ?q=texto (busca en placa o en modelo)
+        ->when($request->input('q'), fn($q, $search) => 
+            $q->where('placa', 'like', "{$search}%")
+              ->orWhere('modelo', 'like', "%{$search}%")
+        )
+        
+        // Primer ordenamiento dinámico según lo seleccionado por el usuario
+        ->orderBy($sortBy, $order)
+        
+        // Segundo ordenamiento fijo por ID para desempate y garantizar consistencia en la paginación
+        ->orderBy('id', 'desc')
+        
+        // Divide el resultado en paginas
+        ->paginate($limit);
+
+    // devuelve los resultados paginados en formato JSON con código 200 OK
+    return response()->json($vehiculos);
+}
 
     /**
-     * Guarda un nuevo vehículo en la base de datos.
+     * Registro delegando en el servicio.
      */
-    public function store(Request $request)
+    public function store(StoreVehiculoRequest $request)
     {
-        // Validar campos de la tabla
-        $validatedData = $request->validate([
-            'placa' => 'required|string|max:20|unique:vehiculos,placa',
-            'marca' => 'required|string|max:100',
-            'modelo' => 'required|string|max:100',
-            'anno' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'kilometraje' => 'required|integer|min:0',
-            'categoria_id' => 'required|exists:categorias,id',
-            'estado_id' => 'required|exists:estados,id',
-        ]);
+        $vehiculo = $this->vehiculoService->crear($request->validated());
 
-        // se crea el registro con los datos validados
-        $vehiculo = Vehiculo::create($validatedData);
-
-        return $vehiculo;
+        return response()->json($vehiculo, 201);
     }
 
     /**
-     * Muestra la información de un vehículo con sus relaciones.
+     * Detalle individual con su categoria
      */
     public function show(Vehiculo $vehiculo)
     {
-        // Cargar las relaciones de categoría y estado
-        return $vehiculo->load(['categoria', 'estado']);
+        return response()->json($vehiculo->load('categoria'));
     }
 
     /**
-     * Actualiza la información de un vehículo existente.
+     * Actualización de vehículo delegando la validación de negocio al servicio.
      */
-    public function update(Request $request, Vehiculo $vehiculo)
+    public function update(UpdateVehiculoRequest $request, Vehiculo $vehiculo)
     {
-        // Validar ignorando la placa del vehículo actual
-        $validatedData = $request->validate([
-            'placa' => [
-                'required',
-                'string',
-                'max:20',
-                Rule::unique('vehiculos', 'placa')->ignore($vehiculo->id)
-            ],
-            'marca' => 'required|string|max:100',
-            'modelo' => 'required|string|max:100',
-            'anno' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'kilometraje' => 'required|integer|min:0',
-            'categoria_id' => 'required|exists:categorias,id',
-            'estado_id' => 'required|exists:estados,id',
-        ]);
+        $vehiculoActualizado = $this->vehiculoService->actualizar($vehiculo, $request->validated());
 
-        $vehiculo->update($validatedData);
-
-        return $vehiculo;
+        return response()->json($vehiculoActualizado);
     }
 
     /**
-     * Elimina un vehiculo.
+     * Eliminación de vehículo delegando la verificación de dependencias al servicio.
      */
     public function destroy(Vehiculo $vehiculo)
     {
-        $vehiculo->delete();
+        $this->vehiculoService->eliminar($vehiculo);
 
-        return response()->json(['message' => 'Vehículo eliminado correctamente']);
+        return response()->json(null, 204);
     }
 }

@@ -13,8 +13,13 @@ class EstadoFactory extends Factory
     public function definition(): array
     {
         return [
-            // Se usa un elemento aleatorio 
-            'nombre' => $this->faker->randomElement(['Disponible', 'Rentado', 'En Mantenimiento', 'Fuera de Servicio']),
+            'nombre' => $this->faker->randomElement([
+                'Disponible', 
+                'Alquilado', 
+                'En Mantenimiento', 
+                'Inactivo', 
+                'Para Venta'
+            ]),
         ];
     }
 }

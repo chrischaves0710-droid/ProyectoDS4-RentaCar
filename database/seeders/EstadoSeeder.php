@@ -9,7 +9,13 @@ class EstadoSeeder extends Seeder
 {
     public function run(): void
     {
-        $estados = ['Disponible', 'Alquilado', 'En Mantenimiento', 'Inactivo'];
+        $estados = [
+            'Disponible',
+            'Alquilado',
+            'En Mantenimiento',
+            'Inactivo',
+            'Para Venta', // Nuevo estado para la regla de negocio
+        ];
 
         foreach ($estados as $nombreEstado) {
             Estado::firstOrCreate(['nombre' => $nombreEstado]);

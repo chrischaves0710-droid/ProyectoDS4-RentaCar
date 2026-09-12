@@ -27,17 +27,21 @@ class CategoriaService
             ->paginate($perPage);
     }
 
-    public function crear(array $data): Categoria
-    {
-        // Regla 1: Restricción de palabras reservadas
-        if (str_contains(strtolower($data['nombre']), 'mantenimiento') || str_contains(strtolower($data['nombre']), 'inactivo')) {
-            throw new CategoriaException('No se pueden registrar categorías marcadas como reservadas o inactivas.');
-        }
+   public function crear(array $data): Categoria
+{
+    $nombreLimpio = trim($data['nombre']);
 
-        return DB::transaction(function () use ($data) {
-            return Categoria::create($data);
-        });
+    // Regla 1: Evitar categorías duplicadas (insensible a mayúsculas/minúsculas)
+    $existe = Categoria::whereRaw('LOWER(nombre) = ?', [strtolower($nombreLimpio)])->exists();
+
+    if ($existe) {
+        throw new CategoriaException('Ya existe una categoría registrada con ese nombre.');
     }
+
+    $data['nombre'] = $nombreLimpio;
+
+    return Categoria::create($data);
+}
 
     public function actualizar(Categoria $categoria, array $data): Categoria
     {

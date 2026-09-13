@@ -75,8 +75,8 @@ class VehiculoService
 
     public function eliminar(Vehiculo $vehiculo): void
     {
-        // Regla 5: Impedir borrado de vehículos con contratos activos
-        if ($vehiculo->rentas()->where('estado', 'activa')->exists()) {
+        // Regla 5: Bloquea si la fecha de fin del alquiler es posterior o igual a la fecha actual
+        if ($vehiculo->rentas()->where('fecha_fin', '>=', now()->toDateString())->exists()) {
             throw new VehiculoException('No se puede eliminar el vehículo porque tiene contratos de alquiler activos.');
         }
 

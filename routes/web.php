@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\ClienteController;
 use App\Http\Controllers\Api\EstadoController;
 use App\Http\Controllers\Api\RentaController;
 use App\Http\Controllers\Api\ReporteController;
-use App\Http\Controllers\Api\VehiculosController;
+use App\Http\Controllers\Api\VehiculoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,7 +14,7 @@ Route::get('/', function () {
 });
 
 // Rutas CRUD API
-Route::resource('vehiculos', VehiculosController::class);
+Route::resource('vehiculos', VehiculoController::class);
 Route::resource('accesorios', AccesorioController::class);
 Route::resource('rentas', RentaController::class);
 Route::resource('estados', EstadoController::class);

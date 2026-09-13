@@ -6,62 +6,49 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreClienteRequest;
 use App\Http\Requests\UpdateClienteRequest;
 use App\Models\Cliente;
+use App\Services\ClienteService;
 use Illuminate\Http\Request;
 
 class ClienteController extends Controller
 {
-    /**
-     * Muestra una lista paginada de clientes.
-     */
+    public function __construct(
+        private ClienteService $service
+    ) {
+    }
+
     public function index(Request $request)
     {
-        $q = $request->input('q');
-
-        $clientes = Cliente::when($q, function ($query, $q) {
-            return $query->where('nombre1', 'like', "%$q%")
-                         ->orWhere('cedula', 'like', "%$q%")
-                         ->orWhere('correo', 'like', "%$q%");
-        })
-        ->orderBy('created_at', 'desc')
-        ->paginate(25);
-
-        return $clientes;
+        return $this->service->listar(
+            $request->input('q'),
+            $request->input('sortBy', 'created_at'),
+            $request->input('sortDir', 'desc'),
+            (int) $request->input('perPage', 15)
+        );
     }
 
-    /**
-     * Guarda un nuevo cliente.
-     */
     public function store(StoreClienteRequest $request)
     {
-        $cliente = Cliente::create($request->validated());
-
-        return $cliente;
+        return $this->service->crear($request->validated());
     }
 
-    /**
-     * Muestra la información de un cliente.
-     */
     public function show(Cliente $cliente)
     {
-        return $cliente;
+        return $this->service->obtener($cliente);
     }
 
-    /**
-     * Actualiza la información de un cliente.
-     */
-    public function update(UpdateClienteRequest $request, Cliente $cliente)
-    {
-        $cliente->update($request->validated());
-
-        return $cliente;
+    public function update(
+        UpdateClienteRequest $request,
+        Cliente $cliente
+    ) {
+        return $this->service->actualizar(
+            $cliente,
+            $request->validated()
+        );
     }
 
-    /**
-     * Elimina un cliente.
-     */
     public function destroy(Cliente $cliente)
     {
-        $cliente->delete();
+        $this->service->eliminar($cliente);
 
         return response()->json([
             'message' => 'Cliente eliminado correctamente'

@@ -23,9 +23,7 @@ beforeEach(function () {
     $this->service = app(VehiculoService::class);
 });
 
-/* -------------------------------------------------------------------------- */
-/* EVALUACIÓN DE REGLAS DE NEGOCIO                                            */
-/* -------------------------------------------------------------------------- */
+// EVALUACIÓN DE REGLAS DE NEGOCIO                                            
 
 it('Regla 1: Rechaza el registro inicial si el kilometraje supera los 5,000 km', function () {
     $data = [
@@ -100,9 +98,7 @@ it('Regla 5: Bloquea la eliminación si existen contratos de alquiler activos', 
         ->toThrow(VehiculoException::class, 'No se puede eliminar el vehículo porque tiene contratos de alquiler activos.');
 });
 
-/* -------------------------------------------------------------------------- */
-/* TRANSACCIONES MULTITABLA Y REVERSIÓN (ACID)                                */
-/* -------------------------------------------------------------------------- */
+// TRANSACCIONES MULTITABLA Y REVERSIÓN
 
 it('Transacción Multitabla: Crea el vehículo y registra la auditoría exitosamente', function () {
     $data = [

@@ -9,6 +9,7 @@ use App\Models\Vehiculo;
 use App\Services\VehiculoService;
 use Illuminate\Http\Request;
 
+
 class VehiculoController extends Controller
 {
     public function __construct(protected VehiculoService $vehiculoService){}

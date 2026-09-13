@@ -63,18 +63,19 @@ class CategoriaService
 
     public function eliminar(Categoria $categoria): bool
     {
-        // Regla 3: Integridad referencial con vehículos
-        if ($categoria->vehiculos()->count() > 0) {
-            throw new CategoriaException('No se puede eliminar la categoría porque tiene vehículos asociados.');
-        }
+    
+{
+    // EVALUAR REGLA 4: Protección del ID 1
+    if ($categoria->id === 1) {
+        throw new CategoriaException('No se puede eliminar la categoría principal del sistema.', 422);
+    }
 
-        // Regla 4: Protección de la categoría base del sistema
-        if ($categoria->id === 1) {
-            throw new CategoriaException('La categoría principal del sistema está protegida y no se puede eliminar.');
-        }
+    // EVALUAR REGLA 3: Vehículos asociados
+    if ($categoria->vehiculos()->exists()) {
+        throw new CategoriaException('No se puede eliminar la categoría porque tiene vehículos asociados.', 422);
+    }
 
-        return DB::transaction(function () use ($categoria) {
-            return $categoria->delete();
-        });
+    return $categoria->delete();
+}
     }
 }

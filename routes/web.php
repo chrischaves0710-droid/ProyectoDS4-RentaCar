@@ -18,7 +18,7 @@ Route::resource('vehiculos', VehiculoController::class);
 Route::resource('accesorios', AccesorioController::class);
 Route::resource('rentas', RentaController::class);
 Route::resource('estados', EstadoController::class);
-Route::apiResource('categorias', CategoriaController::class);
+Route::Resource('categorias', CategoriaController::class);
 Route::apiResource('clientes', ClienteController::class);
 
 // Rutas de reportes y consultas

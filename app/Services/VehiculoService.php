@@ -39,8 +39,6 @@ class VehiculoService
         return DB::transaction(function () use ($data) {
             $vehiculo = Vehiculo::create($data);
 
-            throw new \Exception('Fallo simulación de transacción');
-
             DB::table('auditoria_vehiculos')->insert([
                 'vehiculo_id' => $vehiculo->id,
                 'accion' => 'REGISTRO_INICIAL',

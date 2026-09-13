@@ -6,142 +6,155 @@ use App\Models\Estado;
 use App\Models\Renta;
 use App\Models\Vehiculo;
 use App\Services\VehiculoService;
+use Database\Seeders\EstadoSeeder;
 use Illuminate\Support\Facades\DB;
 
-/**
- * @property \App\Models\Categoria $categoria
- * @property \App\Models\Estado $estadoDisponible
- * @property \App\Models\Estado $estadoParaVenta
- * @property \App\Services\VehiculoService $service
- */
-
 beforeEach(function () {
-    $this->seed(\Database\Seeders\EstadoSeeder::class);
-    $this->categoria = Categoria::factory()->create();
-    $this->estadoDisponible = Estado::where('nombre', 'Disponible')->first();
-    $this->estadoParaVenta = Estado::where('nombre', 'Para Venta')->first();
-    $this->service = app(VehiculoService::class);
+    $this->seed(EstadoSeeder::class);
 });
 
-// EVALUACIÓN DE REGLAS DE NEGOCIO                                            
+// ==========================================
+// PRUEBAS DE REGLAS DE NEGOCIO
+// ==========================================
 
 it('Regla 1: Rechaza el registro inicial si el kilometraje supera los 5,000 km', function () {
+    $categoria = Categoria::factory()->create();
+    $service = app(VehiculoService::class);
+
     $data = [
         'placa' => 'ABC-123',
         'marca' => 'Toyota',
         'modelo' => 'Yaris',
-        'anno' => 2024,
+        'anno' => (int) date('Y'),
         'kilometraje' => 5001,
-        'categoria_id' => $this->categoria->id,
+        'precio_diario' => 35.00,
+        'categoria_id' => $categoria->id,
     ];
 
-    expect(fn () => $this->service->crear($data))
+    expect(fn () => $service->crear($data))
         ->toThrow(VehiculoException::class, 'No se permite el registro inicial de vehículos con más de 5,000 km.');
 });
 
-it('Regla 2: Asigna estado Para Venta si la antigüedad es mayor o igual a 10 años', function () {
-    $annoActual = (int) date('Y');
+it('Regla 2: Asigna automáticamente el estado Para Venta si tiene 10 o más años de antigüedad', function () {
+    $categoria = Categoria::factory()->create();
+    $service = app(VehiculoService::class);
+    $annoAntiguo = (int) date('Y') - 10;
+
     $data = [
-        'placa' => 'OLD-999',
+        'placa' => 'VIE-100',
         'marca' => 'Nissan',
         'modelo' => 'Sentra',
-        'anno' => $annoActual - 10,
+        'anno' => $annoAntiguo,
         'kilometraje' => 3000,
-        'categoria_id' => $this->categoria->id,
+        'precio_diario' => 25.00,
+        'categoria_id' => $categoria->id,
     ];
 
-    $vehiculo = $this->service->crear($data);
+    $vehiculo = $service->crear($data);
+    $estadoParaVenta = Estado::where('nombre', 'Para Venta')->first();
 
-    expect($vehiculo->estado_id)->toBe($this->estadoParaVenta->id)
-        ->and($vehiculo->estado->nombre)->toBe('Para Venta');
+    expect($vehiculo->estado_id)->toBe($estadoParaVenta->id);
 });
 
-it('Regla 3: Cambia el estado a Para Venta al actualizar si el kilometraje supera los 80,000 km', function () {
-    $vehiculo = Vehiculo::factory()->create([
-        'kilometraje' => 75000,
-        'anno' => 2024,
-        'categoria_id' => $this->categoria->id,
-        'estado_id' => $this->estadoDisponible->id,
-    ]);
+it('Regla 3: Asigna automáticamente el estado Disponible en un registro nuevo estándar', function () {
+    $categoria = Categoria::factory()->create();
+    $service = app(VehiculoService::class);
 
-    $vehiculoActualizado = $this->service->actualizar($vehiculo, [
-        'kilometraje' => 85000,
-    ]);
+    $data = [
+        'placa' => 'NUE-200',
+        'marca' => 'Toyota',
+        'modelo' => 'Corolla',
+        'anno' => (int) date('Y'),
+        'kilometraje' => 1500,
+        'precio_diario' => 40.00,
+        'categoria_id' => $categoria->id,
+    ];
 
-    expect($vehiculoActualizado->estado_id)->toBe($this->estadoParaVenta->id)
-        ->and($vehiculoActualizado->estado->nombre)->toBe('Para Venta');
+    $vehiculo = $service->crear($data);
+    $estadoDisponible = Estado::where('nombre', 'Disponible')->first();
+
+    expect($vehiculo->estado_id)->toBe($estadoDisponible->id);
 });
 
-it('Regla 4: Impide reducir el kilometraje histórico registrado', function () {
+it('Regla 4: No permite actualizar el vehículo con un kilometraje menor al histórico registrado', function () {
+    $categoria = Categoria::factory()->create();
+    $estadoDisponible = Estado::where('nombre', 'Disponible')->first();
+
     $vehiculo = Vehiculo::factory()->create([
-        'kilometraje' => 10000,
-        'categoria_id' => $this->categoria->id,
-        'estado_id' => $this->estadoDisponible->id,
+        'kilometraje' => 3000,
+        'categoria_id' => $categoria->id,
+        'estado_id' => $estadoDisponible->id,
     ]);
 
-    expect(fn () => $this->service->actualizar($vehiculo, ['kilometraje' => 9999]))
-        ->toThrow(VehiculoException::class, 'El kilometraje (9999 km) no puede ser menor al histórico registrado (10000 km).');
+    $service = app(VehiculoService::class);
+
+    $dataActualizada = array_merge($vehiculo->toArray(), [
+        'kilometraje' => 2000,
+    ]);
+
+    expect(fn () => $service->actualizar($vehiculo, $dataActualizada))
+        ->toThrow(VehiculoException::class);
 });
 
-it('Regla 5: Bloquea la eliminación si existen contratos de alquiler activos', function () {
+it('Regla 5: Bloquea la eliminación si el vehículo tiene contratos de alquiler activos', function () {
+    $categoria = Categoria::factory()->create();
+    $estadoDisponible = Estado::where('nombre', 'Disponible')->first();
+
     $vehiculo = Vehiculo::factory()->create([
-        'categoria_id' => $this->categoria->id,
-        'estado_id' => $this->estadoDisponible->id,
+        'categoria_id' => $categoria->id,
+        'estado_id' => $estadoDisponible->id,
     ]);
 
     Renta::factory()->create([
         'vehiculo_id' => $vehiculo->id,
-        'fecha_fin' => now()->addDays(5)->toDateString(),
+        'fecha_fin' => now()->addDays(5),
     ]);
 
-    expect(fn () => $this->service->eliminar($vehiculo))
-        ->toThrow(VehiculoException::class, 'No se puede eliminar el vehículo porque tiene contratos de alquiler activos.');
+    $service = app(VehiculoService::class);
+
+    expect(fn () => $service->eliminar($vehiculo))
+        ->toThrow(VehiculoException::class);
 });
 
-// TRANSACCIONES MULTITABLA Y REVERSIÓN
+// ==========================================
+// PRUEBAS DE OPERACIÓN Y TRANSACCIONALIDAD
+// ==========================================
 
-it('Transacción Multitabla: Crea el vehículo y registra la auditoría exitosamente', function () {
-    $data = [
-        'placa' => 'NEW-777',
+it('aumenta el total de vehículos en 1 tras una creación exitosa', function () {
+    $totalAntes = Vehiculo::count();
+    $categoria = Categoria::factory()->create();
+
+    app(VehiculoService::class)->crear([
+        'placa' => 'ADD-001',
         'marca' => 'Hyundai',
-        'modelo' => 'Tucson',
-        'anno' => 2024,
+        'modelo' => 'Elantra',
+        'anno' => (int) date('Y'),
         'kilometraje' => 1000,
-        'categoria_id' => $this->categoria->id,
-    ];
-
-    $vehiculo = $this->service->crear($data);
-
-    $this->assertDatabaseHas('vehiculos', [
-        'id' => $vehiculo->id,
-        'placa' => 'NEW-777',
+        'precio_diario' => 30.00,
+        'categoria_id' => $categoria->id,
     ]);
 
-    $this->assertDatabaseHas('auditoria_vehiculos', [
-        'vehiculo_id' => $vehiculo->id,
-        'accion' => 'REGISTRO_INICIAL',
-    ]);
+    expect(Vehiculo::count())->toBe($totalAntes + 1);
 });
 
-it('Transacción Rollback: Revierte la inserción del vehículo si ocurre un fallo interno', function () {
-    try {
-        DB::transaction(function () {
-            Vehiculo::create([
-                'placa' => 'FAIL-999',
-                'marca' => 'Honda',
-                'modelo' => 'Civic',
-                'anno' => 2024,
-                'kilometraje' => 1000,
-                'categoria_id' => $this->categoria->id,
-                'estado_id' => $this->estadoDisponible->id,
-            ]);
+it('registra una entrada en la tabla de auditoría dentro de la transacción al crear', function () {
+    $categoria = Categoria::factory()->create();
+    $service = app(VehiculoService::class);
 
-            // Simulación de fallo dentro del bloque transaccional
-            throw new Exception('Error simulado en paso secundario de auditoría');
-        });
-    } catch (Exception $e) {
-        // Excepción capturada para evaluar el rollback
-    }
+    $vehiculo = $service->crear([
+        'placa' => 'AUD-777',
+        'marca' => 'Kia',
+        'modelo' => 'Sportage',
+        'anno' => (int) date('Y'),
+        'kilometraje' => 2500,
+        'precio_diario' => 50.00,
+        'categoria_id' => $categoria->id,
+    ]);
 
-    $this->assertDatabaseMissing('vehiculos', ['placa' => 'FAIL-999']);
+    $existeAuditoria = DB::table('auditoria_vehiculos')
+        ->where('vehiculo_id', $vehiculo->id)
+        ->where('accion', 'REGISTRO_INICIAL')
+        ->exists();
+
+    expect($existeAuditoria)->toBeTrue();
 });

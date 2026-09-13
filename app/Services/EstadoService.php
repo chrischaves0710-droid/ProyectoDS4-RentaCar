@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Exceptions\CategoriaException;
+use App\Exceptions\EstadoException;
 use App\Models\Estado;
 use App\Models\Vehiculo;
 
@@ -26,7 +26,7 @@ class EstadoService
 
         // Regla de negocio: No se puede eliminar un estado si tiene vehículos asociados.
         if ($tieneVehiculos) {
-            throw new CategoriaException(
+            throw new EstadoException(
                 'No se puede eliminar el estado porque tiene vehículos asociados.'
             );
         }

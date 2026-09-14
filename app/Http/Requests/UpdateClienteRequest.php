@@ -7,17 +7,11 @@ use Illuminate\Validation\Rule;
 
 class UpdateClienteRequest extends FormRequest
 {
-    /**
-     * Determine si el usuario está autorizado.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Reglas de validación para actualizar un cliente.
-     */
     public function rules(): array
     {
         $cliente = $this->route('cliente');
@@ -26,15 +20,31 @@ class UpdateClienteRequest extends FormRequest
             'cedula' => [
                 'required',
                 'string',
-                'max:255',
+                'regex:/^[0-9]{9}$/',
                 Rule::unique('clientes', 'cedula')->ignore($cliente->id),
             ],
+
             'nombre1' => 'required|string|max:255',
+
             'nombre2' => 'nullable|string|max:255',
+
             'apellido1' => 'required|string|max:255',
+
             'apellido2' => 'nullable|string|max:255',
-            'anno_nacimiento' => 'required|integer|min:1900|max:' . date('Y'),
-            'telefono' => 'required|string|max:255',
+
+            'anno_nacimiento' => [
+                'required',
+                'integer',
+                'min:1900',
+                'max:' . date('Y'),
+            ],
+
+            'telefono' => [
+                'required',
+                'string',
+                'regex:/^[0-9]{8}$/',
+            ],
+
             'correo' => [
                 'required',
                 'email',
@@ -44,15 +54,12 @@ class UpdateClienteRequest extends FormRequest
         ];
     }
 
-    /**
-     * Mensajes de validación en español.
-     */
     public function messages(): array
     {
         return [
             'cedula.required' => 'La cédula es obligatoria.',
             'cedula.string' => 'La cédula debe ser un texto.',
-            'cedula.max' => 'La cédula no puede superar los 255 caracteres.',
+            'cedula.regex' => 'La cédula debe contener exactamente 9 dígitos.',
             'cedula.unique' => 'La cédula ya está registrada.',
 
             'nombre1.required' => 'El primer nombre es obligatorio.',
@@ -76,7 +83,7 @@ class UpdateClienteRequest extends FormRequest
 
             'telefono.required' => 'El teléfono es obligatorio.',
             'telefono.string' => 'El teléfono debe ser un texto.',
-            'telefono.max' => 'El teléfono no puede superar los 255 caracteres.',
+            'telefono.regex' => 'El teléfono debe contener exactamente 8 dígitos.',
 
             'correo.required' => 'El correo electrónico es obligatorio.',
             'correo.email' => 'El correo electrónico debe tener un formato válido.',

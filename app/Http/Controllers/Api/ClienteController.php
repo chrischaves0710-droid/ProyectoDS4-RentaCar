@@ -28,7 +28,9 @@ class ClienteController extends Controller
 
     public function store(StoreClienteRequest $request)
     {
-        return $this->service->crear($request->validated());
+        $cliente = $this->service->crear($request->validated());
+
+        return response()->json($cliente, 201);
     }
 
     public function show(Cliente $cliente)
@@ -50,8 +52,6 @@ class ClienteController extends Controller
     {
         $this->service->eliminar($cliente);
 
-        return response()->json([
-            'message' => 'Cliente eliminado correctamente'
-        ]);
+        return response()->noContent();
     }
 }

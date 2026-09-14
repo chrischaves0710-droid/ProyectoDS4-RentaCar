@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\AccesorioController;
 use App\Http\Controllers\Api\CategoriaController;
-use App\Http\Controllers\Api\ClienteController;
 use App\Http\Controllers\Api\EstadoController;
 use App\Http\Controllers\Api\RentaController;
 use App\Http\Controllers\Api\ReporteController;
@@ -19,7 +18,7 @@ Route::resource('accesorios', AccesorioController::class);
 Route::resource('rentas', RentaController::class);
 Route::resource('estados', EstadoController::class);
 Route::Resource('categorias', CategoriaController::class);
-Route::apiResource('clientes', ClienteController::class);
+
 
 // Rutas de reportes y consultas
 Route::prefix('reportes')->group(function () {

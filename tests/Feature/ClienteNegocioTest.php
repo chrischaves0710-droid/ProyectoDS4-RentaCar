@@ -1,4 +1,3 @@
-```php
 <?php
 
 use App\Exceptions\ClienteException;
@@ -126,4 +125,30 @@ it('permite listar clientes con paginación y límite máximo', function () {
     );
 
     expect($resultado->perPage())->toBe(50);
+});
+
+/* -------------------------------------------------------------------------- */
+/* regla crea y actualiza menor de edad prueba                                                                 */
+/* -------------------------------------------------------------------------- */
+
+it('impide actualizar un cliente para convertirlo en menor de edad', function () {
+    $cliente = Cliente::factory()->create([
+        'anno_nacimiento' => 1995,
+    ]);
+
+    $service = app(ClienteService::class);
+
+    expect(fn () => $service->actualizar($cliente, [
+        'cedula' => $cliente->cedula,
+        'nombre1' => $cliente->nombre1,
+        'nombre2' => $cliente->nombre2,
+        'apellido1' => $cliente->apellido1,
+        'apellido2' => $cliente->apellido2,
+        'anno_nacimiento' => date('Y') - 17,
+        'telefono' => $cliente->telefono,
+        'correo' => $cliente->correo,
+    ]))->toThrow(
+        ClienteException::class,
+        'El cliente debe ser mayor de edad.'
+    );
 });

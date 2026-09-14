@@ -20,13 +20,13 @@ class StoreClienteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cedula' => 'required|string|max:255|unique:clientes,cedula',
+            'cedula' => ['required','string','regex:/^[0-9]{9}$/','unique:clientes,cedula',],
             'nombre1' => 'required|string|max:255',
             'nombre2' => 'nullable|string|max:255',
             'apellido1' => 'required|string|max:255',
             'apellido2' => 'nullable|string|max:255',
             'anno_nacimiento' => 'required|integer|min:1900|max:' . date('Y'),
-            'telefono' => 'required|string|max:255',
+           'telefono' => ['required','string','regex:/^[0-9]{8}$/',],
             'correo' => 'required|email|max:255|unique:clientes,correo',
         ];
     }
@@ -41,6 +41,7 @@ class StoreClienteRequest extends FormRequest
             'cedula.string' => 'La cédula debe ser un texto.',
             'cedula.max' => 'La cédula no puede superar los 255 caracteres.',
             'cedula.unique' => 'La cédula ya está registrada.',
+            'cedula.regex' => 'La cédula debe contener exactamente 9 dígitos.',
 
             'nombre1.required' => 'El primer nombre es obligatorio.',
             'nombre1.string' => 'El primer nombre debe ser un texto.',
@@ -64,6 +65,7 @@ class StoreClienteRequest extends FormRequest
             'telefono.required' => 'El teléfono es obligatorio.',
             'telefono.string' => 'El teléfono debe ser un texto.',
             'telefono.max' => 'El teléfono no puede superar los 255 caracteres.',
+            'telefono.regex' => 'El teléfono debe contener exactamente 8 dígitos.',
 
             'correo.required' => 'El correo electrónico es obligatorio.',
             'correo.email' => 'El correo electrónico debe tener un formato válido.',

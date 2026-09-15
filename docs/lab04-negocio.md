@@ -50,3 +50,53 @@ Este documento describe la lógica de negocio, las validaciones de dominio y el 
   Si se presenta un error no controlado durante la ejecución del sistema o se interrumpe la persistencia dentro de la transacción, el servidor responde con un estado **`500`**. Esto confirma que la base de datos abortó la operación mediante un rollback automático para preservar la integridad global de los datos.
 
   ---
+
+  # Documentación de Reglas de Negocio - Entidad Rentas
+  
+  ### Regla 1: Validación de Disponibilidad del Vehículo
+
+* **Descripción:** Se impide registrar una nueva renta cuando el vehículo seleccionado no se encuentra en estado `Disponible`.
+
+* **Comportamiento Esperado:** Antes de crear la renta, la capa de servicio consulta el estado actual del vehículo. Si el vehículo no posee un estado asignado o su estado es diferente de `Disponible`, la operación se cancela y se genera una `RentaException`, indicando la placa y el estado actual del vehículo.
+
+
+### Regla 2: Duración Mínima de la Renta
+
+* **Descripción:** Toda renta debe tener una duración mínima de un día, evitando contratos cuya fecha de inicio y fecha de finalización representen una duración de cero días.
+
+* **Comportamiento Esperado:** La capa de servicio calcula la diferencia entre `fecha_inicio` y `fecha_fin`. Si la duración calculada es menor a un día, se cancela la creación de la renta y se genera una `RentaException` con el mensaje `La renta debe tener una duración mínima de un día.`
+
+
+### Regla 3: Cálculo Automático del Monto Total
+
+* **Descripción:** El monto total de una renta no es ingresado manualmente, sino que se calcula automáticamente utilizando la duración del alquiler y el precio diario establecido.
+
+* **Comportamiento Esperado:** La capa de servicio calcula la cantidad de días entre `fecha_inicio` y `fecha_fin` y multiplica el resultado por `precio_diario`. El valor obtenido se almacena automáticamente en el campo `monto_total`.
+
+
+### Regla 4: Cambio Automático del Estado del Vehículo
+
+* **Descripción:** Cuando una renta se registra correctamente, el vehículo asociado deja de estar disponible y pasa automáticamente al estado `Alquilado`.
+
+* **Comportamiento Esperado:** Después de crear la renta, la capa de servicio busca el estado `Alquilado` y actualiza el `estado_id` del vehículo. Si dicho estado no existe en el sistema, se genera una `RentaException` y la operación no puede completarse.
+
+
+### Regla 5: Creación Transaccional de la Renta
+
+* **Descripción:** La creación de una renta y el cambio de estado del vehículo deben realizarse como una única operación transaccional para mantener la consistencia de los datos.
+
+* **Comportamiento Esperado:** La creación de la renta y la actualización del vehículo al estado `Alquilado` se ejecutan dentro de una `DB::transaction`. Si alguna de las operaciones falla, se realiza un rollback y ninguno de los cambios efectuados dentro de la transacción queda almacenado.
+
+
+### Regla 6: Validación de Fechas durante la Actualización
+
+* **Descripción:** No se permite actualizar una renta de manera que la fecha de finalización sea igual o anterior a la fecha de inicio.
+
+* **Comportamiento Esperado:** Antes de actualizar la renta, la capa de servicio compara `fecha_inicio` con `fecha_fin`. Si la fecha final es menor o igual a la inicial, la actualización se cancela y se genera una `RentaException` con el mensaje `La fecha final debe ser posterior a la fecha inicial.`
+
+
+### Regla 7: Recálculo del Monto Total durante la Actualización
+
+* **Descripción:** Cuando se modifican las fechas o el precio diario de una renta, el monto total debe actualizarse automáticamente para reflejar los nuevos valores.
+
+* **Comportamiento Esperado:** La capa de servicio toma las fechas y el precio diario actualizados, calcula nuevamente la duración de la renta y establece `monto_total` como el resultado de multiplicar la cantidad de días por el precio diario.

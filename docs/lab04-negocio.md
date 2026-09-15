@@ -243,3 +243,90 @@ Este documento describe la lógica de negocio, las validaciones de dominio y el 
 
 * **Violaciones a las Reglas de Negocio (`422 Unprocessable Content` / `400 Bad Request`):**
   Cuando la solicitud vulnera alguna de las 4 reglas de negocio (duplicidad, rentas activas en edición, eliminación del ID 1 o vehículos asociados en eliminación), la capa de servicio lanza una `CategoriaException` que es capturada por el manejador global de Laravel para formatear la respuesta JSON de error con su mensaje correspondiente.
+
+
+
+## Cliente
+
+La entidad Cliente implementa la lógica de negocio mediante un Service, manteniendo los controladores enfocados en recibir las solicitudes, delegar las operaciones y devolver las respuestas.
+
+### Reglas de negocio
+
+#### Regla 1: mayoría de edad
+
+Un cliente debe ser mayor de edad para poder ser registrado o actualizado.
+
+Esta regla se implementa en `ClienteService`, mediante el método `validarEdadMinima()`.
+
+Si el año de nacimiento indica que el cliente tiene menos de 18 años, se lanza `ClienteException` con el mensaje:
+
+> El cliente debe ser mayor de edad.
+
+La regla se prueba mediante las pruebas automatizadas de creación y actualización.
+
+#### Regla 2: clientes con rentas
+
+No se permite eliminar un cliente que tenga rentas asociadas.
+
+La validación se realiza en `ClienteService` consultando la relación `rentas` antes de ejecutar la eliminación.
+
+Si existen rentas asociadas, se lanza `ClienteException` con el mensaje:
+
+> No se puede eliminar el cliente porque tiene rentas asociadas.
+
+Esta regla evita eliminar información de un cliente que mantiene relaciones con operaciones de renta existentes.
+
+## Validaciones
+
+Las validaciones de creación y actualización se encuentran separadas en:
+
+* `StoreClienteRequest`
+* `UpdateClienteRequest`
+
+Se validan campos obligatorios, tipos de datos, longitudes, formatos, correo electrónico, valores numéricos y unicidad de cédula y correo.
+
+Los mensajes de validación fueron definidos en español para cada campo.
+
+## Listado
+
+El listado de clientes se realiza desde `ClienteService` utilizando paginación.
+
+Se permite:
+
+* Filtrar mediante el parámetro `q`.
+* Ordenar mediante `sortBy`.
+* Elegir dirección ascendente o descendente mediante `sortDir`.
+* Combinar filtros y ordenamiento.
+* Utilizar un máximo de 50 registros por página.
+
+El servicio también valida los campos permitidos para ordenamiento para evitar utilizar columnas no contempladas.
+
+## Excepciones
+
+Las violaciones de reglas de negocio utilizan la excepción personalizada:
+
+`App\Exceptions\ClienteException`
+
+Esto permite separar los errores propios de las reglas del negocio de las validaciones realizadas mediante Form Requests y deja preparada su traducción a respuestas HTTP específicas para una etapa posterior.
+
+## Transacciones
+
+Las operaciones de Cliente implementadas actualmente modifican únicamente la tabla `clientes`, por lo que no se agrega una transacción artificial.
+
+Las operaciones del proyecto que modifican múltiples tablas cuentan con su propia lógica transaccional, incluyendo pruebas para verificar el rollback ante errores.
+
+## Pruebas
+
+Las pruebas automatizadas verifican:
+
+* Creación de clientes.
+* Actualización de clientes.
+* Eliminación de clientes.
+* Restricción de eliminación cuando existen rentas.
+* Restricción de clientes menores de edad.
+* Listado con paginación y límite máximo.
+* Restricción de actualización para clientes menores de edad.
+
+Las pruebas se ejecutan mediante:
+
+`php artisan test`

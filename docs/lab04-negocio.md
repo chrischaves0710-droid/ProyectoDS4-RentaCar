@@ -201,3 +201,45 @@ Este documento describe la lógica de negocio, las validaciones de dominio y el 
 * Se comprueba que un accesorio no pueda ser agregado dos veces a la misma renta.
 * Se valida el cálculo del `precio_diario`, `subtotal` y `monto_total`.
 * Se incluye una prueba de rollback para comprobar que una falla durante la operación transaccional no deje registros parciales en `accesorio_renta` ni modificaciones incompletas en `rentas`.
+
+# Documentación de Reglas de Negocio - Entidad Categorías
+
+Este documento describe la lógica de negocio, las validaciones de dominio y el comportamiento implementado en la capa de servicio (`CategoriaService`) para el módulo de administración de categorías.
+
+## 1. Reglas de Negocio Implementadas
+
+### Regla 1: Evitar Categorías Duplicadas (Creación)
+* **Descripción:** No se permite registrar una nueva categoría cuyo nombre ya exista en la base de datos, ignorando diferencias entre mayúsculas y minúsculas.
+* **Comportamiento Esperado:** Antes de la creación, la capa de servicio aplica `trim()` al nombre enviado y ejecuta una consulta insensible a mayúsculas/minúsculas (`LOWER(nombre) = ?`). Si el nombre ya existe, se cancela la operación y se lanza una `CategoriaException` con el mensaje: `Ya existe una categoría registrada con ese nombre.`.
+
+### Regla 2: Bloqueo de Edición por Vehículos en Rentas Activas (Actualización)
+* **Descripción:** No se permite modificar una categoría si alguno de los vehículos asociados a ella se encuentra actualmente en un contrato de renta vigente.
+* **Comportamiento Esperado:** Antes de actualizar los datos, el servicio verifica si existen vehículos pertenecientes a la categoría con registros en la relación de rentas donde `fecha_fin >= now()`. Si existen coincidencias, la operación se detiene lanzando una `CategoriaException` con el mensaje: `No se puede modificar la categoría porque tiene vehículos en rentas activas.`.
+
+### Regla 3: Protección de la Categoría Principal ID 1 (Eliminación)
+* **Descripción:** Se prohíbe estrictamente la eliminación física de la categoría base/principal del sistema (identificada con el `ID 1`).
+* **Comportamiento Esperado:** Al recibir una solicitud de eliminación, la primera evaluación de control comprueba si `$categoria->id === 1`. Si la condición resulta verdadera, se interrumpe la ejecución lanzando una `CategoriaException` con código `422` y el mensaje: `No se puede eliminar la categoría principal del sistema.`.
+
+### Regla 4: Protección de Eliminación de Categorías con Vehículos Asociados (Eliminación)
+* **Descripción:** No se permite eliminar una categoría que mantenga vehículos asociados en el sistema, asegurando la integridad referencial.
+* **Comportamiento Esperado:** Después de validar que no se trate del ID 1, la capa de servicio verifica si la categoría tiene vehículos vinculados mediante `$categoria->vehiculos()->exists()`. De existir registros asociados, se interrumpe el flujo lanzando una `CategoriaException` con código `422` y el mensaje: `No se puede eliminar la categoría porque tiene vehículos asociados.`.
+
+## 2. Validaciones y Parámetros del Listado
+
+* **Filtro de búsqueda (`$q`):** Permite filtrar las categorías por coincidencia parcial en el campo `nombre` mediante una consulta `LIKE %{$q}%`.
+* **Paginación dinámica:** Limita el número de elementos devueltos por página a un rango estricto de entre **1 y 50 registros** (`min(max($perPage, 1), 50)`), siendo 15 el valor por defecto.
+* **Campos de ordenamiento permitidos:** Solo se permite ordenar la consulta mediante los campos `nombre`, `created_at` e `id`. Si se especifica una columna distinta, el servicio asigna por defecto `created_at`.
+* **Dirección de ordenamiento:** Acepta las direcciones `asc` o `desc`. Además, incluye un segundo criterio de orden secundario `orderBy('nombre', 'asc')` para desempatar registros.
+
+## 3. Comportamiento Transaccional (ACID)
+
+* **Uso de Transacciones en Modificación:** La actualización de los datos del modelo se ejecuta dentro de un bloque explícito `DB::transaction()`, garantizando la atomicidad durante la persistencia.
+* **Protección de Integridad Referencial:** Las operaciones de eliminación controlan preventivamente las dependencias con la entidad `Vehiculo` y sus relaciones de rentas activas directamente desde la capa de servicio antes de interactuar con la persistencia.
+
+## 4. Códigos de Respuesta HTTP y Manejo de Excepciones
+
+* **Operaciones Exitosas (`201 Created` / `200 OK`):**
+  La API responde con un código **`201 Created`** tras la creación exitosa de un registro y con **`200 OK`** al listar, actualizar o eliminar una categoría.
+
+* **Violaciones a las Reglas de Negocio (`422 Unprocessable Content` / `400 Bad Request`):**
+  Cuando la solicitud vulnera alguna de las 4 reglas de negocio (duplicidad, rentas activas en edición, eliminación del ID 1 o vehículos asociados en eliminación), la capa de servicio lanza una `CategoriaException` que es capturada por el manejador global de Laravel para formatear la respuesta JSON de error con su mensaje correspondiente.

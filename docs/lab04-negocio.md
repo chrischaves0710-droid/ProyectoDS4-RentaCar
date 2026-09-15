@@ -1,9 +1,5 @@
 # Documentación de Reglas de Negocio - Entidad Vehículos
 
-Este documento describe la lógica de negocio, las validaciones de dominio y el comportamiento transaccional (ACID) implementados en la capa de servicio (`VehiculoService`) para el módulo de administración de vehículos.
-
----
-
 ## 1. Reglas de Negocio Implementadas
 
 ### Regla 1: Límite de Kilometraje en Registro Inicial

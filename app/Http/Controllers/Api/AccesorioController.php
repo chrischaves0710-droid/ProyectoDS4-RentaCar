@@ -46,7 +46,7 @@ class AccesorioController extends Controller
     }
 
     // Método para agregar un accesorio a una renta
-    public function agregarARenta(Request $request, Accesorio $accesorio, Renta $renta)
+    public function agregarARenta(Request $request, Renta $renta, Accesorio $accesorio)
     {
         $validated = $request->validate(['cantidad' => 'required|integer|min:1']);
         $renta = $this->accesorioService->agregarARenta($accesorio, $renta, $validated['cantidad']);

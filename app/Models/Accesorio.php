@@ -16,7 +16,11 @@ class Accesorio extends Model
         'precio_unitario',
     ];
 
-    // Un accesorio puede estar presente en muchas rentas
+    protected $casts = [
+        'precio_unitario' => 'decimal:2',
+    ];
+
+    // Definición de la relación con el modelo Renta
     public function rentas()
     {
         return $this->belongsToMany(Renta::class, 'accesorio_renta', 'accesorio_id', 'renta_id')

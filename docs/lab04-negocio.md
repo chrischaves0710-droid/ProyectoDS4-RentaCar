@@ -100,3 +100,110 @@ Este documento describe la lógica de negocio, las validaciones de dominio y el 
 * **Descripción:** Cuando se modifican las fechas o el precio diario de una renta, el monto total debe actualizarse automáticamente para reflejar los nuevos valores.
 
 * **Comportamiento Esperado:** La capa de servicio toma las fechas y el precio diario actualizados, calcula nuevamente la duración de la renta y establece `monto_total` como el resultado de multiplicar la cantidad de días por el precio diario.
+
+--- 
+
+# Documentación de Reglas de Negocio - Entidad Estados
+
+Este documento describe la lógica de negocio, las validaciones de dominio y el comportamiento implementado en la capa de servicio (`EstadoService`) para el módulo de administración de estados.
+
+## 1. Reglas de Negocio Implementadas
+
+### Regla 1: Protección de Eliminación de Estados con Vehículos Asociados
+
+* **Descripción:** No se permite eliminar físicamente un estado que se encuentre asociado a uno o más vehículos registrados en el sistema.
+* **Comportamiento Esperado:** Antes de ejecutar la eliminación, la capa de servicio consulta si existen vehículos cuyo `estado_id` corresponda al estado seleccionado. Si existen vehículos asociados, la operación se cancela y se genera una `EstadoException` con el mensaje `No se puede eliminar el estado porque tiene vehículos asociados.`. El estado permanece almacenado en la base de datos.
+
+## 2. Validaciones de Entrada
+
+* **Nombre obligatorio:** El campo `nombre` es obligatorio y debe corresponder a una cadena de texto.
+* **Longitud máxima:** El nombre del estado no puede superar los 255 caracteres.
+* **Nombre único:** No se permiten dos estados con el mismo nombre. Durante una actualización, la validación ignora el registro que se está modificando para permitir conservar su propio nombre.
+* **Paginación máxima:** El listado de estados limita el parámetro `per_page` a un máximo de 50 registros por página.
+* **Ordenamiento:** El listado permite ordenar por `id` o `nombre`, utilizando únicamente las direcciones `asc` o `desc`.
+* **Filtro por nombre:** El listado permite filtrar los estados mediante el parámetro `nombre`.
+
+## 3. Comportamiento Transaccional (ACID)
+
+* **Operaciones sobre una sola tabla:** Las operaciones de creación, actualización y eliminación de un estado afectan únicamente a la tabla `estados`, por lo que no requieren una transacción explícita mediante `DB::transaction()`.
+* **Protección de integridad referencial:** La eliminación es controlada desde la capa de servicio mediante una consulta previa a la entidad `Vehiculo`, evitando eliminar estados que todavía se encuentren asociados a vehículos.
+
+## 4. Códigos de Respuesta HTTP y Manejo de Excepciones
+
+* **Operaciones Exitosas (`201 Created` / `200 OK`):**
+  Cuando el sistema procesa correctamente una solicitud, responde con un código **`201 Created`** al registrar un nuevo estado y con **`200 OK`** al consultar, actualizar o eliminar un estado.
+
+* **Errores de Validación de Entrada (`422 Unprocessable Content`):**
+  Si la solicitud no cumple con las reglas definidas en `StoreEstadoRequest` o `UpdateEstadoRequest`, Laravel rechaza la petición y devuelve los errores de validación correspondientes al campo `nombre`.
+
+* **Violaciones a las Reglas de Negocio:**
+  Cuando se intenta eliminar un estado que tiene vehículos asociados, la capa de servicio genera una `EstadoException` con un mensaje explicativo del motivo por el cual la operación no puede realizarse.
+
+---
+
+# Documentación de Reglas de Negocio - Entidad Accesorios
+
+Este documento describe la lógica de negocio, las validaciones de dominio y el comportamiento transaccional (ACID) implementados en la capa de servicio (`AccesorioService`) para el módulo de administración de accesorios.
+
+## 1. Reglas de Negocio Implementadas
+
+### Regla 1: Protección de Eliminación con Rentas Asociadas
+
+* **Descripción:** No se permite eliminar físicamente un accesorio que tenga registros asociados en la tabla intermedia `accesorio_renta`.
+* **Comportamiento Esperado:** Antes de ejecutar la eliminación, la capa de servicio verifica si el accesorio posee rentas asociadas. Si existen registros relacionados, la operación se cancela y se genera una `AccesorioException` con el mensaje `No se puede eliminar el accesorio porque tiene rentas asociadas.`.
+
+### Regla 2: Restricción de Accesorios en Rentas Finalizadas
+
+* **Descripción:** No se permite agregar un accesorio a una renta cuya fecha de finalización ya haya pasado.
+* **Comportamiento Esperado:** Antes de crear la asociación, la capa de servicio verifica la fecha `fecha_fin` de la renta. Si la renta ya se encuentra finalizada, se cancela la operación y se genera una `AccesorioException` con el mensaje `No se puede agregar un accesorio a una renta finalizada.`.
+
+### Regla 3: No Duplicar Accesorios dentro de una Misma Renta
+
+* **Descripción:** Un mismo accesorio no puede ser asociado más de una vez a una misma renta.
+* **Comportamiento Esperado:** Antes de insertar el registro en `accesorio_renta`, la capa de servicio comprueba si el accesorio ya se encuentra asociado a la renta. Si la relación ya existe, se cancela la operación y se genera una `AccesorioException` con el mensaje `El accesorio ya está asociado a esta renta.`.
+
+### Regla 4: Congelación del Precio y Actualización del Total de la Renta
+
+* **Descripción:** Al agregar un accesorio a una renta, se debe conservar el precio que tenía el accesorio en el momento de realizar la asociación y actualizar el monto total de la renta.
+* **Comportamiento Esperado:** La capa de servicio copia el valor actual de `precio_unitario` a `precio_diario`, calcula el `subtotal` mediante la operación `cantidad * precio_diario` y suma dicho subtotal al `monto_total` de la renta.
+
+## 2. Validaciones de Entrada, Filtros y Paginación
+
+* **Nombre obligatorio:** El campo `nombre` es obligatorio y debe ser una cadena de texto.
+* **Longitud máxima:** El nombre del accesorio no puede superar los 100 caracteres.
+* **Nombre único:** No se permiten accesorios con nombres duplicados.
+* **Precio obligatorio:** El campo `precio_unitario` es obligatorio y debe ser numérico.
+* **Precio positivo:** El `precio_unitario` debe ser mayor que 0.
+* **Cantidad válida:** Para agregar un accesorio a una renta, la cantidad debe ser un entero mayor o igual a 1.
+* **Filtros combinables:** El listado permite combinar filtros por nombre y por rango de `precio_unitario`.
+* **Ordenamiento:** El listado permite ordenar por `id`, `nombre`, `precio_unitario` o `created_at`, utilizando las direcciones `asc` o `desc`.
+* **Paginación máxima:** El tamaño máximo de página es de 25 registros, aunque el cliente solicite una cantidad superior.
+
+## 3. Comportamiento Transaccional y Auditoría (ACID)
+
+* **Atomicidad en la Asociación a una Renta:** La operación de agregar un accesorio a una renta modifica tanto la tabla intermedia `accesorio_renta` como el campo `monto_total` de la tabla `rentas`. Ambas operaciones se ejecutan dentro de un bloque `DB::transaction()`.
+
+* **Congelación del Precio:** Dentro de la transacción se almacena el precio actual del accesorio en el campo `precio_diario` y se calcula el `subtotal`, evitando que modificaciones posteriores al precio del catálogo alteren el valor histórico de la renta.
+
+* **Comportamiento ante Fallos (Rollback):** Si ocurre una excepción después de insertar la relación en `accesorio_renta` y antes de completar la actualización de la renta, la transacción realiza un `ROLLBACK`. De esta forma, se elimina la asociación insertada y el `monto_total` de la renta conserva su valor anterior.
+
+
+## 4. Códigos de Respuesta HTTP y Manejo de Excepciones
+
+* **Operaciones Exitosas (`201 Created` / `200 OK`):**
+  Cuando el sistema procesa correctamente una solicitud, responde con **`201 Created`** al registrar un nuevo accesorio y con **`200 OK`** al consultar, actualizar, eliminar o agregar un accesorio a una renta.
+
+* **Errores de Validación de Entrada (`422 Unprocessable Content`):**
+  Si la solicitud no cumple con las reglas definidas en los `FormRequest` o con la validación de `cantidad`, Laravel rechaza la petición con código **`422`**, indicando el campo que presenta el error.
+
+* **Violaciones a las Reglas de Negocio:**
+  Cuando una petición intenta eliminar un accesorio con rentas asociadas, agregarlo a una renta finalizada o duplicarlo dentro de una misma renta, la capa de servicio genera una `AccesorioException` con un mensaje explicativo del motivo del rechazo.
+
+
+## 5. Pruebas de las Reglas de Negocio
+
+* Se incluyen pruebas Pest para verificar que no sea posible eliminar accesorios con rentas asociadas.
+* Se verifica que no sea posible agregar accesorios a rentas finalizadas.
+* Se comprueba que un accesorio no pueda ser agregado dos veces a la misma renta.
+* Se valida el cálculo del `precio_diario`, `subtotal` y `monto_total`.
+* Se incluye una prueba de rollback para comprobar que una falla durante la operación transaccional no deje registros parciales en `accesorio_renta` ni modificaciones incompletas en `rentas`.

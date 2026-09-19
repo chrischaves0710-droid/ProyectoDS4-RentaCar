@@ -3,13 +3,16 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\Request;
 
 class CategoriaException extends Exception
 {
-    public function render($request)
+  
+    public function render(Request $request)
     {
         return response()->json([
-            'error' => $this->getMessage()
-        ], 422);
+            'error' => 'Conflict',
+            'message' => $this->getMessage()
+        ], 409); 
     }
 }

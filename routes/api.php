@@ -6,7 +6,16 @@ use App\Http\Controllers\Api\ClienteController;
 use App\Http\Controllers\Api\EstadoController;
 use App\Http\Controllers\Api\RentaController;
 use App\Http\Controllers\Api\VehiculoController;
+use App\Http\Controllers\Api\LoginController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Resources\UserResource;
+
+Route::post('login', LoginController::class);
+
+Route::middleware('auth:sanctum')->get('user', function (Request $request) {
+    return new UserResource($request->user());
+});
 
 Route::apiResource('rentas', RentaController::class);
 Route::apiResource('vehiculos', VehiculoController::class);

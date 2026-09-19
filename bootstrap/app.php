@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\ClienteException;
+use App\Exceptions\VehiculoException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -57,4 +58,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
             }
         );
+
+        // excepcion de negocio para vehiculo
+        $exceptions->render(
+            function (VehiculoException $e, Request $request) {
+                if ($request->is('api/*')) {
+                    return response()->json([
+                        'message' => $e->getMessage(),
+                    ], 409);
+                }
+            }
+        );
+        
     })->create();

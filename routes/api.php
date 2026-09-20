@@ -18,10 +18,6 @@ Route::middleware('auth:sanctum')->get('user', function (Request $request) {
     return new UserResource($request->user());
 });
 
-// Estados routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('estados', EstadoController::class);
-});
 
     // definicion de recurso
     Route::apiResource('rentas', RentaController::class);

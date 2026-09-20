@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreVehiculoRequest;
 use App\Http\Requests\UpdateVehiculoRequest;
-use App\Http\Resources\VehiculoResource; // importacion de recurso
+use App\Http\Resources\VehiculoResource; // importar recurso
 use App\Models\Vehiculo;
 use App\Services\VehiculoService;
 use Illuminate\Http\Request;
@@ -16,18 +16,18 @@ class VehiculoController extends Controller
 
     public function index(Request $request)
     {
-        // limite de registro
+        // limite maximo
         $limit = min((int) $request->input('limit', 10), 50);
 
-        // validacion de campo para ordenamiento
+        // campo a ordenar
         $sortBy = in_array($request->input('sort_by'), ['marca', 'anno', 'precio_diario', 'created_at']) 
             ? $request->input('sort_by') 
             : 'created_at';
 
-        // direccion de ordenamiento
+        // direccion asc o desc
         $order = $request->input('order', 'desc') === 'asc' ? 'asc' : 'desc';
 
-        // carga de relacion de categoria y estado para el resource
+        // consulta con filtros y relaciones
         $vehiculos = Vehiculo::with(['categoria', 'estado']) 
             ->when($request->input('categoria_id'), fn($q, $cat) => $q->where('categoria_id', $cat))
             ->when($request->input('q'), fn($q, $search) => 
@@ -38,7 +38,7 @@ class VehiculoController extends Controller
             ->orderBy('id', 'desc')
             ->paginate($limit);
 
-        // respuesta formateada con paginacion
+        // devolver con paginacion
         return VehiculoResource::collection($vehiculos);
     }
 
@@ -46,7 +46,7 @@ class VehiculoController extends Controller
     {
         $vehiculo = $this->vehiculoService->crear($request->validated());
 
-        // respuesta 201 con formato y encabezado location segun requerimiento
+        // 201 con header location
         return (new VehiculoResource($vehiculo))
             ->response()
             ->setStatusCode(201)
@@ -55,10 +55,10 @@ class VehiculoController extends Controller
 
     public function show(Vehiculo $vehiculo)
     {
-        // carga de relacion
+        // cargar relaciones
         $vehiculo->load(['categoria', 'estado']);
 
-        // respuesta formateada
+        // devolver recurso
         return new VehiculoResource($vehiculo);
     }
 
@@ -66,10 +66,10 @@ class VehiculoController extends Controller
     {
         $vehiculoActualizado = $this->vehiculoService->actualizar($vehiculo, $request->validated());
 
-        // carga de relacion para asegurar estructura completa
+        // cargar relaciones nuevas
         $vehiculoActualizado->load(['categoria', 'estado']);
 
-        // respuesta formateada
+        // devolver recurso
         return new VehiculoResource($vehiculoActualizado);
     }
 
@@ -77,7 +77,7 @@ class VehiculoController extends Controller
     {
         $this->vehiculoService->eliminar($vehiculo);
 
-        // respuesta 204 sin contenido
+        // 204 sin contenido
         return response()->noContent();
     }
 }

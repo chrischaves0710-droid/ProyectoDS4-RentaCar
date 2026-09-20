@@ -3,6 +3,7 @@
 use App\Exceptions\ClienteException;
 use App\Exceptions\EstadoException;
 use App\Exceptions\VehiculoException;
+use App\Exceptions\RentaException;
 
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -177,6 +178,21 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
             }
         );
+        /*
+|--------------------------------------------------------------------------
+| 409 Conflict - Renta
+|--------------------------------------------------------------------------
+*/
+
+$exceptions->render(
+    function (RentaException $e, Request $request) {
+        if ($request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 409);
+        }
+    }
+);
 
     })
 

@@ -8,6 +8,7 @@ use App\Models\Renta;
 use App\Models\Vehiculo;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class RentaService
 {
@@ -35,8 +36,8 @@ class RentaService
         ])->find($id);
 
         if (!$renta) {
-            throw new RentaException('Renta no encontrada.');
-        }
+    throw new NotFoundHttpException('Renta no encontrada.');
+}
 
         return $renta;
     }

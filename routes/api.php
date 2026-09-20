@@ -11,15 +11,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Resources\UserResource;
 
-// ruta publica
+// Ruta publica
 Route::post('login', LoginController::class);
 
-Route::middleware('auth:sanctum')->get('user', function (Request $request) {
-    return new UserResource($request->user());
-});
+// Proteccion general con token para TODO el sistema
+Route::middleware('auth:sanctum')->group(function () {
+    
+    Route::get('user', function (Request $request) {
+        return new UserResource($request->user());
+    });
 
-
-    // definicion de recurso
+    // Definicion de recursos protegidos
     Route::apiResource('rentas', RentaController::class);
     Route::apiResource('vehiculos', VehiculoController::class);
     Route::apiResource('estados', EstadoController::class);
@@ -27,7 +29,7 @@ Route::middleware('auth:sanctum')->get('user', function (Request $request) {
     Route::apiResource('clientes', ClienteController::class);
     Route::apiResource('accesorios', AccesorioController::class);
 
-    // accion extra
+    // Accion extra
     Route::post(
         'rentas/{renta}/accesorios/{accesorio}',
         [AccesorioController::class, 'agregarARenta']

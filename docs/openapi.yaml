@@ -589,3 +589,510 @@ components:
             errors:
               nombre:
                 - "El nombre del estado es obligatorio."
+
+openapi: 3.0.3
+info:
+  title: RentaCar (Categorías y Accesorios)
+  description: Especificación OpenAPI para los módulos de Categorías y Accesorios.
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:8000/api
+    description: Servidor Local
+
+paths:
+  /categorias:
+    get:
+      summary: Listar categorías
+      tags:
+        - Categorias
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Número de página
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Listado paginado de categorías
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Crear una categoría
+      tags:
+        - Categorias
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaInput'
+      responses:
+        '201':
+          description: Categoría creada con éxito
+          headers:
+            Location:
+              description: URL del recurso recién creado
+              schema:
+                type: string
+                example: "http://127.0.0.1:8000/api/categorias/1"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /categorias/{categoria}:
+    get:
+      summary: Obtener el detalle de una categoría
+      tags:
+        - Categorias
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: categoria
+          in: path
+          required: true
+          description: ID de la categoría
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Categoría encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Actualizar una categoría
+      tags:
+        - Categorias
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: categoria
+          in: path
+          required: true
+          description: ID de la categoría a actualizar
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaInput'
+      responses:
+        '200':
+          description: Categoría actualizada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      summary: Eliminar una categoría
+      tags:
+        - Categorias
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: categoria
+          in: path
+          required: true
+          description: ID de la categoría a eliminar
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Categoría eliminada correctamente (Sin contenido)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /accesorios:
+    get:
+      summary: Listar accesorios
+      tags:
+        - Accesorios
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Número de página
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Listado de accesorios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesorioListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Crear un accesorio
+      tags:
+        - Accesorios
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccesorioInput'
+      responses:
+        '201':
+          description: Accesorio creado con éxito
+          headers:
+            Location:
+              description: URL del accesorio creado
+              schema:
+                type: string
+                example: "http://127.0.0.1:8000/api/accesorios/1"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesorioResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /accesorios/{accesorio}:
+    get:
+      summary: Obtener el detalle de un accesorio
+      tags:
+        - Accesorios
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accesorio
+          in: path
+          required: true
+          description: ID del accesorio
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Accesorio encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesorioResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Actualizar un accesorio
+      tags:
+        - Accesorios
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accesorio
+          in: path
+          required: true
+          description: ID del accesorio a actualizar
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccesorioInput'
+      responses:
+        '200':
+          description: Accesorio actualizado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesorioResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      summary: Eliminar un accesorio
+      tags:
+        - Accesorios
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accesorio
+          in: path
+          required: true
+          description: ID del accesorio a eliminar
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Accesorio eliminado (Sin contenido)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Categoria:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: "SUVs Premium"
+        descripcion:
+          type: string
+          example: "Vehículos utilitarios deportivos de alta gama"
+        descuento_porcentaje:
+          type: number
+          format: float
+          example: 10.0
+        activo:
+          type: boolean
+          example: true
+        creado_el:
+          type: string
+          format: date-time
+          example: "2026-09-20T12:00:00Z"
+
+    CategoriaInput:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+          example: "SUVs Premium"
+        descripcion:
+          type: string
+          example: "Vehículos utilitarios deportivos de alta gama"
+        descuento_porcentaje:
+          type: number
+          format: float
+          example: 10.0
+
+    CategoriaResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Categoria'
+
+    CategoriaListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Categoria'
+        meta:
+          type: object
+          properties:
+            pagina_actual:
+              type: integer
+              example: 1
+            total_paginas:
+              type: integer
+              example: 1
+            total_registros:
+              type: integer
+              example: 5
+            por_pagina:
+              type: integer
+              example: 10
+        links:
+          type: object
+          properties:
+            primero:
+              type: string
+              example: "http://127.0.0.1:8000/api/categorias?page=1"
+            ultimo:
+              type: string
+              example: "http://127.0.0.1:8000/api/categorias?page=1"
+            previo:
+              type: string
+              nullable: true
+              example: null
+            siguiente:
+              type: string
+              nullable: true
+              example: null
+
+    Accesorio:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: "Navegador GPS"
+        descripcion:
+          type: string
+          example: "GPS con mapas actualizados de Costa Rica"
+        precio_unitario:
+          type: number
+          format: float
+          example: 8.50
+        disponible:
+          type: boolean
+          example: true
+
+    AccesorioInput:
+      type: object
+      required:
+        - nombre
+        - precio_unitario
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+          example: "Navegador GPS"
+        descripcion:
+          type: string
+          example: "GPS con mapas actualizados de Costa Rica"
+        precio_unitario:
+          type: number
+          format: float
+          minimum: 0.01
+          example: 8.50
+        disponible:
+          type: boolean
+          example: true
+
+    AccesorioResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Accesorio'
+
+    AccesorioListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Accesorio'
+        meta:
+          type: object
+          properties:
+            pagina_actual:
+              type: integer
+              example: 1
+            total_paginas:
+              type: integer
+              example: 1
+            total_registros:
+              type: integer
+              example: 8
+            por_pagina:
+              type: integer
+              example: 10
+        links:
+          type: object
+          properties:
+            primero:
+              type: string
+              example: "http://127.0.0.1:8000/api/accesorios?page=1"
+            ultimo:
+              type: string
+              example: "http://127.0.0.1:8000/api/accesorios?page=1"
+            previo:
+              type: string
+              nullable: true
+              example: null
+            siguiente:
+              type: string
+              nullable: true
+              example: null
+
+  responses:
+    Unauthorized:
+      description: No autenticado / Token no proporcionado o inválido
+      content:
+        application/json:
+          example:
+            message: "Unauthenticated."
+
+    NotFound:
+      description: El recurso solicitado no existe
+      content:
+        application/json:
+          example:
+            error: "Not Found"
+            message: "El recurso solicitado no existe."
+
+    Conflict:
+      description: Violación de regla de negocio
+      content:
+        application/json:
+          example:
+            error: "Conflict"
+            message: "No se puede eliminar el recurso porque tiene dependencias asociadas."
+
+    ValidationError:
+      description: Error de validación en la solicitud
+      content:
+        application/json:
+          example:
+            message: "Los datos proporcionados no son válidos."
+            errors:
+              nombre:
+                - "El nombre es obligatorio."
+              precio_unitario:
+                - "El precio unitario debe ser mayor que 0."

@@ -12,12 +12,23 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Documentación Swagger UI en el navegador
+Route::view('/docs', 'docs.index');
+
+// Entrega del archivo físico OpenAPI YAML
+Route::get('/docs/openapi.yaml', function () {
+    return response()->file(
+        base_path('docs/openapi.yaml'),
+        ['Content-Type' => 'application/yaml']
+    );
+});
+
 // Rutas CRUD API
 Route::resource('vehiculos', VehiculoController::class);
 Route::resource('accesorios', AccesorioController::class);
 Route::resource('rentas', RentaController::class);
 Route::resource('estados', EstadoController::class);
-Route::Resource('categorias', CategoriaController::class);
+Route::resource('categorias', CategoriaController::class);
 
 
 // Rutas de reportes y consultas

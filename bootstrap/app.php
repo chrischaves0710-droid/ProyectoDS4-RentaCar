@@ -1,13 +1,19 @@
 <?php
 
 use App\Exceptions\ClienteException;
+use App\Exceptions\EstadoException;
 use App\Exceptions\VehiculoException;
+
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,27 +22,78 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+
     ->withMiddleware(function (Middleware $middleware): void {
         //
     })
+
     ->withExceptions(function (Exceptions $exceptions): void {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Respuestas JSON para la API
+        |--------------------------------------------------------------------------
+        */
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) =>
                 $request->is('api/*') || $request->expectsJson(),
         );
 
-        // Reglas de negocio de Cliente -> 409 Conflict
+        /*
+        |--------------------------------------------------------------------------
+        | 400 Bad Request
+        |--------------------------------------------------------------------------
+        */
+
         $exceptions->render(
-            function (ClienteException $e, Request $request) {
+            function (BadRequestHttpException $e, Request $request) {
                 if ($request->is('api/*')) {
                     return response()->json([
-                        'message' => $e->getMessage(),
-                    ], 409);
+                        'message' => 'La solicitud no es válida.',
+                    ], 400);
                 }
             }
         );
 
-        // Recurso inexistente -> 404 Not Found
+        /*
+        |--------------------------------------------------------------------------
+        | 401 Unauthorized
+        |--------------------------------------------------------------------------
+        */
+
+        $exceptions->render(
+            function (AuthenticationException $e, Request $request) {
+                if ($request->is('api/*')) {
+                    return response()->json([
+                        'message' => 'No autenticado. Debe proporcionar credenciales válidas.',
+                    ], 401);
+                }
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 403 Forbidden
+        |--------------------------------------------------------------------------
+        */
+
+        $exceptions->render(
+            function (AuthorizationException $e, Request $request) {
+                if ($request->is('api/*')) {
+                    return response()->json([
+                        'message' => 'No tiene permisos para realizar esta operación.',
+                    ], 403);
+                }
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 404 Not Found
+        |--------------------------------------------------------------------------
+        */
+
         $exceptions->render(
             function (ModelNotFoundException $e, Request $request) {
                 if ($request->is('api/*')) {
@@ -47,7 +104,60 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         );
 
-        // Errores de validación -> 422
+        /*
+        |--------------------------------------------------------------------------
+        | 409 Conflict - Cliente
+        |--------------------------------------------------------------------------
+        */
+
+        $exceptions->render(
+            function (ClienteException $e, Request $request) {
+                if ($request->is('api/*')) {
+                    return response()->json([
+                        'message' => $e->getMessage(),
+                    ], 409);
+                }
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 409 Conflict - Vehículo
+        |--------------------------------------------------------------------------
+        */
+
+        $exceptions->render(
+            function (VehiculoException $e, Request $request) {
+                if ($request->is('api/*')) {
+                    return response()->json([
+                        'message' => $e->getMessage(),
+                    ], 409);
+                }
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 409 Conflict - Estado
+        |--------------------------------------------------------------------------
+        */
+
+        $exceptions->render(
+            function (EstadoException $e, Request $request) {
+                if ($request->is('api/*')) {
+                    return response()->json([
+                        'message' => $e->getMessage(),
+                    ], 409);
+                }
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 422 Unprocessable Content - Validación
+        |--------------------------------------------------------------------------
+        */
+
         $exceptions->render(
             function (ValidationException $e, Request $request) {
                 if ($request->is('api/*')) {
@@ -59,15 +169,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         );
 
-        // excepcion de negocio para vehiculo
-        $exceptions->render(
-            function (VehiculoException $e, Request $request) {
-                if ($request->is('api/*')) {
-                    return response()->json([
-                        'message' => $e->getMessage(),
-                    ], 409);
-                }
-            }
-        );
-        
-    })->create();
+    })
+
+    ->create();

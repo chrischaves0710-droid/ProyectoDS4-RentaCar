@@ -1,0 +1,870 @@
+{
+  "info": {
+    "_postman_id": "8ecf07b2-b538-41df-81ce-8e1cacba6bc1",
+    "name": "Coleccion Estado",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57883441",
+    "_collection_link": "https://go.postman.co/collection/57883441-8ecf07b2-b538-41df-81ce-8e1cacba6bc1?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01. Listar Estados",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 200 OK\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Estructura de paginación correcta\", function () {\r\n    const json = pm.response.json();\r\n    pm.expect(json).to.have.property('data');\r\n    pm.expect(json).to.have.property('meta');\r\n    pm.expect(json).to.have.property('links');\r\n});"
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {}
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "02. Filtrar por Nombre",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 200 OK\", function () {\r\n    pm.response.to.have.status(200);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados?nombre=Dis",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ],
+          "query": [
+            {
+              "key": "nombre",
+              "value": "Dis"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03. Ordenar por Nombre Descendente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 200 OK\", function () {\r\n    pm.response.to.have.status(200);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados?sort=nombre&direction=desc",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ],
+          "query": [
+            {
+              "key": "sort",
+              "value": "nombre"
+            },
+            {
+              "key": "direction",
+              "value": "desc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04. Probar Límite de Paginación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 200 OK\", function () {\r\n    pm.response.to.have.status(200);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados?per_page=100",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ],
+          "query": [
+            {
+              "key": "per_page",
+              "value": "100"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05. Crear Estado Exitoso",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 201 Created\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.test(\"Encabezado Location presente\", function () {\r\n    pm.expect(pm.response.headers.get(\"Location\")).to.exist;\r\n});\r\n\r\nconst response = pm.response.json();\r\npm.environment.set(\"estado_id\", response.data.id);\r\npm.environment.set(\"estado_nombre\", response.data.nombre);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/estados?nombre=Disponible&=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ],
+          "query": [
+            {
+              "key": "nombre",
+              "value": "Disponible"
+            },
+            {
+              "key": "",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "06. Consultar Detalle del Estado Creado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 200 OK\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Retorna el estado correcto\", function () {\r\n    const json = pm.response.json();\r\n    pm.expect(json.data.id).to.eql(parseInt(pm.environment.get(\"estado_id\")));\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados/{{estado_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados",
+            "{{estado_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "07. Crear Segundo Estado Exitoso (Para pruebas de duplicado)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 201 Created\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\nconst response = pm.response.json();\r\npm.environment.set(\"estado_duplicado_id\", response.data.id);\r\npm.environment.set(\"estado_duplicado_nombre\", response.data.nombre);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados?nombre=De Baja",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ],
+          "query": [
+            {
+              "key": "nombre",
+              "value": "De Baja"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08. Actualizar Estado Exitoso",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 200 OK\", function () {\r\n    pm.response.to.have.status(200);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados/{{estado_id}}?nombre=En Taller",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados",
+            "{{estado_id}}"
+          ],
+          "query": [
+            {
+              "key": "nombre",
+              "value": "En Taller"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "09. Eliminar Estado Sin Vehículos",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 204 No Content\", function () {\r\n    pm.response.to.have.status(204);\r\n});\r\n\r\npm.test(\"Cuerpo de respuesta vacío\", function () {\r\n    pm.expect(pm.response.text()).to.be.empty;\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados/{{estado_id}}?=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados",
+            "{{estado_id}}"
+          ],
+          "query": [
+            {
+              "key": "",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 422 - Crear Nombre Duplicado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 422 Unprocessable Content\", function () {\r\n    pm.response.to.have.status(422);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados?nombre={{estado_duplicado_nombre}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ],
+          "query": [
+            {
+              "key": "nombre",
+              "value": "{{estado_duplicado_nombre}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 422 - Crear Nombre Vacío",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 422 Unprocessable Content\", function () {\r\n    pm.response.to.have.status(422);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados?nombre=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ],
+          "query": [
+            {
+              "key": "nombre",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 422 - Nombre Mayor a 50 Caracteres",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 422 Unprocessable Content\", function () {\r\n    pm.response.to.have.status(422);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados?nombre=Este es un texto extremadamente largo que supera el límite de cincuenta caracteres",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ],
+          "query": [
+            {
+              "key": "nombre",
+              "value": "Este es un texto extremadamente largo que supera el límite de cincuenta caracteres"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 422 - Actualizar Nombre a Uno Ya Existente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 422 Unprocessable Content\", function () {\r\n    pm.response.to.have.status(422);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "",
+            "value": ""
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados/{{estado_duplicado_id}}?nombre=En Renta",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados",
+            "{{estado_duplicado_id}}"
+          ],
+          "query": [
+            {
+              "key": "nombre",
+              "value": "En Renta"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 404 - Consultar Estado Inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 404 Not Found\", function () {\r\n    pm.response.to.have.status(404);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados/999999999",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados",
+            "999999999"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 404 - Actualizar Estado Inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 404 Not Found\", function () {\r\n    pm.response.to.have.status(404);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados/999999999?nombre=Prueba",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados",
+            "999999999"
+          ],
+          "query": [
+            {
+              "key": "nombre",
+              "value": "Prueba"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 409 - Eliminar Estado Con Vehículos Asociados",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 409 Conflict\", function () {\r\n    pm.response.to.have.status(409);\r\n});\r\n\r\npm.test(\"Mensaje de regla de negocio presente\", function () {\r\n    const json = pm.response.json();\r\n    pm.expect(json.message).to.include(\"vehículos asociados\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados/{{estado_con_vehiculo_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados",
+            "{{estado_con_vehiculo_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 401 - Petición Sin Token de Autenticación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 401 Unauthorized\", function () {\r\n    pm.response.to.have.status(401);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 403 - Petición Con Autorización Rechazada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 403 Forbidden o 401\", function () {\r\n    pm.expect(pm.response.code).to.be.oneOf([403, 401]);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Error 400 - Solicitud JSON Malformada",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Código 400 Bad Request\", function () {\r\n    pm.response.to.have.status(400);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"nombre\": \"Invalido",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/estados",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "estados"
+          ],
+          "query": [
+            {
+              "key": "",
+              "value": "",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  }
+}

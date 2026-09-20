@@ -11,20 +11,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Resources\UserResource;
 
+// ruta publica
 Route::post('login', LoginController::class);
 
-Route::middleware('auth:sanctum')->get('user', function (Request $request) {
-    return new UserResource($request->user());
+// proteccion con token
+Route::middleware('auth:sanctum')->group(function () {
+    
+    // perfil de usuario
+    Route::get('user', function (Request $request) {
+        return new UserResource($request->user());
+    });
+
+    // definicion de recurso
+    Route::apiResource('rentas', RentaController::class);
+    Route::apiResource('vehiculos', VehiculoController::class);
+    Route::apiResource('estados', EstadoController::class);
+    Route::apiResource('categorias', CategoriaController::class);
+    Route::apiResource('clientes', ClienteController::class);
+    Route::apiResource('accesorios', AccesorioController::class);
+
+    // accion extra
+    Route::post(
+        'rentas/{renta}/accesorios/{accesorio}',
+        [AccesorioController::class, 'agregarARenta']
+    );
 });
-
-Route::apiResource('rentas', RentaController::class);
-Route::apiResource('vehiculos', VehiculoController::class);
-Route::apiResource('estados', EstadoController::class);
-Route::apiResource('categorias', CategoriaController::class);
-Route::apiResource('clientes', ClienteController::class);
-Route::apiResource('accesorios', AccesorioController::class);
-
-Route::post(
-    'rentas/{renta}/accesorios/{accesorio}',
-    [AccesorioController::class, 'agregarARenta']
-);

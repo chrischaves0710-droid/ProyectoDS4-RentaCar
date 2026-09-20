@@ -444,47 +444,6 @@ components:
               nullable: true
               example: null
 
-  responses:
-    BadRequest:
-      description: Solicitud con formato no válido
-      content:
-        application/json:
-          example:
-            message: "La solicitud no es válida."
-    Unauthorized:
-      description: Credenciales no proporcionadas o inválidas
-      content:
-        application/json:
-          example:
-            message: "No autenticado. Debe proporcionar credenciales válidas."
-    Forbidden:
-      description: Sin permisos suficientes
-      content:
-        application/json:
-          example:
-            message: "No tiene permisos para realizar esta operación."
-    NotFound:
-      description: Estado no encontrado
-      content:
-        application/json:
-          example:
-            message: "El recurso solicitado no existe."
-    Conflict:
-      description: Violación de regla de negocio
-      content:
-        application/json:
-          example:
-            message: "No se puede eliminar el estado porque tiene vehículos asociados."
-    ValidationError:
-      description: Error de validación en la solicitud
-      content:
-        application/json:
-          example:
-            message: "Los datos proporcionados no son válidos."
-            errors:
-              nombre:
-                - "El nombre del estado es obligatorio."
-
     Vehiculo:
       type: object
       properties:
@@ -589,3 +548,44 @@ components:
             next:
               type: string
               nullable: true
+
+  responses:
+    BadRequest:
+      description: Solicitud con formato no válido
+      content:
+        application/json:
+          example:
+            message: "La solicitud no es válida."
+    Unauthorized:
+      description: Credenciales no proporcionadas o inválidas
+      content:
+        application/json:
+          example:
+            message: "No autenticado. Debe proporcionar credenciales válidas."
+    Forbidden:
+      description: Sin permisos suficientes
+      content:
+        application/json:
+          example:
+            message: "No tiene permisos para realizar esta operación."
+    NotFound:
+      description: Estado no encontrado
+      content:
+        application/json:
+          example:
+            message: "El recurso solicitado no existe."
+    Conflict:
+      description: Violación de regla de negocio
+      content:
+        application/json:
+          example:
+            message: "No se puede eliminar el estado porque tiene vehículos asociados."
+    ValidationError:
+      description: Error de validación en la solicitud
+      content:
+        application/json:
+          example:
+            message: "Los datos proporcionados no son válidos."
+            errors:
+              nombre:
+                - "El nombre del estado es obligatorio."

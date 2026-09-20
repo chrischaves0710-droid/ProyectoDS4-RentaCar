@@ -10,6 +10,8 @@ servers:
 tags:
   - name: Estados
     description: Operaciones CRUD sobre estados de vehículos
+  - name: Vehiculos
+    description: Operaciones CRUD sobre el catálogo de vehículos
 
 paths:
   /estados:
@@ -192,6 +194,177 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  /vehiculos:
+    get:
+      summary: Listar vehículos paginados
+      tags:
+        - Vehiculos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          description: Buscar por placa o modelo
+          required: false
+          schema:
+            type: string
+        - name: categoria_id
+          in: query
+          description: Filtrar por categoría
+          required: false
+          schema:
+            type: integer
+        - name: sort_by
+          in: query
+          description: Campo para ordenar
+          required: false
+          schema:
+            type: string
+            enum: [marca, anno, precio_diario, created_at]
+            default: created_at
+        - name: order
+          in: query
+          description: Dirección del ordenamiento
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: limit
+          in: query
+          description: Límite de registros por página
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Listado obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiculoListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Crear un nuevo vehículo
+      tags:
+        - Vehiculos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehiculoInput'
+      responses:
+        '201':
+          description: Vehículo creado exitosamente
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL del vehículo recién creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiculoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /vehiculos/{vehiculo}:
+    get:
+      summary: Obtener el detalle de un vehículo
+      tags:
+        - Vehiculos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: vehiculo
+          in: path
+          required: true
+          description: ID del vehículo
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Vehículo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiculoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Actualizar un vehículo
+      tags:
+        - Vehiculos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: vehiculo
+          in: path
+          required: true
+          description: ID del vehículo a actualizar
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehiculoInput'
+      responses:
+        '200':
+          description: Vehículo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehiculoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      summary: Eliminar un vehículo
+      tags:
+        - Vehiculos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: vehiculo
+          in: path
+          required: true
+          description: ID del vehículo a eliminar
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Vehículo eliminado (Sin contenido)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
 
 components:
   securitySchemes:
@@ -311,3 +484,108 @@ components:
             errors:
               nombre:
                 - "El nombre del estado es obligatorio."
+
+    Vehiculo:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 20
+        matricula:
+          type: string
+          example: "TST-999"
+        marca:
+          type: string
+          example: "Nissan"
+        modelo:
+          type: string
+          example: "Sentra"
+        anio_fabricacion:
+          type: integer
+          example: 2023
+        kilometraje:
+          type: integer
+          example: 2000
+        precio_diario:
+          type: number
+          format: float
+          example: 45.00
+        categoria:
+          type: string
+          example: "Sedán"
+        estado:
+          type: string
+          example: "Disponible"
+
+    VehiculoInput:
+      type: object
+      required:
+        - placa
+        - marca
+        - modelo
+        - anno
+        - kilometraje
+        - precio_diario
+        - categoria_id
+      properties:
+        placa:
+          type: string
+          example: "TST-999"
+        marca:
+          type: string
+          example: "Nissan"
+        modelo:
+          type: string
+          example: "Sentra"
+        anno:
+          type: integer
+          example: 2023
+        kilometraje:
+          type: integer
+          example: 2000
+        precio_diario:
+          type: number
+          format: float
+          example: 45.00
+        categoria_id:
+          type: integer
+          example: 1
+        estado_id:
+          type: integer
+          example: 1
+
+    VehiculoResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Vehiculo'
+
+    VehiculoListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehiculo'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            total:
+              type: integer
+              example: 1
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+            last:
+              type: string
+            prev:
+              type: string
+              nullable: true
+            next:
+              type: string
+              nullable: true

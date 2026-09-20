@@ -161,6 +161,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(
             function (ValidationException $e, Request $request) {
                 if ($request->is('api/*')) {
+                    if ($request->isJson() && !empty($request->getContent())) {
+                        json_decode($request->getContent());
+                        if (json_last_error() !== JSON_ERROR_NONE) {
+                            return response()->json([
+                                'message' => 'La solicitud no es válida.',
+                            ], 400);
+                        }
+                    }
+
                     return response()->json([
                         'message' => 'Los datos proporcionados no son válidos.',
                         'errors' => $e->errors(),

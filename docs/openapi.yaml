@@ -1,0 +1,313 @@
+openapi: 3.0.3
+info:
+  title: RentaCar API - Módulo Estado
+  description: Especificación OpenAPI de la API REST para la gestión de Estados de Vehículos.
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:8000/api
+    description: Servidor Local de Desarrollo
+
+tags:
+  - name: Estados
+    description: Operaciones CRUD sobre estados de vehículos
+
+paths:
+  /estados:
+    get:
+      summary: Listar estados paginados
+      tags:
+        - Estados
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: nombre
+          in: query
+          description: Filtrar por coincidencia inicial del nombre
+          required: false
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: Campo para ordenar (id o nombre)
+          required: false
+          schema:
+            type: string
+            enum: [id, nombre]
+            default: id
+        - name: direction
+          in: query
+          description: Dirección del ordenamiento
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - name: per_page
+          in: query
+          description: Registros por página (máximo 50)
+          required: false
+          schema:
+            type: integer
+            default: 15
+        - name: page
+          in: query
+          description: Número de página
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Listado obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      summary: Crear un nuevo estado
+      tags:
+        - Estados
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EstadoInput'
+      responses:
+        '201':
+          description: Estado creado exitosamente
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL del recurso recién creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /estados/{estado}:
+    get:
+      summary: Obtener el detalle de un estado
+      tags:
+        - Estados
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: estado
+          in: path
+          required: true
+          description: ID del estado
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Estado encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Actualizar un estado existente
+      tags:
+        - Estados
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: estado
+          in: path
+          required: true
+          description: ID del estado a actualizar
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EstadoInput'
+      responses:
+        '200':
+          description: Estado actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      summary: Eliminar un estado
+      tags:
+        - Estados
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: estado
+          in: path
+          required: true
+          description: ID del estado a eliminar
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Estado eliminado correctamente (Sin contenido)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Estado:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: Disponible
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-09-19T22:10:00.000000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-09-19T22:10:00.000000Z"
+
+    EstadoInput:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          example: "En Mantenimiento"
+
+    EstadoResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Estado'
+
+    EstadoListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Estado'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            total_pages:
+              type: integer
+              example: 1
+            total_records:
+              type: integer
+              example: 5
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+              example: "http://127.0.0.1:8000/api/estados?page=1"
+            last:
+              type: string
+              example: "http://127.0.0.1:8000/api/estados?page=1"
+            prev:
+              type: string
+              nullable: true
+              example: null
+            next:
+              type: string
+              nullable: true
+              example: null
+
+  responses:
+    BadRequest:
+      description: Solicitud con formato no válido
+      content:
+        application/json:
+          example:
+            message: "La solicitud no es válida."
+    Unauthorized:
+      description: Credenciales no proporcionadas o inválidas
+      content:
+        application/json:
+          example:
+            message: "No autenticado. Debe proporcionar credenciales válidas."
+    Forbidden:
+      description: Sin permisos suficientes
+      content:
+        application/json:
+          example:
+            message: "No tiene permisos para realizar esta operación."
+    NotFound:
+      description: Estado no encontrado
+      content:
+        application/json:
+          example:
+            message: "El recurso solicitado no existe."
+    Conflict:
+      description: Violación de regla de negocio
+      content:
+        application/json:
+          example:
+            message: "No se puede eliminar el estado porque tiene vehículos asociados."
+    ValidationError:
+      description: Error de validación en la solicitud
+      content:
+        application/json:
+          example:
+            message: "Los datos proporcionados no son válidos."
+            errors:
+              nombre:
+                - "El nombre del estado es obligatorio."

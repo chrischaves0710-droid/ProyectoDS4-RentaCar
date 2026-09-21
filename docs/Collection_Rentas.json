@@ -1,0 +1,228 @@
+{
+  "info": {
+    "_postman_id": "rentas-api-rest-ds4",
+    "name": "RentaCar - Rentas",
+    "description": "Colección de pruebas HTTP para el recurso Rentas de la API REST del proyecto RentaCar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Rentas - Listar (200)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/rentas",
+          "host": ["{{base_url}}"],
+          "path": ["api", "rentas"]
+        }
+      }
+    },
+    {
+      "name": "Rentas - Obtener por ID (200)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/rentas/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "rentas", "1"]
+        }
+      }
+    },
+    {
+      "name": "Rentas - Crear (201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"cliente_id\": 5,\n    \"vehiculo_id\": 7,\n    \"fecha_inicio\": \"2026-09-21\",\n    \"fecha_fin\": \"2026-09-25\",\n    \"precio_diario\": 30000\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/rentas",
+          "host": ["{{base_url}}"],
+          "path": ["api", "rentas"]
+        }
+      }
+    },
+    {
+      "name": "Rentas - Actualizar (200)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"fecha_fin\": \"2026-09-25\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/rentas/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "rentas", "1"]
+        }
+      }
+    },
+    {
+      "name": "Rentas - Eliminar (204)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/rentas/17",
+          "host": ["{{base_url}}"],
+          "path": ["api", "rentas", "17"]
+        }
+      }
+    },
+    {
+      "name": "Rentas - Error 401 sin autenticación",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/rentas",
+          "host": ["{{base_url}}"],
+          "path": ["api", "rentas"]
+        }
+      }
+    },
+    {
+      "name": "Rentas - Error 404 no encontrada",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/rentas/999999",
+          "host": ["{{base_url}}"],
+          "path": ["api", "rentas", "999999"]
+        }
+      }
+    },
+    {
+      "name": "Rentas - Error 409 vehículo no disponible",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"cliente_id\": 5,\n    \"vehiculo_id\": 15,\n    \"fecha_inicio\": \"2026-09-21\",\n    \"fecha_fin\": \"2026-09-25\",\n    \"precio_diario\": 30000\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/rentas",
+          "host": ["{{base_url}}"],
+          "path": ["api", "rentas"]
+        }
+      }
+    },
+    {
+      "name": "Rentas - Error 422 validación",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"cliente_id\": 999999,\n    \"vehiculo_id\": 999999,\n    \"fecha_inicio\": \"\",\n    \"fecha_fin\": \"\",\n    \"precio_diario\": -100\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/rentas",
+          "host": ["{{base_url}}"],
+          "path": ["api", "rentas"]
+        }
+      }
+    }
+  ]
+}

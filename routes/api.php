@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Resources\UserResource;
 
 // Ruta publica
-Route::post('login', LoginController::class);
+Route::post('login', LoginController::class)->name('login');
 
 // Proteccion general con token para TODO el sistema
 Route::middleware('auth:sanctum')->group(function () {

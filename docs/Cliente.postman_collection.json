@@ -1,0 +1,282 @@
+{
+  "info": {
+    "_postman_id": "747dab17-6510-49b6-b054-1d17c723efc4",
+    "name": "Cliente",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57883460",
+    "_collection_link": "https://go.postman.co/collection/57883460-747dab17-6510-49b6-b054-1d17c723efc4?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "00 - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const respuesta = pm.response.json();\r\npm.environment.set(\"token\", respuesta.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"test@example.com\",\r\n    \"password\": \"password123\",\r\n    \"device_name\": \"postman\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "01 - Listar clientes",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes?sortBy=apellido1&sortDir=asc&perPage=5",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "clientes"
+          ],
+          "query": [
+            {
+              "key": "sortBy",
+              "value": "apellido1"
+            },
+            {
+              "key": "sortDir",
+              "value": "asc"
+            },
+            {
+              "key": "perPage",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Crear cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const respuesta = pm.response.json();\r\npm.environment.set(\"cliente_id\", respuesta.data?.id ?? respuesta.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"cedula\": \"777777701\",\r\n    \"nombre1\": \"Fernando\",\r\n    \"nombre2\": \"Andres\",\r\n    \"apellido1\": \"Mora\",\r\n    \"apellido2\": \"Corea\",\r\n    \"anno_nacimiento\": 2000,\r\n    \"telefono\": \"88887777\",\r\n    \"correo\": \"fernando.lab5.701@example.com\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/clientes",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "clientes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Obtener cliente",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes/{{cliente_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "clientes",
+            "{{cliente_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Actualizar cliente",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"cedula\": \"777777701\",\r\n    \"nombre1\": \"Fernando\",\r\n    \"nombre2\": \"Andres\",\r\n    \"apellido1\": \"Mora\",\r\n    \"apellido2\": \"Corea\",\r\n    \"anno_nacimiento\": 2000,\r\n    \"telefono\": \"88881111\",\r\n    \"correo\": \"fernando.lab5.701@example.com\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/clientes/{{cliente_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "clientes",
+            "{{cliente_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 - Error validacion 422",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"cedula\": \"\",\r\n    \"nombre1\": \"\",\r\n    \"apellido1\": \"\",\r\n    \"anno_nacimiento\": 2000,\r\n    \"telefono\": \"\",\r\n    \"correo\": \"correo-malo\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/clientes",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "clientes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "06 - Cliente menor 409",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"cedula\": \"777777702\",\r\n    \"nombre1\": \"Cliente\",\r\n    \"nombre2\": null,\r\n    \"apellido1\": \"Menor\",\r\n    \"apellido2\": null,\r\n    \"anno_nacimiento\": 2012,\r\n    \"telefono\": \"88885555\",\r\n    \"correo\": \"menor.lab5.702@example.com\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/clientes",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "clientes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "07 - Cliente no existe 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes/999999",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "clientes",
+            "999999"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08 - Sin token 401",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "clientes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "09 - Eliminar cliente",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/clientes/{{cliente_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "clientes",
+            "{{cliente_id}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  }
+}

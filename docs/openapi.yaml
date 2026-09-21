@@ -365,7 +365,163 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+  /rentas:
+    get:
+      summary: Listar rentas paginadas
+      tags:
+        - Rentas
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cliente_id
+          in: query
+          description: Filtrar las rentas por cliente
+          required: false
+          schema:
+            type: integer
+        - name: vehiculo_id
+          in: query
+          description: Filtrar las rentas por vehículo
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Listado de rentas obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentaListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
+    post:
+      summary: Registrar una nueva renta
+      tags:
+        - Rentas
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentaInput'
+            example:
+              cliente_id: 5
+              vehiculo_id: 7
+              fecha_inicio: "2026-09-21"
+              fecha_fin: "2026-09-25"
+              precio_diario: 30000
+      responses:
+        '201':
+          description: Renta registrada correctamente
+          headers:
+            Location:
+              description: URL de la renta recién creada
+              schema:
+                type: string
+              example: "http://127.0.0.1:8000/api/rentas/17"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentaResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /rentas/{renta}:
+    get:
+      summary: Obtener el detalle de una renta
+      tags:
+        - Rentas
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: renta
+          in: path
+          required: true
+          description: ID de la renta
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Renta encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentaResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Actualizar una renta
+      tags:
+        - Rentas
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: renta
+          in: path
+          required: true
+          description: ID de la renta a actualizar
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentaUpdateInput'
+            example:
+              fecha_fin: "2026-09-25"
+      responses:
+        '200':
+          description: Renta actualizada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentaResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      summary: Eliminar una renta
+      tags:
+        - Rentas
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: renta
+          in: path
+          required: true
+          description: ID de la renta a eliminar
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Renta eliminada correctamente (sin contenido)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
 components:
   securitySchemes:
     bearerAuth:
@@ -548,7 +704,176 @@ components:
             next:
               type: string
               nullable: true
+    Renta:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        fecha_inicio:
+          type: string
+          format: date
+          example: "2026-09-11"
+        fecha_fin:
+          type: string
+          format: date
+          example: "2026-09-25"
+        precio_diario:
+          type: number
+          format: float
+          example: 63.27
+        monto_total:
+          type: number
+          format: float
+          example: 885.78
+        cliente:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 5
+            nombre_completo:
+              type: string
+              example: "Hannah Reinger Grady"
+        vehiculo:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 15
+            matricula:
+              type: string
+              example: "WOU-784"
+            marca:
+              type: string
+              example: "Suzuki"
+            modelo:
+              type: string
+              example: "Versa"
+        accesorios:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              nombre:
+                type: string
+                example: "Silla de bebé para auto"
+              cantidad:
+                type: integer
+                example: 1
+              precio_diario:
+                type: number
+                format: float
+                example: 15
+              subtotal:
+                type: number
+                format: float
+                example: 15
 
+    RentaInput:
+      type: object
+      required:
+        - cliente_id
+        - vehiculo_id
+        - fecha_inicio
+        - fecha_fin
+        - precio_diario
+      properties:
+        cliente_id:
+          type: integer
+          example: 5
+        vehiculo_id:
+          type: integer
+          example: 7
+        fecha_inicio:
+          type: string
+          format: date
+          example: "2026-09-21"
+        fecha_fin:
+          type: string
+          format: date
+          example: "2026-09-25"
+        precio_diario:
+          type: number
+          format: float
+          example: 30000
+
+    RentaUpdateInput:
+      type: object
+      properties:
+        cliente_id:
+          type: integer
+          example: 5
+        vehiculo_id:
+          type: integer
+          example: 7
+        fecha_inicio:
+          type: string
+          format: date
+          example: "2026-09-21"
+        fecha_fin:
+          type: string
+          format: date
+          example: "2026-09-25"
+        precio_diario:
+          type: number
+          format: float
+          example: 30000
+
+    RentaResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Renta'
+
+    RentaListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Renta'
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+              example: "http://127.0.0.1:8000/api/rentas?page=1"
+            last:
+              type: string
+              example: "http://127.0.0.1:8000/api/rentas?page=2"
+            prev:
+              type: string
+              nullable: true
+              example: null
+            next:
+              type: string
+              nullable: true
+              example: "http://127.0.0.1:8000/api/rentas?page=2"
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            from:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 2
+            per_page:
+              type: integer
+              example: 10
+            to:
+              type: integer
+              example: 10
+            total:
+              type: integer
+              example: 15
   responses:
     BadRequest:
       description: Solicitud con formato no válido

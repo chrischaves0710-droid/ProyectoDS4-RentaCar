@@ -1,63 +1,314 @@
 openapi: 3.0.3
 info:
-  title: RentaCar API - Módulo Estado
-  description: Especificación OpenAPI de la API REST para la gestión de Estados de Vehículos.
+  title: RentaCar API
+  description: Especificación OpenAPI de la API REST del sistema RentaCar.
   version: 1.0.0
 servers:
-  - url: http://127.0.0.1:8000/api
-    description: Servidor Local de Desarrollo
-
+- url: http://127.0.0.1:8000/api
+  description: Servidor Local de Desarrollo
 tags:
-  - name: Estados
-    description: Operaciones CRUD sobre estados de vehículos
-  - name: Vehiculos
-    description: Operaciones CRUD sobre el catálogo de vehículos
-
+- name: Autenticacion
+  description: Inicio de sesión y usuario autenticado
+- name: Clientes
+  description: Operaciones CRUD sobre clientes
+- name: Estados
+  description: Operaciones CRUD sobre estados de vehículos
+- name: Vehiculos
+  description: Operaciones CRUD sobre el catálogo de vehículos
+- name: Rentas
+  description: Operaciones CRUD sobre rentas
+- name: Categorias
+  description: Operaciones CRUD sobre categorías
+- name: Accesorios
+  description: Operaciones CRUD sobre accesorios
 paths:
+  /login:
+    post:
+      summary: Iniciar sesión y generar token de acceso
+      tags:
+      - Autenticacion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+            example:
+              email: test@example.com
+              password: password123
+              device_name: postman
+      responses:
+        '200':
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                token: 1|token-de-ejemplo
+        '422':
+          $ref: '#/components/responses/LoginValidationError'
+  /user:
+    get:
+      summary: Obtener el usuario autenticado
+      tags:
+      - Autenticacion
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /clientes:
+    get:
+      summary: Listar clientes paginados
+      tags:
+      - Clientes
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: q
+        in: query
+        description: Buscar por nombre, cédula o correo según la implementación del servicio
+        required: false
+        schema:
+          type: string
+      - name: sortBy
+        in: query
+        description: Campo de ordenamiento
+        required: false
+        schema:
+          type: string
+          enum:
+          - id
+          - nombre1
+          - apellido1
+          - anno_nacimiento
+          - created_at
+          default: created_at
+      - name: sortDir
+        in: query
+        description: Dirección del ordenamiento
+        required: false
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+      - name: perPage
+        in: query
+        description: Registros por página
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 15
+      - name: page
+        in: query
+        description: Número de página
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      responses:
+        '200':
+          description: Listado de clientes obtenido correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Crear un cliente
+      tags:
+      - Clientes
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClienteInput'
+            example:
+              cedula: '777777701'
+              nombre1: Fernando
+              nombre2: Andres
+              apellido1: Mora
+              apellido2: Corea
+              anno_nacimiento: 2000
+              telefono: '88887777'
+              correo: fernando.lab5.701@example.com
+      responses:
+        '201':
+          description: Cliente creado correctamente
+          headers:
+            Location:
+              description: URL del cliente recién creado
+              schema:
+                type: string
+              example: http://127.0.0.1:8000/api/clientes/52
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/ClienteConflict'
+        '422':
+          $ref: '#/components/responses/ClienteValidationError'
+  /clientes/{cliente}:
+    parameters:
+    - name: cliente
+      in: path
+      required: true
+      description: ID del cliente
+      schema:
+        type: integer
+    get:
+      summary: Obtener un cliente por ID
+      tags:
+      - Clientes
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Cliente encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Actualizar un cliente
+      tags:
+      - Clientes
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClienteInput'
+      responses:
+        '200':
+          description: Cliente actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ClienteConflict'
+        '422':
+          $ref: '#/components/responses/ClienteValidationError'
+    patch:
+      summary: Actualizar un cliente
+      tags:
+      - Clientes
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClienteInput'
+      responses:
+        '200':
+          description: Cliente actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClienteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ClienteConflict'
+        '422':
+          $ref: '#/components/responses/ClienteValidationError'
+    delete:
+      summary: Eliminar un cliente
+      tags:
+      - Clientes
+      security:
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Cliente eliminado correctamente; respuesta sin contenido
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ClienteConflict'
   /estados:
     get:
       summary: Listar estados paginados
       tags:
-        - Estados
+      - Estados
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: nombre
-          in: query
-          description: Filtrar por coincidencia inicial del nombre
-          required: false
-          schema:
-            type: string
-        - name: sort
-          in: query
-          description: Campo para ordenar (id o nombre)
-          required: false
-          schema:
-            type: string
-            enum: [id, nombre]
-            default: id
-        - name: direction
-          in: query
-          description: Dirección del ordenamiento
-          required: false
-          schema:
-            type: string
-            enum: [asc, desc]
-            default: asc
-        - name: per_page
-          in: query
-          description: Registros por página (máximo 50)
-          required: false
-          schema:
-            type: integer
-            default: 15
-        - name: page
-          in: query
-          description: Número de página
-          required: false
-          schema:
-            type: integer
-            default: 1
+      - name: nombre
+        in: query
+        description: Filtrar por coincidencia inicial del nombre
+        required: false
+        schema:
+          type: string
+      - name: sort
+        in: query
+        description: Campo para ordenar (id o nombre)
+        required: false
+        schema:
+          type: string
+          enum:
+          - id
+          - nombre
+          default: id
+      - name: direction
+        in: query
+        description: Dirección del ordenamiento
+        required: false
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: asc
+      - name: per_page
+        in: query
+        description: Registros por página (máximo 50)
+        required: false
+        schema:
+          type: integer
+          default: 15
+      - name: page
+        in: query
+        description: Número de página
+        required: false
+        schema:
+          type: integer
+          default: 1
       responses:
         '200':
           description: Listado obtenido exitosamente
@@ -71,13 +322,12 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-
     post:
       summary: Crear un nuevo estado
       tags:
-        - Estados
+      - Estados
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -104,21 +354,20 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '422':
           $ref: '#/components/responses/ValidationError'
-
   /estados/{estado}:
     get:
       summary: Obtener el detalle de un estado
       tags:
-        - Estados
+      - Estados
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: estado
-          in: path
-          required: true
-          description: ID del estado
-          schema:
-            type: integer
+      - name: estado
+        in: path
+        required: true
+        description: ID del estado
+        schema:
+          type: integer
       responses:
         '200':
           description: Estado encontrado
@@ -132,20 +381,19 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-
     put:
       summary: Actualizar un estado existente
       tags:
-        - Estados
+      - Estados
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: estado
-          in: path
-          required: true
-          description: ID del estado a actualizar
-          schema:
-            type: integer
+      - name: estado
+        in: path
+        required: true
+        description: ID del estado a actualizar
+        schema:
+          type: integer
       requestBody:
         required: true
         content:
@@ -169,20 +417,19 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/ValidationError'
-
     delete:
       summary: Eliminar un estado
       tags:
-        - Estados
+      - Estados
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: estado
-          in: path
-          required: true
-          description: ID del estado a eliminar
-          schema:
-            type: integer
+      - name: estado
+        in: path
+        required: true
+        description: ID del estado a eliminar
+        schema:
+          type: integer
       responses:
         '204':
           description: Estado eliminado correctamente (Sin contenido)
@@ -198,45 +445,51 @@ paths:
     get:
       summary: Listar vehículos paginados
       tags:
-        - Vehiculos
+      - Vehiculos
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: q
-          in: query
-          description: Buscar por placa o modelo
-          required: false
-          schema:
-            type: string
-        - name: categoria_id
-          in: query
-          description: Filtrar por categoría
-          required: false
-          schema:
-            type: integer
-        - name: sort_by
-          in: query
-          description: Campo para ordenar
-          required: false
-          schema:
-            type: string
-            enum: [marca, anno, precio_diario, created_at]
-            default: created_at
-        - name: order
-          in: query
-          description: Dirección del ordenamiento
-          required: false
-          schema:
-            type: string
-            enum: [asc, desc]
-            default: desc
-        - name: limit
-          in: query
-          description: Límite de registros por página
-          required: false
-          schema:
-            type: integer
-            default: 10
+      - name: q
+        in: query
+        description: Buscar por placa o modelo
+        required: false
+        schema:
+          type: string
+      - name: categoria_id
+        in: query
+        description: Filtrar por categoría
+        required: false
+        schema:
+          type: integer
+      - name: sort_by
+        in: query
+        description: Campo para ordenar
+        required: false
+        schema:
+          type: string
+          enum:
+          - marca
+          - anno
+          - precio_diario
+          - created_at
+          default: created_at
+      - name: order
+        in: query
+        description: Dirección del ordenamiento
+        required: false
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+      - name: limit
+        in: query
+        description: Límite de registros por página
+        required: false
+        schema:
+          type: integer
+          default: 10
       responses:
         '200':
           description: Listado obtenido exitosamente
@@ -246,13 +499,12 @@ paths:
                 $ref: '#/components/schemas/VehiculoListResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
-
     post:
       summary: Crear un nuevo vehículo
       tags:
-        - Vehiculos
+      - Vehiculos
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -279,21 +531,20 @@ paths:
           $ref: '#/components/responses/Conflict'
         '422':
           $ref: '#/components/responses/ValidationError'
-
   /vehiculos/{vehiculo}:
     get:
       summary: Obtener el detalle de un vehículo
       tags:
-        - Vehiculos
+      - Vehiculos
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: vehiculo
-          in: path
-          required: true
-          description: ID del vehículo
-          schema:
-            type: integer
+      - name: vehiculo
+        in: path
+        required: true
+        description: ID del vehículo
+        schema:
+          type: integer
       responses:
         '200':
           description: Vehículo encontrado
@@ -305,20 +556,19 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
     put:
       summary: Actualizar un vehículo
       tags:
-        - Vehiculos
+      - Vehiculos
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: vehiculo
-          in: path
-          required: true
-          description: ID del vehículo a actualizar
-          schema:
-            type: integer
+      - name: vehiculo
+        in: path
+        required: true
+        description: ID del vehículo a actualizar
+        schema:
+          type: integer
       requestBody:
         required: true
         content:
@@ -342,20 +592,19 @@ paths:
           $ref: '#/components/responses/Conflict'
         '422':
           $ref: '#/components/responses/ValidationError'
-
     delete:
       summary: Eliminar un vehículo
       tags:
-        - Vehiculos
+      - Vehiculos
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: vehiculo
-          in: path
-          required: true
-          description: ID del vehículo a eliminar
-          schema:
-            type: integer
+      - name: vehiculo
+        in: path
+        required: true
+        description: ID del vehículo a eliminar
+        schema:
+          type: integer
       responses:
         '204':
           description: Vehículo eliminado (Sin contenido)
@@ -369,22 +618,22 @@ paths:
     get:
       summary: Listar rentas paginadas
       tags:
-        - Rentas
+      - Rentas
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: cliente_id
-          in: query
-          description: Filtrar las rentas por cliente
-          required: false
-          schema:
-            type: integer
-        - name: vehiculo_id
-          in: query
-          description: Filtrar las rentas por vehículo
-          required: false
-          schema:
-            type: integer
+      - name: cliente_id
+        in: query
+        description: Filtrar las rentas por cliente
+        required: false
+        schema:
+          type: integer
+      - name: vehiculo_id
+        in: query
+        description: Filtrar las rentas por vehículo
+        required: false
+        schema:
+          type: integer
       responses:
         '200':
           description: Listado de rentas obtenido exitosamente
@@ -394,13 +643,12 @@ paths:
                 $ref: '#/components/schemas/RentaListResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
-
     post:
       summary: Registrar una nueva renta
       tags:
-        - Rentas
+      - Rentas
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -410,8 +658,8 @@ paths:
             example:
               cliente_id: 5
               vehiculo_id: 7
-              fecha_inicio: "2026-09-21"
-              fecha_fin: "2026-09-25"
+              fecha_inicio: '2026-09-21'
+              fecha_fin: '2026-09-25'
               precio_diario: 30000
       responses:
         '201':
@@ -421,7 +669,7 @@ paths:
               description: URL de la renta recién creada
               schema:
                 type: string
-              example: "http://127.0.0.1:8000/api/rentas/17"
+              example: http://127.0.0.1:8000/api/rentas/17
           content:
             application/json:
               schema:
@@ -434,21 +682,20 @@ paths:
           $ref: '#/components/responses/Conflict'
         '422':
           $ref: '#/components/responses/ValidationError'
-
   /rentas/{renta}:
     get:
       summary: Obtener el detalle de una renta
       tags:
-        - Rentas
+      - Rentas
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: renta
-          in: path
-          required: true
-          description: ID de la renta
-          schema:
-            type: integer
+      - name: renta
+        in: path
+        required: true
+        description: ID de la renta
+        schema:
+          type: integer
       responses:
         '200':
           description: Renta encontrada
@@ -460,20 +707,19 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
     patch:
       summary: Actualizar una renta
       tags:
-        - Rentas
+      - Rentas
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: renta
-          in: path
-          required: true
-          description: ID de la renta a actualizar
-          schema:
-            type: integer
+      - name: renta
+        in: path
+        required: true
+        description: ID de la renta a actualizar
+        schema:
+          type: integer
       requestBody:
         required: true
         content:
@@ -481,7 +727,7 @@ paths:
             schema:
               $ref: '#/components/schemas/RentaUpdateInput'
             example:
-              fecha_fin: "2026-09-25"
+              fecha_fin: '2026-09-25'
       responses:
         '200':
           description: Renta actualizada correctamente
@@ -499,23 +745,290 @@ paths:
           $ref: '#/components/responses/Conflict'
         '422':
           $ref: '#/components/responses/ValidationError'
-
     delete:
       summary: Eliminar una renta
       tags:
-        - Rentas
+      - Rentas
       security:
-        - bearerAuth: []
+      - bearerAuth: []
       parameters:
-        - name: renta
-          in: path
-          required: true
-          description: ID de la renta a eliminar
-          schema:
-            type: integer
+      - name: renta
+        in: path
+        required: true
+        description: ID de la renta a eliminar
+        schema:
+          type: integer
       responses:
         '204':
           description: Renta eliminada correctamente (sin contenido)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /categorias:
+    get:
+      summary: Listar categorías
+      tags:
+      - Categorias
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: page
+        in: query
+        description: Número de página
+        required: false
+        schema:
+          type: integer
+          default: 1
+      responses:
+        '200':
+          description: Listado paginado de categorías
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Crear una categoría
+      tags:
+      - Categorias
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaInput'
+      responses:
+        '201':
+          description: Categoría creada con éxito
+          headers:
+            Location:
+              description: URL del recurso recién creado
+              schema:
+                type: string
+                example: http://127.0.0.1:8000/api/categorias/1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /categorias/{categoria}:
+    get:
+      summary: Obtener el detalle de una categoría
+      tags:
+      - Categorias
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: categoria
+        in: path
+        required: true
+        description: ID de la categoría
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Categoría encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Actualizar una categoría
+      tags:
+      - Categorias
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: categoria
+        in: path
+        required: true
+        description: ID de la categoría a actualizar
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoriaInput'
+      responses:
+        '200':
+          description: Categoría actualizada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriaResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      summary: Eliminar una categoría
+      tags:
+      - Categorias
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: categoria
+        in: path
+        required: true
+        description: ID de la categoría a eliminar
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Categoría eliminada correctamente (Sin contenido)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /accesorios:
+    get:
+      summary: Listar accesorios
+      tags:
+      - Accesorios
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: page
+        in: query
+        description: Número de página
+        required: false
+        schema:
+          type: integer
+          default: 1
+      responses:
+        '200':
+          description: Listado de accesorios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesorioListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Crear un accesorio
+      tags:
+      - Accesorios
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccesorioInput'
+      responses:
+        '201':
+          description: Accesorio creado con éxito
+          headers:
+            Location:
+              description: URL del accesorio creado
+              schema:
+                type: string
+                example: http://127.0.0.1:8000/api/accesorios/1
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesorioResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /accesorios/{accesorio}:
+    get:
+      summary: Obtener el detalle de un accesorio
+      tags:
+      - Accesorios
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: accesorio
+        in: path
+        required: true
+        description: ID del accesorio
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Accesorio encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesorioResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Actualizar un accesorio
+      tags:
+      - Accesorios
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: accesorio
+        in: path
+        required: true
+        description: ID del accesorio a actualizar
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccesorioInput'
+      responses:
+        '200':
+          description: Accesorio actualizado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesorioResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      summary: Eliminar un accesorio
+      tags:
+      - Accesorios
+      security:
+      - bearerAuth: []
+      parameters:
+      - name: accesorio
+        in: path
+        required: true
+        description: ID del accesorio a eliminar
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: Accesorio eliminado (Sin contenido)
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -528,8 +1041,188 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
   schemas:
+    LoginInput:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: test@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+        device_name:
+          type: string
+          nullable: true
+          example: postman
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: 1|token-de-ejemplo
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Usuario de prueba
+        email:
+          type: string
+          format: email
+          example: test@example.com
+    UserResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/User'
+    Cliente:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 52
+        cedula:
+          type: string
+          example: '777777701'
+        nombre1:
+          type: string
+          example: Fernando
+        nombre2:
+          type: string
+          nullable: true
+          example: Andres
+        apellido1:
+          type: string
+          example: Mora
+        apellido2:
+          type: string
+          nullable: true
+          example: Corea
+        anno_nacimiento:
+          type: integer
+          example: 2000
+        telefono:
+          type: string
+          example: '88887777'
+        correo:
+          type: string
+          format: email
+          example: fernando.lab5.701@example.com
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-09-20T20:30:00.000000Z'
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-09-20T20:35:00.000000Z'
+    ClienteInput:
+      type: object
+      required:
+      - cedula
+      - nombre1
+      - apellido1
+      - anno_nacimiento
+      - telefono
+      - correo
+      properties:
+        cedula:
+          type: string
+          example: '777777701'
+        nombre1:
+          type: string
+          example: Fernando
+        nombre2:
+          type: string
+          nullable: true
+          example: Andres
+        apellido1:
+          type: string
+          example: Mora
+        apellido2:
+          type: string
+          nullable: true
+          example: Corea
+        anno_nacimiento:
+          type: integer
+          example: 2000
+        telefono:
+          type: string
+          example: '88887777'
+        correo:
+          type: string
+          format: email
+          example: fernando.lab5.701@example.com
+    ClienteResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Cliente'
+    ClienteListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cliente'
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+              nullable: true
+              example: http://127.0.0.1:8000/api/clientes?page=1
+            last:
+              type: string
+              nullable: true
+              example: http://127.0.0.1:8000/api/clientes?page=3
+            prev:
+              type: string
+              nullable: true
+              example: null
+            next:
+              type: string
+              nullable: true
+              example: http://127.0.0.1:8000/api/clientes?page=2
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            from:
+              type: integer
+              nullable: true
+              example: 1
+            last_page:
+              type: integer
+              example: 3
+              description: Total de páginas
+            path:
+              type: string
+              example: http://127.0.0.1:8000/api/clientes
+            per_page:
+              type: integer
+              example: 5
+            to:
+              type: integer
+              nullable: true
+              example: 5
+            total:
+              type: integer
+              example: 13
+              description: Total de registros
     Estado:
       type: object
       properties:
@@ -542,27 +1235,24 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2026-09-19T22:10:00.000000Z"
+          example: '2026-09-19T22:10:00.000000Z'
         updated_at:
           type: string
           format: date-time
-          example: "2026-09-19T22:10:00.000000Z"
-
+          example: '2026-09-19T22:10:00.000000Z'
     EstadoInput:
       type: object
       required:
-        - nombre
+      - nombre
       properties:
         nombre:
           type: string
-          example: "En Mantenimiento"
-
+          example: En Mantenimiento
     EstadoResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Estado'
-
     EstadoListResponse:
       type: object
       properties:
@@ -587,10 +1277,10 @@ components:
           properties:
             first:
               type: string
-              example: "http://127.0.0.1:8000/api/estados?page=1"
+              example: http://127.0.0.1:8000/api/estados?page=1
             last:
               type: string
-              example: "http://127.0.0.1:8000/api/estados?page=1"
+              example: http://127.0.0.1:8000/api/estados?page=1
             prev:
               type: string
               nullable: true
@@ -599,7 +1289,6 @@ components:
               type: string
               nullable: true
               example: null
-
     Vehiculo:
       type: object
       properties:
@@ -608,13 +1297,13 @@ components:
           example: 20
         matricula:
           type: string
-          example: "TST-999"
+          example: TST-999
         marca:
           type: string
-          example: "Nissan"
+          example: Nissan
         modelo:
           type: string
-          example: "Sentra"
+          example: Sentra
         anio_fabricacion:
           type: integer
           example: 2023
@@ -624,34 +1313,33 @@ components:
         precio_diario:
           type: number
           format: float
-          example: 45.00
+          example: 45.0
         categoria:
           type: string
-          example: "Sedán"
+          example: Sedán
         estado:
           type: string
-          example: "Disponible"
-
+          example: Disponible
     VehiculoInput:
       type: object
       required:
-        - placa
-        - marca
-        - modelo
-        - anno
-        - kilometraje
-        - precio_diario
-        - categoria_id
+      - placa
+      - marca
+      - modelo
+      - anno
+      - kilometraje
+      - precio_diario
+      - categoria_id
       properties:
         placa:
           type: string
-          example: "TST-999"
+          example: TST-999
         marca:
           type: string
-          example: "Nissan"
+          example: Nissan
         modelo:
           type: string
-          example: "Sentra"
+          example: Sentra
         anno:
           type: integer
           example: 2023
@@ -661,20 +1349,18 @@ components:
         precio_diario:
           type: number
           format: float
-          example: 45.00
+          example: 45.0
         categoria_id:
           type: integer
           example: 1
         estado_id:
           type: integer
           example: 1
-
     VehiculoResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Vehiculo'
-
     VehiculoListResponse:
       type: object
       properties:
@@ -713,11 +1399,11 @@ components:
         fecha_inicio:
           type: string
           format: date
-          example: "2026-09-11"
+          example: '2026-09-11'
         fecha_fin:
           type: string
           format: date
-          example: "2026-09-25"
+          example: '2026-09-25'
         precio_diario:
           type: number
           format: float
@@ -734,7 +1420,7 @@ components:
               example: 5
             nombre_completo:
               type: string
-              example: "Hannah Reinger Grady"
+              example: Hannah Reinger Grady
         vehiculo:
           type: object
           properties:
@@ -743,13 +1429,13 @@ components:
               example: 15
             matricula:
               type: string
-              example: "WOU-784"
+              example: WOU-784
             marca:
               type: string
-              example: "Suzuki"
+              example: Suzuki
             modelo:
               type: string
-              example: "Versa"
+              example: Versa
         accesorios:
           type: array
           items:
@@ -760,7 +1446,7 @@ components:
                 example: 1
               nombre:
                 type: string
-                example: "Silla de bebé para auto"
+                example: Silla de bebé para auto
               cantidad:
                 type: integer
                 example: 1
@@ -772,15 +1458,14 @@ components:
                 type: number
                 format: float
                 example: 15
-
     RentaInput:
       type: object
       required:
-        - cliente_id
-        - vehiculo_id
-        - fecha_inicio
-        - fecha_fin
-        - precio_diario
+      - cliente_id
+      - vehiculo_id
+      - fecha_inicio
+      - fecha_fin
+      - precio_diario
       properties:
         cliente_id:
           type: integer
@@ -791,16 +1476,15 @@ components:
         fecha_inicio:
           type: string
           format: date
-          example: "2026-09-21"
+          example: '2026-09-21'
         fecha_fin:
           type: string
           format: date
-          example: "2026-09-25"
+          example: '2026-09-25'
         precio_diario:
           type: number
           format: float
           example: 30000
-
     RentaUpdateInput:
       type: object
       properties:
@@ -813,22 +1497,20 @@ components:
         fecha_inicio:
           type: string
           format: date
-          example: "2026-09-21"
+          example: '2026-09-21'
         fecha_fin:
           type: string
           format: date
-          example: "2026-09-25"
+          example: '2026-09-25'
         precio_diario:
           type: number
           format: float
           example: 30000
-
     RentaResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Renta'
-
     RentaListResponse:
       type: object
       properties:
@@ -841,10 +1523,10 @@ components:
           properties:
             first:
               type: string
-              example: "http://127.0.0.1:8000/api/rentas?page=1"
+              example: http://127.0.0.1:8000/api/rentas?page=1
             last:
               type: string
-              example: "http://127.0.0.1:8000/api/rentas?page=2"
+              example: http://127.0.0.1:8000/api/rentas?page=2
             prev:
               type: string
               nullable: true
@@ -852,7 +1534,7 @@ components:
             next:
               type: string
               nullable: true
-              example: "http://127.0.0.1:8000/api/rentas?page=2"
+              example: http://127.0.0.1:8000/api/rentas?page=2
         meta:
           type: object
           properties:
@@ -874,343 +1556,6 @@ components:
             total:
               type: integer
               example: 15
-  responses:
-    BadRequest:
-      description: Solicitud con formato no válido
-      content:
-        application/json:
-          example:
-            message: "La solicitud no es válida."
-    Unauthorized:
-      description: Credenciales no proporcionadas o inválidas
-      content:
-        application/json:
-          example:
-            message: "No autenticado. Debe proporcionar credenciales válidas."
-    Forbidden:
-      description: Sin permisos suficientes
-      content:
-        application/json:
-          example:
-            message: "No tiene permisos para realizar esta operación."
-    NotFound:
-      description: Estado no encontrado
-      content:
-        application/json:
-          example:
-            message: "El recurso solicitado no existe."
-    Conflict:
-      description: Violación de regla de negocio
-      content:
-        application/json:
-          example:
-            message: "No se puede eliminar el estado porque tiene vehículos asociados."
-    ValidationError:
-      description: Error de validación en la solicitud
-      content:
-        application/json:
-          example:
-            message: "Los datos proporcionados no son válidos."
-            errors:
-              nombre:
-                - "El nombre del estado es obligatorio."
-
-openapi: 3.0.3
-info:
-  title: RentaCar (Categorías y Accesorios)
-  description: Especificación OpenAPI para los módulos de Categorías y Accesorios.
-  version: 1.0.0
-servers:
-  - url: http://127.0.0.1:8000/api
-    description: Servidor Local
-
-paths:
-  /categorias:
-    get:
-      summary: Listar categorías
-      tags:
-        - Categorias
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          description: Número de página
-          required: false
-          schema:
-            type: integer
-            default: 1
-      responses:
-        '200':
-          description: Listado paginado de categorías
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CategoriaListResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-    post:
-      summary: Crear una categoría
-      tags:
-        - Categorias
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CategoriaInput'
-      responses:
-        '201':
-          description: Categoría creada con éxito
-          headers:
-            Location:
-              description: URL del recurso recién creado
-              schema:
-                type: string
-                example: "http://127.0.0.1:8000/api/categorias/1"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CategoriaResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-
-  /categorias/{categoria}:
-    get:
-      summary: Obtener el detalle de una categoría
-      tags:
-        - Categorias
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: categoria
-          in: path
-          required: true
-          description: ID de la categoría
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Categoría encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CategoriaResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    put:
-      summary: Actualizar una categoría
-      tags:
-        - Categorias
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: categoria
-          in: path
-          required: true
-          description: ID de la categoría a actualizar
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CategoriaInput'
-      responses:
-        '200':
-          description: Categoría actualizada con éxito
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CategoriaResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-
-    delete:
-      summary: Eliminar una categoría
-      tags:
-        - Categorias
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: categoria
-          in: path
-          required: true
-          description: ID de la categoría a eliminar
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Categoría eliminada correctamente (Sin contenido)
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-
-  /accesorios:
-    get:
-      summary: Listar accesorios
-      tags:
-        - Accesorios
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          description: Número de página
-          required: false
-          schema:
-            type: integer
-            default: 1
-      responses:
-        '200':
-          description: Listado de accesorios
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccesorioListResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-    post:
-      summary: Crear un accesorio
-      tags:
-        - Accesorios
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccesorioInput'
-      responses:
-        '201':
-          description: Accesorio creado con éxito
-          headers:
-            Location:
-              description: URL del accesorio creado
-              schema:
-                type: string
-                example: "http://127.0.0.1:8000/api/accesorios/1"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccesorioResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-
-  /accesorios/{accesorio}:
-    get:
-      summary: Obtener el detalle de un accesorio
-      tags:
-        - Accesorios
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: accesorio
-          in: path
-          required: true
-          description: ID del accesorio
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Accesorio encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccesorioResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    put:
-      summary: Actualizar un accesorio
-      tags:
-        - Accesorios
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: accesorio
-          in: path
-          required: true
-          description: ID del accesorio a actualizar
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccesorioInput'
-      responses:
-        '200':
-          description: Accesorio actualizado con éxito
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccesorioResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '422':
-          $ref: '#/components/responses/ValidationError'
-
-    delete:
-      summary: Eliminar un accesorio
-      tags:
-        - Accesorios
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: accesorio
-          in: path
-          required: true
-          description: ID del accesorio a eliminar
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Accesorio eliminado (Sin contenido)
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
-
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
-  schemas:
     Categoria:
       type: object
       properties:
@@ -1219,10 +1564,10 @@ components:
           example: 1
         nombre:
           type: string
-          example: "SUVs Premium"
+          example: SUVs Premium
         descripcion:
           type: string
-          example: "Vehículos utilitarios deportivos de alta gama"
+          example: Vehículos utilitarios deportivos de alta gama
         descuento_porcentaje:
           type: number
           format: float
@@ -1233,31 +1578,28 @@ components:
         creado_el:
           type: string
           format: date-time
-          example: "2026-09-20T12:00:00Z"
-
+          example: '2026-09-20T12:00:00Z'
     CategoriaInput:
       type: object
       required:
-        - nombre
+      - nombre
       properties:
         nombre:
           type: string
           maxLength: 100
-          example: "SUVs Premium"
+          example: SUVs Premium
         descripcion:
           type: string
-          example: "Vehículos utilitarios deportivos de alta gama"
+          example: Vehículos utilitarios deportivos de alta gama
         descuento_porcentaje:
           type: number
           format: float
           example: 10.0
-
     CategoriaResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Categoria'
-
     CategoriaListResponse:
       type: object
       properties:
@@ -1285,10 +1627,10 @@ components:
           properties:
             primero:
               type: string
-              example: "http://127.0.0.1:8000/api/categorias?page=1"
+              example: http://127.0.0.1:8000/api/categorias?page=1
             ultimo:
               type: string
-              example: "http://127.0.0.1:8000/api/categorias?page=1"
+              example: http://127.0.0.1:8000/api/categorias?page=1
             previo:
               type: string
               nullable: true
@@ -1297,7 +1639,6 @@ components:
               type: string
               nullable: true
               example: null
-
     Accesorio:
       type: object
       properties:
@@ -1306,46 +1647,43 @@ components:
           example: 1
         nombre:
           type: string
-          example: "Navegador GPS"
+          example: Navegador GPS
         descripcion:
           type: string
-          example: "GPS con mapas actualizados de Costa Rica"
+          example: GPS con mapas actualizados de Costa Rica
         precio_unitario:
           type: number
           format: float
-          example: 8.50
+          example: 8.5
         disponible:
           type: boolean
           example: true
-
     AccesorioInput:
       type: object
       required:
-        - nombre
-        - precio_unitario
+      - nombre
+      - precio_unitario
       properties:
         nombre:
           type: string
           maxLength: 100
-          example: "Navegador GPS"
+          example: Navegador GPS
         descripcion:
           type: string
-          example: "GPS con mapas actualizados de Costa Rica"
+          example: GPS con mapas actualizados de Costa Rica
         precio_unitario:
           type: number
           format: float
           minimum: 0.01
-          example: 8.50
+          example: 8.5
         disponible:
           type: boolean
           example: true
-
     AccesorioResponse:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/Accesorio'
-
     AccesorioListResponse:
       type: object
       properties:
@@ -1373,10 +1711,10 @@ components:
           properties:
             primero:
               type: string
-              example: "http://127.0.0.1:8000/api/accesorios?page=1"
+              example: http://127.0.0.1:8000/api/accesorios?page=1
             ultimo:
               type: string
-              example: "http://127.0.0.1:8000/api/accesorios?page=1"
+              example: http://127.0.0.1:8000/api/accesorios?page=1
             previo:
               type: string
               nullable: true
@@ -1385,39 +1723,74 @@ components:
               type: string
               nullable: true
               example: null
-
   responses:
+    BadRequest:
+      description: Solicitud con formato no válido
+      content:
+        application/json:
+          example:
+            message: La solicitud no es válida.
     Unauthorized:
-      description: No autenticado / Token no proporcionado o inválido
+      description: Credenciales no proporcionadas o inválidas
       content:
         application/json:
           example:
-            message: "Unauthenticated."
-
+            message: No autenticado. Debe proporcionar credenciales válidas.
+    Forbidden:
+      description: Sin permisos suficientes
+      content:
+        application/json:
+          example:
+            message: No tiene permisos para realizar esta operación.
     NotFound:
-      description: El recurso solicitado no existe
+      description: Estado no encontrado
       content:
         application/json:
           example:
-            error: "Not Found"
-            message: "El recurso solicitado no existe."
-
+            message: El recurso solicitado no existe.
     Conflict:
       description: Violación de regla de negocio
       content:
         application/json:
           example:
-            error: "Conflict"
-            message: "No se puede eliminar el recurso porque tiene dependencias asociadas."
-
+            message: No se puede eliminar el estado porque tiene vehículos asociados.
     ValidationError:
       description: Error de validación en la solicitud
       content:
         application/json:
           example:
-            message: "Los datos proporcionados no son válidos."
+            message: Los datos proporcionados no son válidos.
             errors:
               nombre:
-                - "El nombre es obligatorio."
-              precio_unitario:
-                - "El precio unitario debe ser mayor que 0."
+              - El nombre del estado es obligatorio.
+    LoginValidationError:
+      description: Credenciales inválidas o datos de inicio de sesión no válidos
+      content:
+        application/json:
+          example:
+            message: Los datos proporcionados no son válidos.
+            errors:
+              email:
+              - Las credenciales proporcionadas son incorrectas.
+    ClienteValidationError:
+      description: Error de validación de los datos del cliente
+      content:
+        application/json:
+          example:
+            message: Los datos proporcionados no son válidos.
+            errors:
+              correo:
+              - El correo debe ser una dirección de correo válida.
+    ClienteConflict:
+      description: Violación de una regla de negocio de Cliente
+      content:
+        application/json:
+          examples:
+            menorEdad:
+              summary: Cliente menor de edad
+              value:
+                message: El cliente debe ser mayor de edad.
+            rentasAsociadas:
+              summary: Cliente con rentas asociadas
+              value:
+                message: No se puede eliminar el cliente porque tiene rentas asociadas.

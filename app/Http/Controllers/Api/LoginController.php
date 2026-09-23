@@ -11,20 +11,24 @@ use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $solicitud): JsonResponse
     {
-        $usuario = User::where('email', $request->email)->first();
+        $usuario = User::where('email', $solicitud->email)->first();
 
-        if (! $usuario || ! Hash::check($request->password, $usuario->password)) {
+        // mensaje que no distingue entre cuenta inexistente o clave incorrecta
+        if (! $usuario || ! Hash::check($solicitud->password, $usuario->password)) {
             throw ValidationException::withMessages([
-                'email' => [
-                    'Las credenciales proporcionadas son incorrectas.'
-                ],
+                'email' => ['Las credenciales proporcionadas son incorrectas.'],
             ]);
         }
 
+        // Capacidades asociadas al token basadas en el rol
+        $capacidades = $usuario->roles()->pluck('name')->toArray();
+
         $token = $usuario->createToken(
-            $request->device_name ?? 'default'
+            name: 'api',
+            abilities: $capacidades,
+            expiresAt: now()->addMinutes(30)
         );
 
         return response()->json([

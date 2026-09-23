@@ -7,31 +7,60 @@ use App\Http\Controllers\Api\EstadoController;
 use App\Http\Controllers\Api\RentaController;
 use App\Http\Controllers\Api\VehiculoController;
 use App\Http\Controllers\Api\LoginController;
+use App\Http\Controllers\Api\LogoutController;
+use App\Http\Controllers\Api\AuthController; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Resources\UserResource;
 
-// Ruta publica
-Route::post('login', LoginController::class)->name('login');
+// Rutas públicas
+Route::post('/login', LoginController::class)->middleware('throttle:5,1');
+// Route::post('/register', [AuthController::class, 'register']); // Descomenta si tienes tu ruta de registro aquí
 
-// Proteccion general con token para TODO el sistema
+// Protección general con token para TODO el sistema
 Route::middleware('auth:sanctum')->group(function () {
     
+    // Cierre de sesión
+    Route::post('/logout', LogoutController::class);
+
     Route::get('user', function (Request $request) {
         return new UserResource($request->user());
     });
 
-    // Definicion de recursos protegidos
-    Route::apiResource('rentas', RentaController::class);
-    Route::apiResource('vehiculos', VehiculoController::class);
-    Route::apiResource('estados', EstadoController::class);
-    Route::apiResource('categorias', CategoriaController::class);
-    Route::apiResource('clientes', ClienteController::class);
-    Route::apiResource('accesorios', AccesorioController::class);
+    // scceso Exclusivo: Admin_General y Admin_Inventarios
+    // se usa el middleware 'role' de Spatie 
+    Route::apiResource('estados', EstadoController::class)
+        ->middleware('role:Admin_General|Admin_Inventarios');
+        
+    Route::apiResource('categorias', CategoriaController::class)
+        ->middleware('role:Admin_General|Admin_Inventarios');
 
-    // Accion extra
-    Route::post(
-        'rentas/{renta}/accesorios/{accesorio}',
-        [AccesorioController::class, 'agregarARenta']
-    );
+    // acceso misxto, ectura para Gestor, CRUD completo para Inventarios y General
+    Route::apiResource('vehiculos', VehiculoController::class)
+        ->only(['index', 'show'])
+        ->middleware('role:Admin_General|Admin_Inventarios|Gestor_Rentas');
+        
+    Route::apiResource('vehiculos', VehiculoController::class)
+        ->except(['index', 'show'])
+        ->middleware('role:Admin_General|Admin_Inventarios');
+
+    Route::apiResource('accesorios', AccesorioController::class)
+        ->only(['index', 'show'])
+        ->middleware('role:Admin_General|Admin_Inventarios|Gestor_Rentas');
+        
+    Route::apiResource('accesorios', AccesorioController::class)
+        ->except(['index', 'show'])
+        ->middleware('role:Admin_General|Admin_Inventarios');
+
+    // Clientes y Rentas, Interviene el Cliente final
+    // se el paso a los roles administrativos y al Cliente. La Policy se encargará de limitar las acciones del Cliente a sus propios recursos
+    Route::apiResource('clientes', ClienteController::class)
+        ->middleware('role:Admin_General|Gestor_Rentas|Cliente');
+        
+    Route::apiResource('rentas', RentaController::class)
+        ->middleware('role:Admin_General|Gestor_Rentas|Cliente');
+
+    // Acción extra
+    Route::post('rentas/{renta}/accesorios/{accesorio}', [AccesorioController::class, 'agregarARenta'])
+        ->middleware('role:Admin_General|Gestor_Rentas');
 });

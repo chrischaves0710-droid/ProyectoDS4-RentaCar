@@ -17,6 +17,20 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
+    // campos que se pueden asignar masivamente
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
+
+    // campos que se deben ocultar por seguridad
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];  
+
+
     protected function casts(): array
     {
         return [

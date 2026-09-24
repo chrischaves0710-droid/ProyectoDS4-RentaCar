@@ -8,7 +8,7 @@ use App\Services\EstadoService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Mockery;
+
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
@@ -236,18 +236,19 @@ it('actualiza un estado utilizando un doble del recurso', function () {
 
 
 it('elimina un estado sin vehiculos usando un doble de Vehiculo', function () {
-    $dependencias = crearEstadoServiceConDobles();
+    $vehiculoModel = Mockery::mock(Vehiculo::class);
 
-    $vehiculoModel = $dependencias['vehiculoModel'];
-    $service = $dependencias['service'];
+    $service = new EstadoService(
+        new Estado(),
+        $vehiculoModel
+    );
 
     simularUsuarioAutorizadoEstado();
 
-    $estado = Mockery::mock(
-        Estado::class
-    )->makePartial();
-
-    $estado->id = 10;
+    // Estado real para evitar conflictos entre Mockery y Eloquent.
+    $estado = Estado::factory()->create([
+        'nombre' => 'Estado Sin Vehiculos Mock'
+    ]);
 
     $query = Mockery::mock();
 
@@ -261,7 +262,7 @@ it('elimina un estado sin vehiculos usando un doble de Vehiculo', function () {
         ->once()
         ->with(
             'estado_id',
-            10
+            $estado->id
         )
         ->andReturnSelf();
 
@@ -270,28 +271,27 @@ it('elimina un estado sin vehiculos usando un doble de Vehiculo', function () {
         ->once()
         ->andReturn(false);
 
-    $estado
-        ->shouldReceive('delete')
-        ->once()
-        ->andReturn(true);
-
     $service->eliminar($estado);
+
+    $this->assertDatabaseMissing('estados', [
+        'id' => $estado->id
+    ]);
 });
 
-
 it('rechaza eliminar un estado con vehiculos usando un doble', function () {
-    $dependencias = crearEstadoServiceConDobles();
+    $vehiculoModel = Mockery::mock(Vehiculo::class);
 
-    $vehiculoModel = $dependencias['vehiculoModel'];
-    $service = $dependencias['service'];
+    $service = new EstadoService(
+        new Estado(),
+        $vehiculoModel
+    );
 
     simularUsuarioAutorizadoEstado();
 
-    $estado = Mockery::mock(
-        Estado::class
-    )->makePartial();
-
-    $estado->id = 20;
+    // Estado real.
+    $estado = Estado::factory()->create([
+        'nombre' => 'Estado Con Vehiculos Mock'
+    ]);
 
     $query = Mockery::mock();
 
@@ -305,7 +305,7 @@ it('rechaza eliminar un estado con vehiculos usando un doble', function () {
         ->once()
         ->with(
             'estado_id',
-            20
+            $estado->id
         )
         ->andReturnSelf();
 
@@ -314,17 +314,18 @@ it('rechaza eliminar un estado con vehiculos usando un doble', function () {
         ->once()
         ->andReturn(true);
 
-    $estado
-        ->shouldNotReceive('delete');
-
     expect(
         fn () => $service->eliminar($estado)
     )->toThrow(
         EstadoException::class,
         'No se puede eliminar el estado porque tiene vehículos asociados.'
     );
-});
 
+    // La regla de negocio debe impedir la eliminación.
+    $this->assertDatabaseHas('estados', [
+        'id' => $estado->id
+    ]);
+});
 
 it('rechaza mediante doble un usuario con rol no permitido', function () {
     $dependencias = crearEstadoServiceConDobles();

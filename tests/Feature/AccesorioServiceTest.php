@@ -9,7 +9,6 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Mockery;
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
@@ -447,17 +446,14 @@ it('rechaza una renta finalizada usando un doble de Renta', function () {
 it('rechaza un accesorio duplicado utilizando dobles', function () {
     $dependencias = crearAccesorioServiceConDoble();
 
-    $service =
-        $dependencias['service'];
+    $service = $dependencias['service'];
 
     simularUsuarioAutorizadoAccesorio();
 
-    $accesorio = Mockery::mock(
-        Accesorio::class
-    )->makePartial();
-
-    $accesorio->id = 5;
-    $accesorio->precio_unitario = 1000;
+    // Accesorio real para evitar conflicto Mockery + Eloquent
+    $accesorio = Accesorio::factory()->create([
+        'precio_unitario' => 1000,
+    ]);
 
     $renta = Mockery::mock(
         Renta::class
@@ -478,7 +474,7 @@ it('rechaza un accesorio duplicado utilizando dobles', function () {
         ->once()
         ->with(
             'accesorios.id',
-            5
+            $accesorio->id
         )
         ->andReturnSelf();
 
@@ -488,41 +484,34 @@ it('rechaza un accesorio duplicado utilizando dobles', function () {
         ->andReturn(true);
 
     expect(
-        fn () => $service
-            ->agregarARenta(
-                $accesorio,
-                $renta,
-                1
-            )
+        fn () => $service->agregarARenta(
+            $accesorio,
+            $renta,
+            1
+        )
     )->toThrow(
         AccesorioException::class,
         'El accesorio ya está asociado a esta renta.'
     );
 });
 
-
 it('agrega un accesorio a una renta utilizando dobles', function () {
     $dependencias = crearAccesorioServiceConDoble();
 
-    $service =
-        $dependencias['service'];
+    $service = $dependencias['service'];
 
     simularUsuarioAutorizadoAccesorio();
 
-    $accesorio = Mockery::mock(
-        Accesorio::class
-    )->makePartial();
-
-    $accesorio->id = 10;
-    $accesorio->precio_unitario = 1500;
+    // Accesorio real para evitar problemas con Eloquent
+    $accesorio = Accesorio::factory()->create([
+        'precio_unitario' => 1500,
+    ]);
 
     $renta = Mockery::mock(
         Renta::class
     )->makePartial();
 
-    $renta->fecha_fin =
-        now()->addDay();
-
+    $renta->fecha_fin = now()->addDay();
     $renta->monto_total = 10000;
 
     $relacion = Mockery::mock();
@@ -537,7 +526,7 @@ it('agrega un accesorio a una renta utilizando dobles', function () {
         ->once()
         ->with(
             'accesorios.id',
-            10
+            $accesorio->id
         )
         ->andReturnSelf();
 
@@ -550,7 +539,7 @@ it('agrega un accesorio a una renta utilizando dobles', function () {
         ->shouldReceive('attach')
         ->once()
         ->with(
-            10,
+            $accesorio->id,
             [
                 'cantidad' => 2,
                 'precio_diario' => 1500.0,
@@ -571,18 +560,15 @@ it('agrega un accesorio a una renta utilizando dobles', function () {
 
     DB::shouldReceive('transaction')
         ->once()
-        ->andReturnUsing(
-            function ($callback) {
-                return $callback();
-            }
-        );
+        ->andReturnUsing(function ($callback) {
+            return $callback();
+        });
 
-    $resultado =
-        $service->agregarARenta(
-            $accesorio,
-            $renta,
-            2
-        );
+    $resultado = $service->agregarARenta(
+        $accesorio,
+        $renta,
+        2
+    );
 
     expect($resultado)
         ->toBe($renta);
@@ -591,7 +577,6 @@ it('agrega un accesorio a una renta utilizando dobles', function () {
         (float) $renta->monto_total
     )->toBe(13000.0);
 });
-
 
 it('rechaza mediante doble un usuario sin permisos para crear accesorios', function () {
     $dependencias = crearAccesorioServiceConDoble();

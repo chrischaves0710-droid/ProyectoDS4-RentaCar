@@ -15,7 +15,7 @@ use App\Http\Resources\UserResource;
 
 // Rutas públicas
 Route::post('/login', LoginController::class)->middleware('throttle:5,1');
-// Route::post('/register', [AuthController::class, 'register']); // Descomenta si tienes tu ruta de registro aquí
+Route::post('/register', [AuthController::class, 'register']);
 
 // Protección general con token para TODO el sistema
 Route::middleware('auth:sanctum')->group(function () {

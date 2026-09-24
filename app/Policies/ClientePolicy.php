@@ -4,63 +4,80 @@ namespace App\Policies;
 
 use App\Models\Cliente;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ClientePolicy
 {
     /**
-     * Determine whether the user can view any models.
+     * Admin_General y Gestor_Rentas pueden listar clientes.
+     * El Cliente final no puede listar todos los clientes.
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->hasAnyRole([
+            'Admin_General',
+            'Gestor_Rentas',
+        ]);
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Admin_General y Gestor_Rentas pueden consultar cualquier cliente.
+     * Cliente únicamente puede consultar su propio registro.
      */
     public function view(User $user, Cliente $cliente): bool
     {
-        return false;
+        if ($user->hasAnyRole(['Admin_General', 'Gestor_Rentas'])) {
+            return true;
+        }
+
+        return $this->esPropietario($user, $cliente);
     }
 
     /**
-     * Determine whether the user can create models.
+     * Solamente Admin_General puede crear clientes.
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasRole('Admin_General');
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Admin_General puede modificar cualquier cliente.
+     * Cliente solamente puede modificar su propio registro.
      */
     public function update(User $user, Cliente $cliente): bool
     {
-        return false;
+        if ($user->hasRole('Admin_General')) {
+            return true;
+        }
+
+        return $this->esPropietario($user, $cliente);
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Solamente Admin_General puede eliminar clientes.
      */
     public function delete(User $user, Cliente $cliente): bool
     {
-        return false;
+        return $user->hasRole('Admin_General');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
     public function restore(User $user, Cliente $cliente): bool
     {
         return false;
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
     public function forceDelete(User $user, Cliente $cliente): bool
     {
         return false;
+    }
+
+    /**
+     * Como actualmente no existe FK entre users y clientes,
+     * relacionamos ambos registros mediante email/correo.
+     */
+    private function esPropietario(User $user, Cliente $cliente): bool
+    {
+        return $user->hasRole('Cliente')
+            && strcasecmp($user->email, $cliente->correo) === 0;
     }
 }

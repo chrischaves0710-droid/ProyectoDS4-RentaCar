@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('categorias', CategoriaController::class)
         ->middleware('role:Admin_General|Admin_Inventarios');
 
-    // acceso misxto, ectura para Gestor, CRUD completo para Inventarios y General
+    // acceso mixto, lectura para Gestor, CRUD completo para Inventarios y General
     Route::apiResource('vehiculos', VehiculoController::class)
         ->only(['index', 'show'])
         ->middleware('role:Admin_General|Admin_Inventarios|Gestor_Rentas');
@@ -52,13 +52,42 @@ Route::middleware('auth:sanctum')->group(function () {
         ->except(['index', 'show'])
         ->middleware('role:Admin_General|Admin_Inventarios');
 
-    // Clientes y Rentas, Interviene el Cliente final
-    // se el paso a los roles administrativos y al Cliente. La Policy se encargará de limitar las acciones del Cliente a sus propios recursos
+    // =========================
+    // CLIENTES
+    // =========================
+
+    // Admin y Gestor pueden listar clientes.
+    // Cliente NO puede listar a todos.
     Route::apiResource('clientes', ClienteController::class)
+        ->only(['index'])
+        ->middleware('role:Admin_General|Gestor_Rentas');
+
+    // Admin y Gestor pueden ver cualquiera.
+    // Cliente puede entrar a SHOW, pero la Policy limitará al suyo.
+    Route::apiResource('clientes', ClienteController::class)
+        ->only(['show'])
         ->middleware('role:Admin_General|Gestor_Rentas|Cliente');
-        
+
+    // Solamente Admin General puede crear, modificar o eliminar clientes.
+    Route::apiResource('clientes', ClienteController::class)
+        ->only(['store', 'update', 'destroy'])
+        ->middleware('role:Admin_General');
+
+
+    // =========================
+    // RENTAS
+    // =========================
+
+    // Admin, Gestor y Cliente pueden consultar.
+    // La Policy/Service limitará al Cliente a SUS rentas.
     Route::apiResource('rentas', RentaController::class)
+        ->only(['index', 'show'])
         ->middleware('role:Admin_General|Gestor_Rentas|Cliente');
+
+    // Admin y Gestor tienen CRUD de Rentas.
+    Route::apiResource('rentas', RentaController::class)
+        ->only(['store', 'update', 'destroy'])
+        ->middleware('role:Admin_General|Gestor_Rentas');
 
     // Acción extra
     Route::post('rentas/{renta}/accesorios/{accesorio}', [AccesorioController::class, 'agregarARenta'])

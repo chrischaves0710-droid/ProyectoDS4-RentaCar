@@ -48,6 +48,8 @@ class AccesorioController extends Controller
      */
     public function show(Accesorio $accesorio)
     {
+        $accesorio = $this->accesorioService->mostrar($accesorio);
+
         return new AccesorioResource($accesorio);
     }
 

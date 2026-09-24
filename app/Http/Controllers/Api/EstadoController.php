@@ -18,37 +18,24 @@ class EstadoController extends Controller
 
     public function index(Request $request)
     {
-        $query = Estado::query();
-
-        if ($request->filled('nombre')) {
-            $query->where('nombre', 'like', $request->nombre . '%');
-        }
-
-        $sort = $request->input('sort', 'id');
-        $direction = $request->input('direction', 'asc');
-
-        if (!in_array($sort, ['id', 'nombre'])) {
-            $sort = 'id';
-        }
-
-        if (!in_array($direction, ['asc', 'desc'])) {
-            $direction = 'asc';
-        }
-
-        $perPage = max(1, min($request->integer('per_page', 15), 50));
-
-        $paginator = $query
-            ->orderBy($sort, $direction)
-            ->paginate($perPage)
-            ->withQueryString();
+        $paginator = $this->estadoService->listar([
+            'nombre' => $request->input('nombre'),
+            'sort' => $request->input('sort', 'id'),
+            'direction' => $request->input('direction', 'asc'),
+            'per_page' => $request->integer('per_page', 15),
+        ]);
 
         return response()->json([
-            'data' => EstadoResource::collection($paginator->items())->resolve($request),
+            'data' => EstadoResource::collection(
+                $paginator->items()
+            )->resolve($request),
+
             'meta' => [
                 'current_page' => $paginator->currentPage(),
                 'total_pages' => $paginator->lastPage(),
                 'total_records' => $paginator->total(),
             ],
+
             'links' => [
                 'first' => $paginator->url(1),
                 'last' => $paginator->url($paginator->lastPage()),
@@ -60,25 +47,33 @@ class EstadoController extends Controller
 
     public function store(StoreEstadoRequest $request)
     {
-        $estado = $this->estadoService->crear($request->validated());
+        $estado = $this->estadoService->crear(
+            $request->validated()
+        );
 
         return response()->json([
             'data' => new EstadoResource($estado),
         ], 201)->header(
             'Location',
-            route('estados.show', ['estado' => $estado->id])
+            route('estados.show', [
+                'estado' => $estado->id
+            ])
         );
     }
 
     public function show(Estado $estado)
     {
+        $estado = $this->estadoService->mostrar($estado);
+
         return response()->json([
             'data' => new EstadoResource($estado),
         ], 200);
     }
 
-    public function update(UpdateEstadoRequest $request, Estado $estado)
-    {
+    public function update(
+        UpdateEstadoRequest $request,
+        Estado $estado
+    ) {
         $estado = $this->estadoService->actualizar(
             $estado,
             $request->validated()

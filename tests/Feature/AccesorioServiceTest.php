@@ -5,6 +5,7 @@ use App\Models\Accesorio;
 use App\Models\Renta;
 use App\Models\User;
 use App\Services\AccesorioService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -108,4 +109,36 @@ it('revierte la transaccion si ocurre un fallo despues de insertar la pivote', f
     expect((float) $renta->fresh()->monto_total)->toBe(10000.0);
 
     Renta::flushEventListeners();
+});
+
+it('rechaza una invocacion directa para crear un accesorio con un rol no autorizado', function () {
+
+    $usuario = User::create([
+        'name' => 'Gestor Accesorio Test',
+        'email' => 'gestor_accesorio_' . uniqid() . '@correo.com',
+        'password' => 'Password123',
+    ]);
+
+    $role = Role::firstOrCreate([
+        'name' => 'Gestor_Rentas',
+        'guard_name' => 'web',
+    ]);
+
+    $usuario->assignRole($role);
+
+    $this->actingAs($usuario);
+
+    // Gestor_Rentas puede consultar accesorios,
+    // pero no puede crearlos.
+    // Se invoca directamente el Service.
+    expect(
+        fn () => app(AccesorioService::class)->crear([
+            'nombre' => 'Accesorio No Autorizado',
+            'precio_unitario' => 1000,
+        ])
+    )->toThrow(AuthorizationException::class);
+
+    $this->assertDatabaseMissing('accesorios', [
+        'nombre' => 'Accesorio No Autorizado',
+    ]);
 });

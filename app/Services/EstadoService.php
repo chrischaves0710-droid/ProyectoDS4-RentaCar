@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\Auth;
 
 class EstadoService
 {
+    public function __construct(
+        protected Estado $estadoModel,
+        protected Vehiculo $vehiculoModel
+    ) {
+    }
+
     private function verificarPermisosAdministrativos(): void
     {
         $user = Auth::user();
@@ -29,7 +35,7 @@ class EstadoService
     {
         $this->verificarPermisosAdministrativos();
 
-        $query = Estado::query();
+        $query = $this->estadoModel->newQuery();
 
         $nombre = $filtros['nombre'] ?? null;
         $sort = $filtros['sort'] ?? 'id';
@@ -37,18 +43,31 @@ class EstadoService
         $perPage = $filtros['per_page'] ?? 15;
 
         if ($nombre) {
-            $query->where('nombre', 'like', $nombre . '%');
+            $query->where(
+                'nombre',
+                'like',
+                $nombre . '%'
+            );
         }
 
-        if (!in_array($sort, ['id', 'nombre'])) {
+        if (!in_array($sort, [
+            'id',
+            'nombre',
+        ])) {
             $sort = 'id';
         }
 
-        if (!in_array($direction, ['asc', 'desc'])) {
+        if (!in_array($direction, [
+            'asc',
+            'desc',
+        ])) {
             $direction = 'asc';
         }
 
-        $perPage = max(1, min((int) $perPage, 50));
+        $perPage = max(
+            1,
+            min((int) $perPage, 50)
+        );
 
         return $query
             ->orderBy($sort, $direction)
@@ -67,11 +86,15 @@ class EstadoService
     {
         $this->verificarPermisosAdministrativos();
 
-        return Estado::create($data);
+        return $this->estadoModel
+            ->newQuery()
+            ->create($data);
     }
 
-    public function actualizar(Estado $estado, array $data)
-    {
+    public function actualizar(
+        Estado $estado,
+        array $data
+    ) {
         $this->verificarPermisosAdministrativos();
 
         $estado->update($data);
@@ -83,10 +106,13 @@ class EstadoService
     {
         $this->verificarPermisosAdministrativos();
 
-        $tieneVehiculos = Vehiculo::where(
-            'estado_id',
-            $estado->id
-        )->exists();
+        $tieneVehiculos = $this->vehiculoModel
+            ->newQuery()
+            ->where(
+                'estado_id',
+                $estado->id
+            )
+            ->exists();
 
         if ($tieneVehiculos) {
             throw new EstadoException(

@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Categoria;
-use App\Models\Estado; // <-- Aquí está la corrección del Error 6
+use App\Models\Estado; 
 use App\Models\User;
 use App\Models\Vehiculo;
 use Database\Seeders\EstadoSeeder;

@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 class AccesorioService
 {
+    public function __construct(
+        protected Accesorio $accesorioModel
+    ) {
+    }
+
     private function verificarRoles(array $roles): void
     {
         $user = Auth::user();
@@ -38,30 +43,61 @@ class AccesorioService
         $direction = $filters['direction'] ?? 'asc';
         $perPage = $filters['per_page'] ?? 15;
 
-        $camposPermitidos = ['id', 'nombre', 'precio_unitario', 'created_at'];
+        $camposPermitidos = [
+            'id',
+            'nombre',
+            'precio_unitario',
+            'created_at',
+        ];
 
         if (!in_array($sort, $camposPermitidos)) {
             $sort = 'id';
         }
 
-        if (!in_array($direction, ['asc', 'desc'])) {
+        if (!in_array($direction, [
+            'asc',
+            'desc',
+        ])) {
             $direction = 'asc';
         }
 
-        if ($perPage > 25) {
-            $perPage = 25;
-        }
+        $perPage = max(
+            1,
+            min((int) $perPage, 25)
+        );
 
-        return Accesorio::query()
-            ->when($q, function ($query, $q) {
-                return $query->where('nombre', 'like', "$q%");
-            })
-            ->when($precioMin !== null, function ($query) use ($precioMin) {
-                return $query->where('precio_unitario', '>=', $precioMin);
-            })
-            ->when($precioMax !== null, function ($query) use ($precioMax) {
-                return $query->where('precio_unitario', '<=', $precioMax);
-            })
+        return $this->accesorioModel
+            ->newQuery()
+            ->when(
+                $q,
+                function ($query, $q) {
+                    return $query->where(
+                        'nombre',
+                        'like',
+                        "$q%"
+                    );
+                }
+            )
+            ->when(
+                $precioMin !== null,
+                function ($query) use ($precioMin) {
+                    return $query->where(
+                        'precio_unitario',
+                        '>=',
+                        $precioMin
+                    );
+                }
+            )
+            ->when(
+                $precioMax !== null,
+                function ($query) use ($precioMax) {
+                    return $query->where(
+                        'precio_unitario',
+                        '<=',
+                        $precioMax
+                    );
+                }
+            )
             ->orderBy($sort, $direction)
             ->paginate($perPage);
     }
@@ -84,11 +120,15 @@ class AccesorioService
             'Admin_Inventarios',
         ]);
 
-        return Accesorio::create($data);
+        return $this->accesorioModel
+            ->newQuery()
+            ->create($data);
     }
 
-    public function actualizar(Accesorio $accesorio, array $data)
-    {
+    public function actualizar(
+        Accesorio $accesorio,
+        array $data
+    ) {
         $this->verificarRoles([
             'Admin_General',
             'Admin_Inventarios',
@@ -106,7 +146,9 @@ class AccesorioService
             'Admin_Inventarios',
         ]);
 
-        $tieneRentas = $accesorio->rentas()->exists();
+        $tieneRentas = $accesorio
+            ->rentas()
+            ->exists();
 
         if ($tieneRentas) {
             throw new AccesorioException(
@@ -133,8 +175,12 @@ class AccesorioService
             );
         }
 
-        $yaExiste = $renta->accesorios()
-            ->where('accesorios.id', $accesorio->id)
+        $yaExiste = $renta
+            ->accesorios()
+            ->where(
+                'accesorios.id',
+                $accesorio->id
+            )
             ->exists();
 
         if ($yaExiste) {
@@ -143,20 +189,34 @@ class AccesorioService
             );
         }
 
-        return DB::transaction(function () use ($accesorio, $renta, $cantidad) {
-            $precio = (float) $accesorio->precio_unitario;
-            $subtotal = $precio * $cantidad;
+        return DB::transaction(
+            function () use (
+                $accesorio,
+                $renta,
+                $cantidad
+            ) {
+                $precio = (float) $accesorio->precio_unitario;
+                $subtotal = $precio * $cantidad;
 
-            $renta->accesorios()->attach($accesorio->id, [
-                'cantidad' => $cantidad,
-                'precio_diario' => $precio,
-                'subtotal' => $subtotal,
-            ]);
+                $renta
+                    ->accesorios()
+                    ->attach(
+                        $accesorio->id,
+                        [
+                            'cantidad' => $cantidad,
+                            'precio_diario' => $precio,
+                            'subtotal' => $subtotal,
+                        ]
+                    );
 
-            $renta->monto_total = (float) $renta->monto_total + $subtotal;
-            $renta->save();
+                $renta->monto_total =
+                    (float) $renta->monto_total
+                    + $subtotal;
 
-            return $renta->load('accesorios');
-        });
+                $renta->save();
+
+                return $renta->load('accesorios');
+            }
+        );
     }
 }

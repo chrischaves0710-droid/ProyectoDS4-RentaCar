@@ -66,6 +66,17 @@ class AccesorioService
             ->paginate($perPage);
     }
 
+    public function mostrar(Accesorio $accesorio)
+    {
+        $this->verificarRoles([
+            'Admin_General',
+            'Admin_Inventarios',
+            'Gestor_Rentas',
+        ]);
+
+        return $accesorio;
+    }
+
     public function crear(array $data)
     {
         $this->verificarRoles([

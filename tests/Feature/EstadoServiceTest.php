@@ -5,7 +5,11 @@ use App\Models\Estado;
 use App\Models\User;
 use App\Models\Vehiculo;
 use App\Services\EstadoService;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $admin = User::create([
@@ -78,5 +82,33 @@ it('lanza una excepcion si se intenta eliminar un estado con vehiculos asociados
     // Verificamos que el estado no fue eliminado
     $this->assertDatabaseHas('estados', [
         'id' => $estado->id
+    ]);
+});
+
+it('rechaza una invocacion directa al servicio de estado sin un rol autorizado', function () {
+
+    $usuario = User::create([
+        'name' => 'Gestor Sin Permiso Estado',
+        'email' => 'gestor_estado_' . uniqid() . '@correo.com',
+        'password' => 'Password123',
+    ]);
+
+    $role = Role::firstOrCreate([
+        'name' => 'Gestor_Rentas',
+        'guard_name' => 'web',
+    ]);
+
+    $usuario->assignRole($role);
+
+    $this->actingAs($usuario);
+
+    expect(
+        fn () => app(EstadoService::class)->crear([
+            'nombre' => 'Estado No Autorizado'
+        ])
+    )->toThrow(AuthorizationException::class);
+
+    $this->assertDatabaseMissing('estados', [
+        'nombre' => 'Estado No Autorizado'
     ]);
 });

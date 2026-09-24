@@ -25,6 +25,44 @@ class EstadoService
         }
     }
 
+    public function listar(array $filtros = [])
+    {
+        $this->verificarPermisosAdministrativos();
+
+        $query = Estado::query();
+
+        $nombre = $filtros['nombre'] ?? null;
+        $sort = $filtros['sort'] ?? 'id';
+        $direction = $filtros['direction'] ?? 'asc';
+        $perPage = $filtros['per_page'] ?? 15;
+
+        if ($nombre) {
+            $query->where('nombre', 'like', $nombre . '%');
+        }
+
+        if (!in_array($sort, ['id', 'nombre'])) {
+            $sort = 'id';
+        }
+
+        if (!in_array($direction, ['asc', 'desc'])) {
+            $direction = 'asc';
+        }
+
+        $perPage = max(1, min((int) $perPage, 50));
+
+        return $query
+            ->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    public function mostrar(Estado $estado)
+    {
+        $this->verificarPermisosAdministrativos();
+
+        return $estado;
+    }
+
     public function crear(array $data)
     {
         $this->verificarPermisosAdministrativos();
@@ -45,7 +83,10 @@ class EstadoService
     {
         $this->verificarPermisosAdministrativos();
 
-        $tieneVehiculos = Vehiculo::where('estado_id', $estado->id)->exists();
+        $tieneVehiculos = Vehiculo::where(
+            'estado_id',
+            $estado->id
+        )->exists();
 
         if ($tieneVehiculos) {
             throw new EstadoException(

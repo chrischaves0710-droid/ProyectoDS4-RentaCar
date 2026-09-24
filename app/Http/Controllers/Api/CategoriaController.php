@@ -14,7 +14,6 @@ class CategoriaController extends Controller
 {
     public function __construct(protected CategoriaService $categoriaService)
     {
-        $this->categoriaService = $categoriaService;
     }
 
     /**
@@ -23,12 +22,14 @@ class CategoriaController extends Controller
      */
     public function index(Request $request)
     {
+        // se extraen los parámetros de la petición HTTP
         $q = $request->input('q');
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        $perPage = $request->input('per_page', 10);
 
-        $data = Categoria::when($q, function ($query, $q) {
-                    return $query->where('nombre', 'like', "$q%");
-                })
-                ->paginate(10);
+        // Se delega la consulta al servicio, que maneja la lógica de negocio y permisos
+        $data = $this->categoriaService->listarConFiltros($q, $sortBy, $sortDir, $perPage);
 
         return CategoriaResource::collection($data);
     }

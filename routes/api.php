@@ -59,6 +59,10 @@ Route::middleware('auth:sanctum')->group(function () {
         
     Route::apiResource('rentas', RentaController::class)
         ->middleware('role:Admin_General|Gestor_Rentas|Cliente');
+        Route::patch(
+    'rentas/{renta}/finalizar',
+    [RentaController::class, 'finalizar']
+)->middleware('role:Admin_General|Gestor_Rentas');
 
     // Acción extra
     Route::post('rentas/{renta}/accesorios/{accesorio}', [AccesorioController::class, 'agregarARenta'])

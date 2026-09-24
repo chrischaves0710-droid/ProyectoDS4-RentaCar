@@ -85,4 +85,14 @@ class RentaController extends Controller
 
         return response()->noContent();
     }
+    public function finalizar($id)
+{
+    $renta = $this->rentaService->obtener($id);
+
+    Gate::authorize('update', $renta);
+
+    $renta = $this->rentaService->finalizar($id);
+
+    return new RentaResource($renta);
+}
 }

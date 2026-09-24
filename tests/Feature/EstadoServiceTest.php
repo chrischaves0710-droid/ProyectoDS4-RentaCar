@@ -7,6 +7,8 @@ use App\Models\Vehiculo;
 use App\Services\EstadoService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
+use Mockery;
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
@@ -24,69 +26,82 @@ beforeEach(function () {
     ]);
 
     $admin->assignRole($role);
+
     $this->actingAs($admin);
 });
 
+
 it('puede crear un estado', function () {
-    $data = ['nombre' => 'Nuevo Estado Prueba'];
+    $data = [
+        'nombre' => 'Nuevo Estado Prueba'
+    ];
 
     $estado = app(EstadoService::class)->crear($data);
 
-    expect($estado->nombre)->toBe('Nuevo Estado Prueba');
+    expect($estado->nombre)
+        ->toBe('Nuevo Estado Prueba');
 
     $this->assertDatabaseHas('estados', [
         'nombre' => 'Nuevo Estado Prueba'
     ]);
 });
 
+
 it('puede actualizar un estado existente', function () {
     $estado = Estado::factory()->create([
         'nombre' => 'Viejo Estado'
     ]);
 
-    $data = ['nombre' => 'Estado Actualizado'];
+    $data = [
+        'nombre' => 'Estado Actualizado'
+    ];
 
-    app(EstadoService::class)->actualizar($estado, $data);
+    app(EstadoService::class)
+        ->actualizar($estado, $data);
 
-    expect($estado->fresh()->nombre)->toBe('Estado Actualizado');
+    expect($estado->fresh()->nombre)
+        ->toBe('Estado Actualizado');
 });
+
 
 it('permite eliminar un estado si no tiene vehiculos asociados', function () {
     $estado = Estado::factory()->create([
         'nombre' => 'Estado Sin Uso'
     ]);
 
-    app(EstadoService::class)->eliminar($estado);
+    app(EstadoService::class)
+        ->eliminar($estado);
 
     $this->assertDatabaseMissing('estados', [
         'id' => $estado->id
     ]);
 });
 
+
 it('lanza una excepcion si se intenta eliminar un estado con vehiculos asociados', function () {
     $estado = Estado::factory()->create([
         'nombre' => 'En Uso'
     ]);
 
-    // Creamos un vehículo asignado a este estado
     Vehiculo::factory()->create([
         'estado_id' => $estado->id
     ]);
 
-    expect(fn () => app(EstadoService::class)->eliminar($estado))
-        ->toThrow(
-            EstadoException::class,
-            'No se puede eliminar el estado porque tiene vehículos asociados.'
-        );
+    expect(
+        fn () => app(EstadoService::class)
+            ->eliminar($estado)
+    )->toThrow(
+        EstadoException::class,
+        'No se puede eliminar el estado porque tiene vehículos asociados.'
+    );
 
-    // Verificamos que el estado no fue eliminado
     $this->assertDatabaseHas('estados', [
         'id' => $estado->id
     ]);
 });
 
-it('rechaza una invocacion directa al servicio de estado sin un rol autorizado', function () {
 
+it('rechaza una invocacion directa al servicio de estado sin un rol autorizado', function () {
     $usuario = User::create([
         'name' => 'Gestor Sin Permiso Estado',
         'email' => 'gestor_estado_' . uniqid() . '@correo.com',
@@ -111,4 +126,340 @@ it('rechaza una invocacion directa al servicio de estado sin un rol autorizado',
     $this->assertDatabaseMissing('estados', [
         'nombre' => 'Estado No Autorizado'
     ]);
+});
+
+
+function crearEstadoServiceConDobles(): array
+{
+    $estadoModel = Mockery::mock(Estado::class);
+    $vehiculoModel = Mockery::mock(Vehiculo::class);
+
+    $service = new EstadoService(
+        $estadoModel,
+        $vehiculoModel
+    );
+
+    return [
+        'estadoModel' => $estadoModel,
+        'vehiculoModel' => $vehiculoModel,
+        'service' => $service,
+    ];
+}
+
+
+function simularUsuarioAutorizadoEstado(): User
+{
+    $usuario = Mockery::mock(User::class);
+
+    $usuario
+        ->shouldReceive('hasAnyRole')
+        ->once()
+        ->with([
+            'Admin_General',
+            'Admin_Inventarios',
+        ])
+        ->andReturn(true);
+
+    Auth::shouldReceive('user')
+        ->once()
+        ->andReturn($usuario);
+
+    return $usuario;
+}
+
+
+it('crea un estado utilizando un doble del modelo Estado', function () {
+    $dependencias = crearEstadoServiceConDobles();
+
+    $estadoModel = $dependencias['estadoModel'];
+    $service = $dependencias['service'];
+
+    simularUsuarioAutorizadoEstado();
+
+    $data = [
+        'nombre' => 'Disponible'
+    ];
+
+    $query = Mockery::mock();
+
+    $estadoCreado = Mockery::mock(
+        Estado::class
+    );
+
+    $estadoModel
+        ->shouldReceive('newQuery')
+        ->once()
+        ->andReturn($query);
+
+    $query
+        ->shouldReceive('create')
+        ->once()
+        ->with($data)
+        ->andReturn($estadoCreado);
+
+    $resultado = $service->crear($data);
+
+    expect($resultado)
+        ->toBe($estadoCreado);
+});
+
+
+it('actualiza un estado utilizando un doble del recurso', function () {
+    $dependencias = crearEstadoServiceConDobles();
+
+    $service = $dependencias['service'];
+
+    simularUsuarioAutorizadoEstado();
+
+    $estado = Mockery::mock(
+        Estado::class
+    );
+
+    $data = [
+        'nombre' => 'Mantenimiento'
+    ];
+
+    $estado
+        ->shouldReceive('update')
+        ->once()
+        ->with($data)
+        ->andReturn(true);
+
+    $resultado = $service->actualizar(
+        $estado,
+        $data
+    );
+
+    expect($resultado)
+        ->toBe($estado);
+});
+
+
+it('elimina un estado sin vehiculos usando un doble de Vehiculo', function () {
+    $dependencias = crearEstadoServiceConDobles();
+
+    $vehiculoModel = $dependencias['vehiculoModel'];
+    $service = $dependencias['service'];
+
+    simularUsuarioAutorizadoEstado();
+
+    $estado = Mockery::mock(
+        Estado::class
+    )->makePartial();
+
+    $estado->id = 10;
+
+    $query = Mockery::mock();
+
+    $vehiculoModel
+        ->shouldReceive('newQuery')
+        ->once()
+        ->andReturn($query);
+
+    $query
+        ->shouldReceive('where')
+        ->once()
+        ->with(
+            'estado_id',
+            10
+        )
+        ->andReturnSelf();
+
+    $query
+        ->shouldReceive('exists')
+        ->once()
+        ->andReturn(false);
+
+    $estado
+        ->shouldReceive('delete')
+        ->once()
+        ->andReturn(true);
+
+    $service->eliminar($estado);
+});
+
+
+it('rechaza eliminar un estado con vehiculos usando un doble', function () {
+    $dependencias = crearEstadoServiceConDobles();
+
+    $vehiculoModel = $dependencias['vehiculoModel'];
+    $service = $dependencias['service'];
+
+    simularUsuarioAutorizadoEstado();
+
+    $estado = Mockery::mock(
+        Estado::class
+    )->makePartial();
+
+    $estado->id = 20;
+
+    $query = Mockery::mock();
+
+    $vehiculoModel
+        ->shouldReceive('newQuery')
+        ->once()
+        ->andReturn($query);
+
+    $query
+        ->shouldReceive('where')
+        ->once()
+        ->with(
+            'estado_id',
+            20
+        )
+        ->andReturnSelf();
+
+    $query
+        ->shouldReceive('exists')
+        ->once()
+        ->andReturn(true);
+
+    $estado
+        ->shouldNotReceive('delete');
+
+    expect(
+        fn () => $service->eliminar($estado)
+    )->toThrow(
+        EstadoException::class,
+        'No se puede eliminar el estado porque tiene vehículos asociados.'
+    );
+});
+
+
+it('rechaza mediante doble un usuario con rol no permitido', function () {
+    $dependencias = crearEstadoServiceConDobles();
+
+    $service = $dependencias['service'];
+
+    $usuario = Mockery::mock(
+        User::class
+    );
+
+    $usuario
+        ->shouldReceive('hasAnyRole')
+        ->once()
+        ->with([
+            'Admin_General',
+            'Admin_Inventarios',
+        ])
+        ->andReturn(false);
+
+    Auth::shouldReceive('user')
+        ->once()
+        ->andReturn($usuario);
+
+    expect(
+        fn () => $service->crear([
+            'nombre' => 'No Permitido'
+        ])
+    )->toThrow(
+        AuthorizationException::class
+    );
+});
+
+
+it('rechaza la operacion cuando no existe usuario autenticado', function () {
+    $dependencias = crearEstadoServiceConDobles();
+
+    $service = $dependencias['service'];
+
+    Auth::shouldReceive('user')
+        ->once()
+        ->andReturn(null);
+
+    expect(
+        fn () => $service->crear([
+            'nombre' => 'Sin Usuario'
+        ])
+    )->toThrow(
+        AuthorizationException::class
+    );
+});
+
+
+it('limita per page a 50 cuando recibe un valor superior', function () {
+    $dependencias = crearEstadoServiceConDobles();
+
+    $estadoModel = $dependencias['estadoModel'];
+    $service = $dependencias['service'];
+
+    simularUsuarioAutorizadoEstado();
+
+    $query = Mockery::mock();
+    $paginator = Mockery::mock();
+
+    $estadoModel
+        ->shouldReceive('newQuery')
+        ->once()
+        ->andReturn($query);
+
+    $query
+        ->shouldReceive('orderBy')
+        ->once()
+        ->with('id', 'asc')
+        ->andReturnSelf();
+
+    $query
+        ->shouldReceive('paginate')
+        ->once()
+        ->with(50)
+        ->andReturn($paginator);
+
+    $paginator
+        ->shouldReceive('withQueryString')
+        ->once()
+        ->andReturnSelf();
+
+    $resultado = $service->listar([
+        'per_page' => 100
+    ]);
+
+    expect($resultado)
+        ->toBe($paginator);
+});
+
+
+it('corrige sort y direction invalidos al listar estados', function () {
+    $dependencias = crearEstadoServiceConDobles();
+
+    $estadoModel = $dependencias['estadoModel'];
+    $service = $dependencias['service'];
+
+    simularUsuarioAutorizadoEstado();
+
+    $query = Mockery::mock();
+    $paginator = Mockery::mock();
+
+    $estadoModel
+        ->shouldReceive('newQuery')
+        ->once()
+        ->andReturn($query);
+
+    $query
+        ->shouldReceive('orderBy')
+        ->once()
+        ->with(
+            'id',
+            'asc'
+        )
+        ->andReturnSelf();
+
+    $query
+        ->shouldReceive('paginate')
+        ->once()
+        ->with(15)
+        ->andReturn($paginator);
+
+    $paginator
+        ->shouldReceive('withQueryString')
+        ->once()
+        ->andReturnSelf();
+
+    $resultado = $service->listar([
+        'sort' => 'campo_falso',
+        'direction' => 'lado'
+    ]);
+
+    expect($resultado)
+        ->toBe($paginator);
 });

@@ -11,7 +11,7 @@ beforeEach(function () {
     $admin = User::create([
         'name' => 'Admin Estado Test',
         'email' => 'admin_estado_' . uniqid() . '@correo.com',
-        'password' => 'Password123!',
+        'password' => 'Password123',
     ]);
 
     $role = Role::firstOrCreate([

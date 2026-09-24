@@ -3,11 +3,30 @@
 use App\Exceptions\AccesorioException;
 use App\Models\Accesorio;
 use App\Models\Renta;
+use App\Models\User;
 use App\Services\AccesorioService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $admin = User::create([
+        'name' => 'Admin Accesorio Test',
+        'email' => 'admin_accesorio_' . uniqid() . '@correo.com',
+        'password' => 'Password123',
+    ]);
+
+    $role = Role::firstOrCreate([
+        'name' => 'Admin_General',
+        'guard_name' => 'web',
+    ]);
+
+    $admin->assignRole($role);
+    $this->actingAs($admin);
+});
+
 
 it('no permite eliminar un accesorio con rentas asociadas', function () {
     $accesorio = Accesorio::factory()->create();

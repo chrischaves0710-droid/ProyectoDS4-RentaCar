@@ -1,11 +1,11 @@
 <?php
 
+use App\Exceptions\CategoriaException;
 use App\Exceptions\ClienteException;
 use App\Exceptions\EstadoException;
-use App\Exceptions\VehiculoException;
 use App\Exceptions\RentaException;
+use App\Exceptions\VehiculoException;
 
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -14,7 +14,12 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,7 +30,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
 
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
+        ]);
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -107,6 +116,22 @@ return Application::configure(basePath: dirname(__DIR__))
 
         /*
         |--------------------------------------------------------------------------
+        | 409 Conflict - Categoría
+        |--------------------------------------------------------------------------
+        */
+
+        $exceptions->render(
+            function (CategoriaException $e, Request $request) {
+                if ($request->is('api/*')) {
+                    return response()->json([
+                        'message' => $e->getMessage(),
+                    ], 409);
+                }
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
         | 409 Conflict - Cliente
         |--------------------------------------------------------------------------
         */
@@ -155,6 +180,22 @@ return Application::configure(basePath: dirname(__DIR__))
 
         /*
         |--------------------------------------------------------------------------
+        | 409 Conflict - Renta
+        |--------------------------------------------------------------------------
+        */
+
+        $exceptions->render(
+            function (RentaException $e, Request $request) {
+                if ($request->is('api/*')) {
+                    return response()->json([
+                        'message' => $e->getMessage(),
+                    ], 409);
+                }
+            }
+        );
+
+        /*
+        |--------------------------------------------------------------------------
         | 422 Unprocessable Content - Validación
         |--------------------------------------------------------------------------
         */
@@ -178,21 +219,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
             }
         );
-        /*
-|--------------------------------------------------------------------------
-| 409 Conflict - Renta
-|--------------------------------------------------------------------------
-*/
-
-$exceptions->render(
-    function (RentaException $e, Request $request) {
-        if ($request->is('api/*')) {
-            return response()->json([
-                'message' => $e->getMessage(),
-            ], 409);
-        }
-    }
-);
 
     })
 

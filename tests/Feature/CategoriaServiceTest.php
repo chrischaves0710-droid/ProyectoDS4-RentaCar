@@ -6,15 +6,12 @@ use App\Models\User;
 use App\Models\Vehiculo;
 use App\Models\Renta;
 use App\Services\CategoriaService;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Doble de prueba para Auth/User sin requerir UserFactory
-    /** @var User|\Mockery::MockInterface $userMock */
     $userMock = Mockery::mock(User::class)->makePartial();
     $userMock->shouldReceive('hasAnyRole')->andReturn(true);
 
@@ -23,28 +20,26 @@ beforeEach(function () {
     Auth::shouldReceive('id')->andReturn(1);
 });
 
-afterEach(function () {
-    Mockery::close();
-});
+afterEach(fn () => Mockery::close());
 
-// ==========================================
-// 1. CAMINO FELIZ (4 PRUEBAS)
-// ==========================================
+/*
+|--------------------------------------------------------------------------
+| 1. CAMINO FELIZ
+|--------------------------------------------------------------------------
+*/
 
 it('1. [Camino Feliz] listarConFiltros: retorna la lista paginada procesada correctamente', function () {
     for ($i = 1; $i <= 15; $i++) {
         Categoria::create(['nombre' => "Categoria $i"]);
     }
 
-    $service = new CategoriaService();
-    $resultado = $service->listarConFiltros(perPage: 10);
+    $resultado = (new CategoriaService())->listarConFiltros(perPage: 10);
 
     expect($resultado->items())->toHaveCount(10);
 });
 
 it('2. [Camino Feliz] crear: registra exitosamente una categoria cuando no existe duplicada', function () {
-    $service = new CategoriaService();
-    $categoria = $service->crear(['nombre' => 'SUV Premium']);
+    $categoria = (new CategoriaService())->crear(['nombre' => 'SUV Premium']);
 
     expect($categoria)->toBeInstanceOf(Categoria::class)
         ->and($categoria->nombre)->toBe('SUV Premium');
@@ -52,54 +47,38 @@ it('2. [Camino Feliz] crear: registra exitosamente una categoria cuando no exist
     $this->assertDatabaseHas('categorias', ['nombre' => 'SUV Premium']);
 });
 
-it('3. [Camino Feliz] actualizar: modifica la categoria usando un doble de prueba cuando no hay rentas activas', function () {
-    /** @var Categoria|\Mockery::MockInterface $categoriaMock */
-    $categoriaMock = Mockery::mock(Categoria::class)->makePartial();
-    $categoriaMock->id = 999;
-    $categoriaMock->nombre = 'Sedan Original';
+it('3. [Camino Feliz] actualizar: modifica la categoria correctamente cuando no hay rentas activas', function () {
+    $categoria = Categoria::create(['nombre' => 'Sedan Original']);
 
-    // Mock del método update de Eloquent
-    $categoriaMock->shouldReceive('update')
-        ->once()
-        ->with(['nombre' => 'Sedan Actualizado'])
-        ->andReturn(true);
+    $resultado = (new CategoriaService())->actualizar($categoria, ['nombre' => 'Sedan Actualizado']);
 
-    $service = new CategoriaService();
-    /** @var Categoria $categoriaMock */
-    $resultado = $service->actualizar($categoriaMock, ['nombre' => 'Sedan Actualizado']);
-
-    expect($resultado)->toBe($categoriaMock);
+    expect($resultado->nombre)->toBe('Sedan Actualizado');
+    $this->assertDatabaseHas('categorias', ['nombre' => 'Sedan Actualizado']);
 });
 
-it('4. [Camino Feliz] eliminar: elimina la categoria usando un doble de prueba si cumple las condiciones', function () {
-    /** @var Categoria|\Mockery::MockInterface $categoriaMock */
-    $categoriaMock = Mockery::mock(Categoria::class)->makePartial();
-    $categoriaMock->id = 10;
+it('4. [Camino Feliz] eliminar: elimina la categoria si cumple las condiciones', function () {
+    // 1. Ocupamos el ID 1 (protegido por la regla del sistema)
+    Categoria::create(['nombre' => 'Categoria Principal ID 1']);
 
-    // Stub de la relación vehiculos mockeando la clase HasMany explícitamente
-    $relationMock = Mockery::mock(HasMany::class);
-    $relationMock->shouldReceive('exists')->andReturn(false);
-    $categoriaMock->shouldReceive('vehiculos')->andReturn($relationMock);
+    // 2. Creamos la categoría con ID >= 2 que sí se puede eliminar
+    $categoria = Categoria::create(['nombre' => 'Categoria A Eliminar']);
 
-    $categoriaMock->shouldReceive('delete')->once()->andReturn(true);
-
-    $service = new CategoriaService();
-    /** @var Categoria $categoriaMock */
-    $resultado = $service->eliminar($categoriaMock);
+    $resultado = (new CategoriaService())->eliminar($categoria);
 
     expect($resultado)->toBeTrue();
+    $this->assertDatabaseMissing('categorias', ['id' => $categoria->id]);
 });
 
-// ==========================================
-// 2. VIOLACIÓN DE REGLAS DE NEGOCIO (4 PRUEBAS)
-// ==========================================
+/*
+|--------------------------------------------------------------------------
+| 2. VIOLACIÓN DE REGLAS DE NEGOCIO
+|--------------------------------------------------------------------------
+*/
 
 it('5. [Regla 1] crear: lanza excepcion al intentar registrar un nombre duplicado (case-insensitive)', function () {
     Categoria::create(['nombre' => 'SUV']);
 
-    $service = new CategoriaService();
-
-    expect(fn () => $service->crear(['nombre' => 'suv']))
+    expect(fn () => (new CategoriaService())->crear(['nombre' => 'suv']))
         ->toThrow(CategoriaException::class, 'Ya existe una categoría registrada con ese nombre.');
 });
 
@@ -112,48 +91,37 @@ it('6. [Regla 2] actualizar: lanza excepcion si la categoria tiene vehiculos en 
         'fecha_fin' => now()->addDays(5),
     ]);
 
-    $service = new CategoriaService();
-
-    expect(fn () => $service->actualizar($categoria, ['nombre' => 'Nuevo Nombre']))
+    expect(fn () => (new CategoriaService())->actualizar($categoria, ['nombre' => 'Nuevo Nombre']))
         ->toThrow(CategoriaException::class, 'No se puede modificar la categoría porque tiene vehículos en rentas activas.');
 });
 
-it('7. [Regla 3] eliminar: lanza excepcion si el doble de prueba indica que tiene vehiculos asociados', function () {
-    /** @var Categoria|\Mockery::MockInterface $categoriaMock */
-    $categoriaMock = Mockery::mock(Categoria::class)->makePartial();
-    $categoriaMock->id = 8;
+it('7. [Regla 3] eliminar: lanza excepcion si la categoria tiene vehiculos asociados', function () {
+    Categoria::create(['nombre' => 'Categoria Principal ID 1']);
+    $categoria = Categoria::create(['nombre' => 'Categoria Con Vehiculos']);
+    
+    Vehiculo::factory()->create(['categoria_id' => $categoria->id]);
 
-    // Stub de la relación vehiculos mockeando la clase HasMany explícitamente
-    $relationMock = Mockery::mock(HasMany::class);
-    $relationMock->shouldReceive('exists')->andReturn(true);
-    $categoriaMock->shouldReceive('vehiculos')->andReturn($relationMock);
-
-    $service = new CategoriaService();
-    /** @var Categoria $categoriaMock */
-    expect(fn () => $service->eliminar($categoriaMock))
+    expect(fn () => (new CategoriaService())->eliminar($categoria))
         ->toThrow(CategoriaException::class, 'No se puede eliminar la categoría porque tiene vehículos asociados.');
 });
 
 it('8. [Regla 4] eliminar: lanza excepcion al intentar eliminar la categoria protegida ID 1', function () {
-    /** @var Categoria|\Mockery::MockInterface $categoriaProtegidaMock */
-    $categoriaProtegidaMock = Mockery::mock(Categoria::class)->makePartial();
-    $categoriaProtegidaMock->id = 1;
+    $categoriaProtegida = Categoria::create(['nombre' => 'Categoria Principal']);
 
-    $service = new CategoriaService();
-    /** @var Categoria $categoriaProtegidaMock */
-    expect(fn () => $service->eliminar($categoriaProtegidaMock))
+    expect(fn () => (new CategoriaService())->eliminar($categoriaProtegida))
         ->toThrow(CategoriaException::class, 'No se puede eliminar la categoría principal del sistema.');
 });
 
-// ==========================================
-// 3. CASOS LÍMITE (4 PRUEBAS)
-// ==========================================
+/*
+|--------------------------------------------------------------------------
+| 3. CASOS LÍMITE
+|--------------------------------------------------------------------------
+*/
 
 it('9. [Caso Límite 1] listarConFiltros: sanea perPage negativo (-10) ajustandolo al minimo de 1', function () {
     Categoria::create(['nombre' => 'Cat Límite 1']);
 
-    $service = new CategoriaService();
-    $resultado = $service->listarConFiltros(perPage: -10);
+    $resultado = (new CategoriaService())->listarConFiltros(perPage: -10);
 
     expect($resultado->perPage())->toBe(1);
 });
@@ -161,8 +129,7 @@ it('9. [Caso Límite 1] listarConFiltros: sanea perPage negativo (-10) ajustando
 it('10. [Caso Límite 2] listarConFiltros: acota perPage excesivo (100) al limite maximo de 50', function () {
     Categoria::create(['nombre' => 'Cat Límite 2']);
 
-    $service = new CategoriaService();
-    $resultado = $service->listarConFiltros(perPage: 100);
+    $resultado = (new CategoriaService())->listarConFiltros(perPage: 100);
 
     expect($resultado->perPage())->toBe(50);
 });
@@ -170,15 +137,13 @@ it('10. [Caso Límite 2] listarConFiltros: acota perPage excesivo (100) al limit
 it('11. [Caso Límite 3] listarConFiltros: realiza fallback seguro a created_at ante un sortBy invalido', function () {
     Categoria::create(['nombre' => 'Cat Límite 3']);
 
-    $service = new CategoriaService();
-    $resultado = $service->listarConFiltros(sortBy: 'columna_inexistente_sql');
+    $resultado = (new CategoriaService())->listarConFiltros(sortBy: 'columna_inexistente_sql');
 
     expect($resultado)->not()->toBeNull();
 });
 
 it('12. [Caso Límite 4] crear: remueve espacios laterales (trim) en el nombre antes de procesar', function () {
-    $service = new CategoriaService();
-    $categoria = $service->crear(['nombre' => '   Deportivo Trim   ']);
+    $categoria = (new CategoriaService())->crear(['nombre' => '   Deportivo Trim   ']);
 
     expect($categoria->nombre)->toBe('Deportivo Trim');
 });

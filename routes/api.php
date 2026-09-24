@@ -83,6 +83,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('rentas', RentaController::class)
         ->only(['index', 'show'])
         ->middleware('role:Admin_General|Gestor_Rentas|Cliente');
+        Route::patch(
+    'rentas/{renta}/finalizar',
+    [RentaController::class, 'finalizar']
+)->middleware('role:Admin_General|Gestor_Rentas');
 
     // Admin y Gestor tienen CRUD de Rentas.
     Route::apiResource('rentas', RentaController::class)

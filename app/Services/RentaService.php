@@ -233,6 +233,45 @@ class RentaService
 
         $renta->delete();
     }
+    /**
+ * Finaliza una renta.
+ *
+ * Cambia el vehículo asociado nuevamente a Disponible.
+ * Solamente Admin_General y Gestor_Rentas.
+ */
+public function finalizar($id): Renta
+{
+    $this->verificarGestionRentas();
+
+    $renta = $this->obtener($id);
+
+    $estadoDisponible = Estado::where(
+        'nombre',
+        'Disponible'
+    )->first();
+
+    if (!$estadoDisponible) {
+        throw new RentaException(
+            'No se encontró el estado Disponible.'
+        );
+    }
+
+    return DB::transaction(function () use (
+        $renta,
+        $estadoDisponible
+    ) {
+
+        $renta->vehiculo->update([
+            'estado_id' => $estadoDisponible->id,
+        ]);
+
+        return $renta->load([
+            'cliente',
+            'vehiculo',
+            'accesorios',
+        ]);
+    });
+}
 
     /**
      * Obtiene el usuario autenticado.

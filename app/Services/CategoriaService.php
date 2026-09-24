@@ -27,21 +27,21 @@ class CategoriaService
             ->paginate($perPage);
     }
 
-   public function crear(array $data): Categoria
-{
-    $nombreLimpio = trim($data['nombre']);
+    public function crear(array $data): Categoria
+    {
+        $nombreLimpio = trim($data['nombre']);
 
-    // Regla 1: Evitar categorías duplicadas (insensible a mayúsculas/minúsculas)
-    $existe = Categoria::whereRaw('LOWER(nombre) = ?', [strtolower($nombreLimpio)])->exists();
+        // Regla 1: Evitar categorías duplicadas (insensible a mayúsculas/minúsculas)
+        $existe = Categoria::whereRaw('LOWER(nombre) = ?', [strtolower($nombreLimpio)])->exists();
 
-    if ($existe) {
-        throw new CategoriaException('Ya existe una categoría registrada con ese nombre.');
+        if ($existe) {
+            throw new CategoriaException('Ya existe una categoría registrada con ese nombre.');
+        }
+
+        $data['nombre'] = $nombreLimpio;
+
+        return Categoria::create($data);
     }
-
-    $data['nombre'] = $nombreLimpio;
-
-    return Categoria::create($data);
-}
 
     public function actualizar(Categoria $categoria, array $data): Categoria
     {
@@ -63,19 +63,16 @@ class CategoriaService
 
     public function eliminar(Categoria $categoria): bool
     {
-    
-{
-    // EVALUAR REGLA 4: Protección del ID 1
-    if ($categoria->id === 1) {
-        throw new CategoriaException('No se puede eliminar la categoría principal del sistema.', 422);
-    }
+        // EVALUAR REGLA 4: Protección del ID 1
+        if ($categoria->id === 1) {
+            throw new CategoriaException('No se puede eliminar la categoría principal del sistema.', 422);
+        }
 
-    // EVALUAR REGLA 3: Vehículos asociados
-    if ($categoria->vehiculos()->exists()) {
-        throw new CategoriaException('No se puede eliminar la categoría porque tiene vehículos asociados.', 422);
-    }
+        // EVALUAR REGLA 3: Vehículos asociados
+        if ($categoria->vehiculos()->exists()) {
+            throw new CategoriaException('No se puede eliminar la categoría porque tiene vehículos asociados.', 422);
+        }
 
-    return $categoria->delete();
-}
+        return $categoria->delete();
     }
 }

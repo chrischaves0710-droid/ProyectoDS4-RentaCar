@@ -2,8 +2,26 @@
 
 use App\Exceptions\EstadoException;
 use App\Models\Estado;
+use App\Models\User;
 use App\Models\Vehiculo;
 use App\Services\EstadoService;
+use Spatie\Permission\Models\Role;
+
+beforeEach(function () {
+    $admin = User::create([
+        'name' => 'Admin Estado Test',
+        'email' => 'admin_estado_' . uniqid() . '@correo.com',
+        'password' => 'Password123!',
+    ]);
+
+    $role = Role::firstOrCreate([
+        'name' => 'Admin_General',
+        'guard_name' => 'web',
+    ]);
+
+    $admin->assignRole($role);
+    $this->actingAs($admin);
+});
 
 it('puede crear un estado', function () {
     $data = ['nombre' => 'Nuevo Estado Prueba'];

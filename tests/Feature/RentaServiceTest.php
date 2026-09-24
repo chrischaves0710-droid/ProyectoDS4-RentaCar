@@ -252,3 +252,32 @@ it('elimina correctamente una renta existente', function () {
     expect(Renta::find($renta->id))
         ->toBeNull();
 });
+it('finaliza una renta y cambia el vehículo de Alquilado a Disponible', function () {
+
+    $cliente = Cliente::factory()->create();
+
+    $estadoAlquilado = Estado::where('nombre', 'Alquilado')->first();
+    $estadoDisponible = Estado::where('nombre', 'Disponible')->first();
+
+    $vehiculo = Vehiculo::factory()->create([
+        'estado_id' => $estadoAlquilado->id,
+    ]);
+
+    $renta = Renta::factory()->create([
+        'cliente_id' => $cliente->id,
+        'vehiculo_id' => $vehiculo->id,
+        'fecha_inicio' => '2026-09-15',
+        'fecha_fin' => '2026-09-20',
+        'precio_diario' => 30000,
+        'monto_total' => 150000,
+    ]);
+
+    $service = app(RentaService::class);
+
+    $service->finalizar($renta->id);
+
+    $vehiculo->refresh();
+
+    expect($vehiculo->estado_id)
+        ->toBe($estadoDisponible->id);
+});

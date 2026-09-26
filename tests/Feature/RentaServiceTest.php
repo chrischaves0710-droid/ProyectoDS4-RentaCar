@@ -10,6 +10,7 @@ use App\Services\RentaService;
 use Database\Seeders\EstadoSeeder;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Models\Accesorio;
 
 // ==========================================
 // PREPARACIÓN PARA CADA PRUEBA
@@ -389,4 +390,80 @@ it('no permite que un Cliente finalice una renta', function () {
 
     expect($vehiculo->estado_id)
         ->toBe($estadoAlquilado->id);
+});
+it('conserva el costo de los accesorios al actualizar una renta', function () {
+    $cliente = Cliente::factory()->create();
+
+    $estadoDisponible = Estado::where('nombre', 'Disponible')->firstOrFail();
+
+    $vehiculo = Vehiculo::factory()->create([
+        'estado_id' => $estadoDisponible->id,
+    ]);
+
+    $renta = Renta::factory()->create([
+        'cliente_id' => $cliente->id,
+        'vehiculo_id' => $vehiculo->id,
+        'fecha_inicio' => '2026-09-15',
+        'fecha_fin' => '2026-09-20',
+        'precio_diario' => 30000,
+        'monto_total' => 170000,
+    ]);
+
+    $accesorio = Accesorio::factory()->create();
+
+    $renta->accesorios()->attach($accesorio->id, [
+        'cantidad' => 1,
+        'precio_diario' => 20000,
+        'subtotal' => 20000,
+    ]);
+
+    $actualizada = app(RentaService::class)->actualizar(
+        $renta->id,
+        ['fecha_fin' => '2026-09-25']
+    );
+
+    // Diez días × 30000, más 20000 del accesorio.
+    expect((float) $actualizada->monto_total)->toBe(320000.0);
+});
+it('libera el vehículo al eliminar una renta', function () {
+    $estadoAlquilado = Estado::where('nombre', 'Alquilado')->firstOrFail();
+    $estadoDisponible = Estado::where('nombre', 'Disponible')->firstOrFail();
+
+    $vehiculo = Vehiculo::factory()->create([
+        'estado_id' => $estadoAlquilado->id,
+    ]);
+
+    $renta = Renta::factory()->create([
+        'vehiculo_id' => $vehiculo->id,
+    ]);
+
+    app(RentaService::class)->eliminar($renta->id);
+
+    expect(Renta::find($renta->id))->toBeNull()
+        ->and($vehiculo->fresh()->estado_id)->toBe($estadoDisponible->id);
+});
+it('rechaza cambiar el vehículo de una renta existente', function () {
+    $estadoDisponible = Estado::where('nombre', 'Disponible')->firstOrFail();
+    $estadoAlquilado = Estado::where('nombre', 'Alquilado')->firstOrFail();
+
+    $vehiculoOriginal = Vehiculo::factory()->create([
+        'estado_id' => $estadoAlquilado->id,
+    ]);
+
+    $vehiculoNuevo = Vehiculo::factory()->create([
+        'estado_id' => $estadoDisponible->id,
+    ]);
+
+    $renta = Renta::factory()->create([
+        'vehiculo_id' => $vehiculoOriginal->id,
+    ]);
+
+    expect(fn () => app(RentaService::class)->actualizar(
+        $renta->id,
+        ['vehiculo_id' => $vehiculoNuevo->id]
+    ))->toThrow(RentaException::class);
+
+    expect($renta->fresh()->vehiculo_id)->toBe($vehiculoOriginal->id)
+        ->and($vehiculoOriginal->fresh()->estado_id)->toBe($estadoAlquilado->id)
+        ->and($vehiculoNuevo->fresh()->estado_id)->toBe($estadoDisponible->id);
 });

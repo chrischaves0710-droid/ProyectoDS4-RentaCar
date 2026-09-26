@@ -18,10 +18,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class RentaService
 {
     /**
-     * Lista las rentas.
-     *
-     * Admin_General y Gestor_Rentas pueden listar todas.
-     * Cliente solamente puede listar sus propias rentas.
+     * Admin_General y Gestor_Rentas pueden listar todas las rentas.
+     * Cliente solamente puede listar las suyas.
      */
     public function listar(array $filtros)
     {
@@ -33,44 +31,21 @@ class RentaService
             'accesorios',
         ]);
 
-        /*
-         * Admin_General y Gestor_Rentas pueden consultar
-         * todas las rentas y utilizar los filtros recibidos.
-         */
         if ($user->hasAnyRole(['Admin_General', 'Gestor_Rentas'])) {
-
             if (!empty($filtros['cliente_id'])) {
-                $query->where(
-                    'cliente_id',
-                    $filtros['cliente_id']
-                );
+                $query->where('cliente_id', $filtros['cliente_id']);
             }
 
             if (!empty($filtros['vehiculo_id'])) {
-                $query->where(
-                    'vehiculo_id',
-                    $filtros['vehiculo_id']
-                );
+                $query->where('vehiculo_id', $filtros['vehiculo_id']);
             }
 
             return $query->paginate(10);
         }
 
-        /*
-         * Un Cliente únicamente puede ver el historial
-         * de rentas asociado a su propio registro.
-         */
         if ($user->hasRole('Cliente')) {
+            $cliente = Cliente::where('correo', $user->email)->first();
 
-            $cliente = Cliente::where(
-                'correo',
-                $user->email
-            )->first();
-
-            /*
-             * Si el usuario no tiene un Cliente asociado,
-             * no debe recibir rentas de otras personas.
-             */
             if (!$cliente) {
                 return $query
                     ->whereRaw('1 = 0')
@@ -88,10 +63,7 @@ class RentaService
     }
 
     /**
-     * Obtiene una renta específica.
-     *
-     * Admin_General y Gestor_Rentas pueden ver cualquiera.
-     * Cliente solamente puede ver una renta propia.
+     * Obtiene una renta y comprueba si el usuario puede verla.
      */
     public function obtener($id): Renta
     {
@@ -113,9 +85,7 @@ class RentaService
     }
 
     /**
-     * Crea una renta.
-     *
-     * Solamente Admin_General y Gestor_Rentas.
+     * Crea una renta y marca el vehículo como Alquilado.
      */
     public function crear(array $datos): Renta
     {
@@ -126,13 +96,8 @@ class RentaService
 
         $this->validarDisponibilidad($vehiculo);
 
-        $inicio = Carbon::parse(
-            $datos['fecha_inicio']
-        );
-
-        $fin = Carbon::parse(
-            $datos['fecha_fin']
-        );
+        $inicio = Carbon::parse($datos['fecha_inicio']);
+        $fin = Carbon::parse($datos['fecha_fin']);
 
         $dias = $inicio->diffInDays($fin);
 
@@ -142,42 +107,37 @@ class RentaService
             );
         }
 
-        $datos['monto_total'] =
-            $dias * $datos['precio_diario'];
+        $datos['monto_total'] = $dias * $datos['precio_diario'];
 
-        return DB::transaction(
-            function () use ($datos, $vehiculo) {
+        return DB::transaction(function () use ($datos, $vehiculo) {
+            $renta = Renta::create($datos);
 
-                $renta = Renta::create($datos);
+            $estadoAlquilado = Estado::where(
+                'nombre',
+                'Alquilado'
+            )->first();
 
-                $estadoAlquilado = Estado::where(
-                    'nombre',
-                    'Alquilado'
-                )->first();
-
-                if (!$estadoAlquilado) {
-                    throw new RentaException(
-                        'No se encontró el estado Alquilado.'
-                    );
-                }
-
-                $vehiculo->update([
-                    'estado_id' => $estadoAlquilado->id,
-                ]);
-
-                return $renta->load([
-                    'cliente',
-                    'vehiculo',
-                    'accesorios',
-                ]);
+            if (!$estadoAlquilado) {
+                throw new RentaException(
+                    'No se encontró el estado Alquilado.'
+                );
             }
-        );
+
+            $vehiculo->update([
+                'estado_id' => $estadoAlquilado->id,
+            ]);
+
+            return $renta->load([
+                'cliente',
+                'vehiculo',
+                'accesorios',
+            ]);
+        });
     }
 
     /**
-     * Actualiza una renta.
-     *
-     * Solamente Admin_General y Gestor_Rentas.
+     * Actualiza una renta sin permitir cambiar su vehículo.
+     * Conserva el costo de los accesorios al recalcular el total.
      */
     public function actualizar($id, array $datos): Renta
     {
@@ -185,14 +145,21 @@ class RentaService
 
         $renta = $this->obtener($id);
 
+        if (
+            array_key_exists('vehiculo_id', $datos)
+            && (int) $datos['vehiculo_id'] !== (int) $renta->vehiculo_id
+        ) {
+            throw new RentaException(
+                'No se puede cambiar el vehículo de una renta existente.'
+            );
+        }
+
         $fechaInicio = Carbon::parse(
-            $datos['fecha_inicio']
-                ?? $renta->fecha_inicio
+            $datos['fecha_inicio'] ?? $renta->fecha_inicio
         );
 
         $fechaFin = Carbon::parse(
-            $datos['fecha_fin']
-                ?? $renta->fecha_fin
+            $datos['fecha_fin'] ?? $renta->fecha_fin
         );
 
         if ($fechaFin->lte($fechaInicio)) {
@@ -204,12 +171,13 @@ class RentaService
         $precio = $datos['precio_diario']
             ?? $renta->precio_diario;
 
-        $dias = $fechaInicio->diffInDays(
-            $fechaFin
-        );
+        $dias = $fechaInicio->diffInDays($fechaFin);
+
+        $totalAccesorios = (float) $renta->accesorios()
+            ->sum('accesorio_renta.subtotal');
 
         $datos['monto_total'] =
-            $dias * $precio;
+            ($dias * $precio) + $totalAccesorios;
 
         $renta->update($datos);
 
@@ -221,63 +189,77 @@ class RentaService
     }
 
     /**
-     * Elimina una renta.
-     *
-     * Solamente Admin_General y Gestor_Rentas.
+     * Elimina una renta. Si el vehículo estaba Alquilado,
+     * lo devuelve a Disponible dentro de la misma transacción.
      */
     public function eliminar($id): void
     {
         $this->verificarGestionRentas();
 
         $renta = $this->obtener($id);
+        $vehiculo = $renta->vehiculo;
 
-        $renta->delete();
-    }
-    /**
- * Finaliza una renta.
- *
- * Cambia el vehículo asociado nuevamente a Disponible.
- * Solamente Admin_General y Gestor_Rentas.
- */
-public function finalizar($id): Renta
-{
-    $this->verificarGestionRentas();
+        DB::transaction(function () use ($renta, $vehiculo) {
+            if ($vehiculo && $vehiculo->estado?->nombre === 'Alquilado') {
+                $estadoDisponible = Estado::where(
+                    'nombre',
+                    'Disponible'
+                )->first();
 
-    $renta = $this->obtener($id);
+                if (!$estadoDisponible) {
+                    throw new RentaException(
+                        'No se encontró el estado Disponible.'
+                    );
+                }
 
-    $estadoDisponible = Estado::where(
-        'nombre',
-        'Disponible'
-    )->first();
+                $vehiculo->update([
+                    'estado_id' => $estadoDisponible->id,
+                ]);
+            }
 
-    if (!$estadoDisponible) {
-        throw new RentaException(
-            'No se encontró el estado Disponible.'
-        );
+            $renta->delete();
+        });
     }
 
-    return DB::transaction(function () use (
-        $renta,
-        $estadoDisponible
-    ) {
+    /**
+     * Finaliza una renta y devuelve el vehículo a Disponible.
+     */
+    public function finalizar($id): Renta
+    {
+        $this->verificarGestionRentas();
 
-        $renta->vehiculo->update([
-            'estado_id' => $estadoDisponible->id,
-        ]);
+        $renta = $this->obtener($id);
 
-        return $renta->load([
-            'cliente',
-            'vehiculo',
-            'accesorios',
-        ]);
-    });
-}
+        $estadoDisponible = Estado::where(
+            'nombre',
+            'Disponible'
+        )->first();
+
+        if (!$estadoDisponible) {
+            throw new RentaException(
+                'No se encontró el estado Disponible.'
+            );
+        }
+
+        return DB::transaction(function () use (
+            $renta,
+            $estadoDisponible
+        ) {
+            $renta->vehiculo->update([
+                'estado_id' => $estadoDisponible->id,
+            ]);
+
+            return $renta->load([
+                'cliente',
+                'vehiculo',
+                'accesorios',
+            ]);
+        });
+    }
 
     /**
-     * Obtiene el usuario autenticado.
-     *
-     * También protege al Service cuando alguien intenta
-     * invocarlo directamente sin pasar por api.php.
+     * Obtiene el usuario autenticado, incluso cuando se llama
+     * al servicio directamente sin pasar por una ruta.
      */
     private function usuarioAutenticado(): User
     {
@@ -293,10 +275,7 @@ public function finalizar($id): Renta
     }
 
     /**
-     * Comprueba quién puede administrar Rentas.
-     *
-     * Esta es la segunda capa de seguridad:
-     * Admin_General y Gestor_Rentas tienen CRUD.
+     * Comprueba que el usuario puede gestionar rentas.
      */
     private function verificarGestionRentas(): void
     {
@@ -313,15 +292,11 @@ public function finalizar($id): Renta
     }
 
     /**
-     * Comprueba el acceso a una renta específica.
-     *
-     * Admin_General y Gestor_Rentas pueden ver cualquiera.
-     * Para Cliente se utiliza RentaPolicy para comprobar
-     * que la renta realmente le pertenezca.
+     * Admin_General y Gestor_Rentas pueden ver cualquier renta.
+     * Cliente solamente puede ver una renta propia.
      */
-    private function verificarAccesoRenta(
-        Renta $renta
-    ): void {
+    private function verificarAccesoRenta(Renta $renta): void
+    {
         $user = $this->usuarioAutenticado();
 
         if ($user->hasAnyRole([
@@ -344,12 +319,10 @@ public function finalizar($id): Renta
     }
 
     /**
-     * Regla de negocio:
-     * el vehículo debe estar Disponible.
+     * El vehículo debe tener asignado el estado Disponible.
      */
-    private function validarDisponibilidad(
-        Vehiculo $vehiculo
-    ): void {
+    private function validarDisponibilidad(Vehiculo $vehiculo): void
+    {
         if (!$vehiculo->estado) {
             throw new RentaException(
                 "El vehículo {$vehiculo->placa} no tiene estado asignado."
@@ -358,8 +331,8 @@ public function finalizar($id): Renta
 
         if ($vehiculo->estado->nombre !== 'Disponible') {
             throw new RentaException(
-                "El vehículo {$vehiculo->placa} no está disponible " .
-                "(Estado actual: {$vehiculo->estado->nombre})."
+                "El vehículo {$vehiculo->placa} no está disponible "
+                . "(Estado actual: {$vehiculo->estado->nombre})."
             );
         }
     }

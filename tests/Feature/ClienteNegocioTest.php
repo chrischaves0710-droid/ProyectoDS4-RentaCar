@@ -4,6 +4,28 @@ use App\Exceptions\ClienteException;
 use App\Models\Cliente;
 use App\Models\Renta;
 use App\Services\ClienteService;
+use App\Models\User;
+use Spatie\Permission\Models\Role;
+
+beforeEach(function () {
+    Role::firstOrCreate([
+        'name' => 'Admin_General',
+        'guard_name' => 'web',
+    ]);
+
+    $admin = User::factory()->create();
+
+    $admin->assignRole('Admin_General');
+
+    $this->actingAs($admin);
+});
+/*---------------------------------------------------------------*/
+//el beforeEach anterior es de Admin_General = tengo permiso de ejecutar el Service;
+
+//ahora sí compruebo la regla de negocio.
+/*---------------------------------------------------------------*/
+
+
 
 /* -------------------------------------------------------------------------- */
 /* REGLAS DE NEGOCIO                                                         */

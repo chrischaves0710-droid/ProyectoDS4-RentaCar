@@ -257,7 +257,7 @@ it('Mock 4: Verifica los permisos de lectura simulando un Gestor (Caso límite)'
     $mockUser = \Mockery::mock(User::class);
     
     $mockUser->shouldReceive('hasAnyRole')
-        ->with(['Admin_General', 'Admin_Inventarios', 'Gestor_Rentas'])
+        ->with(['Admin_General', 'Admin_Inventarios', 'Gestor_Rentas', 'Cliente'])
         ->once()
         ->andReturn(true);
 

@@ -38,7 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // acceso mixto, lectura para Gestor, CRUD completo para Inventarios y General
     Route::apiResource('vehiculos', VehiculoController::class)
         ->only(['index', 'show'])
-        ->middleware('role:Admin_General|Admin_Inventarios|Gestor_Rentas');
+        ->middleware('role:Admin_General|Admin_Inventarios|Gestor_Rentas|Cliente');
         
     Route::apiResource('vehiculos', VehiculoController::class)
         ->except(['index', 'show'])
@@ -46,7 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('accesorios', AccesorioController::class)
         ->only(['index', 'show'])
-        ->middleware('role:Admin_General|Admin_Inventarios|Gestor_Rentas');
+        ->middleware('role:Admin_General|Admin_Inventarios|Gestor_Rentas|Cliente');
         
     Route::apiResource('accesorios', AccesorioController::class)
         ->except(['index', 'show'])

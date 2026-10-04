@@ -19,7 +19,7 @@ class VehiculoService
     {
         $user = Auth::user();
         
-        if (!$user instanceof \App\Models\User || !$user->hasAnyRole(['Admin_General', 'Admin_Inventarios', 'Gestor_Rentas'])) {
+        if (!$user instanceof \App\Models\User || !$user->hasAnyRole(['Admin_General', 'Admin_Inventarios', 'Gestor_Rentas', 'Cliente'])) {
             throw new AuthorizationException('No autorizado: Se requieren privilegios para consultar vehículos.');
         }
     }

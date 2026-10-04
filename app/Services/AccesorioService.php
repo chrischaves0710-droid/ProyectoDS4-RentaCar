@@ -34,6 +34,7 @@ class AccesorioService
             'Admin_General',
             'Admin_Inventarios',
             'Gestor_Rentas',
+             'Cliente'
         ]);
 
         $q = $filters['q'] ?? null;
@@ -108,6 +109,7 @@ class AccesorioService
             'Admin_General',
             'Admin_Inventarios',
             'Gestor_Rentas',
+            'Cliente'
         ]);
 
         return $accesorio;

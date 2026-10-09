@@ -12,6 +12,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::view('/lab8/nueva-renta', 'lab8.nueva-renta')
+    ->name('lab8.nueva-renta');
+
+Route::view('/lab8/catalogo', 'lab8.catalogo')
+    ->name('lab8.catalogo');
+
+Route::view('/lab8/gestion-vehiculos', 'lab8.gestion-vehiculos')
+    ->name('lab8.gestion-vehiculos');
+
 // Documentación Swagger UI en el navegador
 Route::view('/docs', 'docs.index');
 

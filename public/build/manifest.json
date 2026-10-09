@@ -28,12 +28,21 @@
     "src": "_instrument-sans-600-normal-B9e8oLYv.woff"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DMbOdan3.css",
+    "file": "assets/app-wgLwsJI2.css",
     "name": "app",
     "names": [
       "app.css"
     ],
     "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/lab8.css": {
+    "file": "assets/lab8-BFgdEaIl.css",
+    "name": "lab8",
+    "names": [
+      "lab8.css"
+    ],
+    "src": "resources/css/lab8.css",
     "isEntry": true
   },
   "resources/js/app.js": {

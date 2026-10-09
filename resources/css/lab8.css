@@ -1,0 +1,1293 @@
+  /* VARIABLES DEL SISTEMA DE DISEÑO */
+
+:root {
+    --color-primario: #1D4ED8;
+    --color-primario-oscuro: #1E3A8A;
+    --color-secundario: #F59E0B;
+    --color-fondo: #F9FAFB;
+    --color-texto: #1F2937;
+    --color-error: #DC2626;
+
+    --color-blanco: #FFFFFF;
+    --color-borde: #6B7280;
+    --color-borde-suave: #E5E7EB;
+    --color-texto-secundario: #4B5563;
+    --color-deshabilitado: #9CA3AF;
+
+    --color-disponible-fondo: #DCFCE7;
+    --color-disponible-texto: #166534;
+    --color-alquilado-fondo: #FEF3C7;
+    --color-alquilado-texto: #92400E;
+
+    --espacio-xs: 0.25rem;
+    --espacio-sm: 0.5rem;
+    --espacio-md: 1rem;
+    --espacio-lg: 1.5rem;
+    --espacio-xl: 2rem;
+
+    --radio-borde: 0.5rem;
+}
+
+
+   /*CONFIGURACIÓN GENERAL*/
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+
+    font-size: 1rem;
+    line-height: 1.5;
+
+    color: var(--color-texto);
+    background-color: var(--color-fondo);
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+a {
+    color: var(--color-primario);
+}
+
+
+/*   ACCESIBILIDAD Y FOCO DE TECLADO
+*/
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 0.1875rem solid var(--color-primario);
+    outline-offset: 0.1875rem;
+}
+
+
+/*   ENCABEZADO PRINCIPAL Y BARRA DE NAVEGACIÓN
+*/
+.encabezado-principal {
+    background-color: var(--color-blanco);
+    border-bottom: 0.0625rem solid var(--color-borde-suave);
+}
+
+.barra-navegacion {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+
+    width: min(100% - 2rem, 75rem);
+    margin-inline: auto;
+    padding-block: var(--espacio-md);
+}
+
+.marca {
+    width: fit-content;
+
+    color: var(--color-primario);
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.menu-principal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.menu-principal a {
+    display: block;
+    padding: var(--espacio-sm);
+
+    color: var(--color-texto);
+    font-weight: 500;
+    text-decoration: none;
+
+    border-radius: var(--radio-borde);
+}
+
+.menu-principal a:hover,
+.menu-principal a[aria-current="page"] {
+    color: var(--color-primario);
+    background-color: #EFF6FF;
+}
+
+.sesion {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espacio-sm);
+
+    font-size: 0.875rem;
+}
+
+.sesion button {
+    padding: var(--espacio-sm) var(--espacio-md);
+
+    color: var(--color-texto);
+    background-color: var(--color-blanco);
+
+    border: 0.0625rem solid var(--color-borde);
+    border-radius: var(--radio-borde);
+
+    cursor: pointer;
+}
+
+.sesion button:hover {
+    background-color: var(--color-fondo);
+}
+
+
+/*   CONTENIDO PRINCIPAL 
+*/
+.contenido-principal {
+    width: min(100% - 2rem, 75rem);
+    margin-inline: auto;
+    padding-block: var(--espacio-lg) var(--espacio-xl);
+}
+
+.migas-pan {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-sm);
+
+    margin-bottom: var(--espacio-md);
+
+    font-size: 0.875rem;
+}
+
+.migas-pan a {
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.encabezado-pagina {
+    margin-bottom: var(--espacio-lg);
+}
+
+.encabezado-pagina h1 {
+    margin: 0 0 var(--espacio-sm);
+
+    font-size: 2rem;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.encabezado-pagina p {
+    margin: 0;
+    color: var(--color-texto-secundario);
+}
+
+
+/*   MAQUETACIÓN GENERAL DEL FORMULARIO
+*/
+.formulario-renta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espacio-lg);
+}
+
+.secciones-formulario {
+    display: grid;
+    gap: var(--espacio-lg);
+}
+
+
+/*   TARJETAS DEL FORMULARIO
+*/
+.tarjeta-formulario,
+.resumen-renta {
+    min-width: 0;
+    margin: 0;
+    padding: var(--espacio-md);
+
+    background-color: var(--color-blanco);
+
+    border: 0.0625rem solid var(--color-borde-suave);
+    border-radius: var(--radio-borde);
+}
+
+.tarjeta-formulario legend {
+    max-width: 100%;
+    padding-inline: var(--espacio-xs);
+
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.numero-paso {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2rem;
+    height: 2rem;
+    margin-right: var(--espacio-sm);
+
+    color: var(--color-blanco);
+    background-color: var(--color-primario);
+
+    font-size: 0.875rem;
+    font-weight: 700;
+
+    border-radius: 50%;
+}
+
+
+/*   CAMPOS
+*/
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-sm);
+}
+
+.campo label,
+.cantidad label,
+.etiqueta-grupo {
+    font-weight: 600;
+}
+
+.campo input,
+.cantidad input {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: var(--espacio-sm) var(--espacio-md);
+
+    color: var(--color-texto);
+    background-color: var(--color-blanco);
+
+ 
+    border: 0.125rem solid var(--color-borde);
+    border-radius: var(--radio-borde);
+}
+
+.campo input:hover,
+.cantidad input:hover {
+    border-color: var(--color-primario);
+}
+
+.campo small {
+    color: var(--color-texto-secundario);
+    font-size: 0.875rem;
+}
+
+.seleccion-actual {
+    margin-top: var(--espacio-md);
+    padding: var(--espacio-md);
+
+    background-color: #EFF6FF;
+
+    border-left: 0.25rem solid var(--color-primario);
+    border-radius: var(--radio-borde);
+}
+
+
+/* 
+   CHECKBOX Y RADIO
+ */
+
+.campo-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--espacio-sm);
+}
+
+.campo-checkbox input,
+.opcion-vehiculo > input {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 auto;
+
+    accent-color: var(--color-primario);
+}
+
+.etiqueta-grupo {
+    margin-block: var(--espacio-md) var(--espacio-sm);
+}
+
+.lista-opciones {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-sm);
+}
+
+
+
+
+.opcion-vehiculo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-sm);
+
+    padding: var(--espacio-md);
+
+    background-color: var(--color-blanco);
+
+    border: 0.125rem solid var(--color-borde);
+    border-radius: var(--radio-borde);
+
+    cursor: pointer;
+}
+
+.opcion-vehiculo:hover {
+    border-color: var(--color-primario);
+}
+
+.opcion-vehiculo:has(input:checked) {
+    border-color: var(--color-primario);
+    background-color: #EFF6FF;
+}
+
+.datos-vehiculo {
+    display: flex;
+    flex: 1 1 12rem;
+    flex-direction: column;
+}
+
+.datos-vehiculo > span {
+    color: var(--color-texto-secundario);
+    font-size: 0.875rem;
+}
+
+.estado {
+    display: inline-block;
+    padding: var(--espacio-xs) var(--espacio-sm);
+
+    font-size: 0.875rem;
+    font-weight: 600;
+
+    border-radius: 999rem;
+}
+
+.estado-disponible {
+    color: var(--color-disponible-texto);
+    background-color: var(--color-disponible-fondo);
+}
+
+.estado-alquilado {
+    color: var(--color-alquilado-texto);
+    background-color: var(--color-alquilado-fondo);
+}
+
+.opcion-deshabilitada {
+    color: var(--color-texto-secundario);
+    background-color: #F3F4F6;
+
+    cursor: not-allowed;
+}
+
+.texto-no-disponible {
+    width: 100%;
+
+    color: var(--color-error);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+
+/* 
+   ACCESORIOS
+ */
+
+.lista-accesorios {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+}
+
+.accesorio {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-md);
+
+    padding-bottom: var(--espacio-md);
+
+    border-bottom: 0.0625rem solid var(--color-borde-suave);
+}
+
+.accesorio:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.cantidad {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+}
+
+.cantidad input {
+    max-width: 7rem;
+}
+
+
+/* 
+   FECHAS
+   */
+
+.grupo-fechas {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espacio-md);
+}
+
+
+/* 
+   VALIDACIÓN Y MENSAJES DE ERROR
+ */
+
+.mensaje-error {
+    display: none;
+
+    color: var(--color-error);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.campo input:user-invalid {
+    border-color: var(--color-error);
+}
+
+.campo input:user-invalid + .mensaje-error {
+    display: block;
+}
+
+
+/* 
+   RESUMEN
+*/
+
+.resumen-renta {
+    align-self: start;
+}
+
+.resumen-renta h2 {
+    display: flex;
+    align-items: center;
+
+    margin: 0 0 var(--espacio-lg);
+
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.datos-resumen {
+    margin: 0;
+}
+
+.datos-resumen div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+
+    padding-block: var(--espacio-sm);
+
+    border-bottom: 0.0625rem solid var(--color-borde-suave);
+}
+
+.datos-resumen dt {
+    color: var(--color-texto-secundario);
+    font-size: 0.875rem;
+}
+
+.datos-resumen dd {
+    margin: 0;
+    font-weight: 600;
+}
+
+.total-renta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-md);
+
+    margin-top: var(--espacio-lg);
+    padding-block: var(--espacio-md);
+
+    font-size: 1.125rem;
+}
+
+.total-renta strong {
+    color: var(--color-primario);
+    font-size: 1.5rem;
+}
+
+.nota-resumen {
+    color: var(--color-texto-secundario);
+    font-size: 0.875rem;
+}
+
+
+/* 
+   BOTONES
+
+   Flexbox distribuye las acciones de forma adaptable.
+*/
+
+.acciones-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-sm);
+
+    margin-top: var(--espacio-lg);
+}
+
+.boton {
+    min-height: 2.75rem;
+    padding: var(--espacio-sm) var(--espacio-md);
+
+    font-weight: 600;
+
+    border: 0.125rem solid transparent;
+    border-radius: var(--radio-borde);
+
+    cursor: pointer;
+}
+
+.boton-primario {
+    color: var(--color-blanco);
+    background-color: var(--color-primario);
+}
+
+.boton-primario:hover {
+    background-color: var(--color-primario-oscuro);
+}
+
+.boton-secundario {
+    color: var(--color-texto);
+    background-color: var(--color-blanco);
+    border-color: var(--color-borde);
+}
+
+.boton-secundario:hover {
+    background-color: var(--color-fondo);
+}
+
+.boton:disabled {
+    color: rgba(31, 41, 55, 0.7);
+    background-color: var(--color-deshabilitado);
+
+    cursor: not-allowed;
+}
+
+
+/* 
+   BREAKPOINT 1 - 40rem / 640px
+ */
+
+@media (min-width: 40rem) {
+
+    .barra-navegacion {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .menu-principal {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .sesion {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .accesorio {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .grupo-fechas {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .acciones-formulario {
+        flex-direction: row;
+    }
+
+    .acciones-formulario .boton {
+        flex: 1;
+    }
+
+}
+
+
+/* 
+   BREAKPOINT 2 - 56.25rem / 900px
+ */
+
+@media (min-width: 56.25rem) {
+
+    .contenido-principal {
+        padding-block: var(--espacio-xl);
+    }
+
+    .formulario-renta {
+        grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+        align-items: start;
+    }
+
+    .resumen-renta {
+        position: sticky;
+        top: var(--espacio-md);
+    }
+
+    .grupo-fechas {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .datos-resumen div {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: var(--espacio-md);
+    }
+
+    .datos-resumen dd {
+        text-align: right;
+    }
+
+}
+
+
+/* 
+   BREAKPOINT 3 - 75rem / 1200px
+*/
+
+@media (min-width: 75rem) {
+
+    .barra-navegacion,
+    .contenido-principal {
+        width: min(100% - 4rem, 75rem);
+    }
+
+    .tarjeta-formulario,
+    .resumen-renta {
+        padding: var(--espacio-lg);
+    }
+
+    .formulario-renta {
+        gap: var(--espacio-xl);
+    }
+
+    .secciones-formulario {
+        gap: var(--espacio-xl);
+    }
+
+}
+
+/*   CATÁLOGO DE VEHÍCULOS
+*/
+
+/* Elementos visibles únicamente para lectores de pantalla */
+
+.visualmente-oculto {
+    position: absolute;
+
+    width: 0.0625rem;
+    height: 0.0625rem;
+    padding: 0;
+    margin: -0.0625rem;
+
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+
+    white-space: nowrap;
+
+    border: 0;
+}
+
+
+/*   PERFIL DEL USUARIO
+*/
+.perfil-usuario {
+    color: var(--color-texto);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.perfil-usuario:hover {
+    color: var(--color-primario);
+}
+
+
+/*   AVISO INFORMATIVO
+
+   Flexbox se utiliza porque el aviso contiene información
+   relacionada que debe acomodarse de forma lineal y poder
+   envolver el texto en pantallas pequeñas.
+*/
+.aviso-informativo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-xs);
+
+    margin-bottom: var(--espacio-lg);
+    padding: var(--espacio-md);
+
+    color: var(--color-primario-oscuro);
+    background-color: #EFF6FF;
+
+    border-left: 0.25rem solid var(--color-primario);
+    border-radius: var(--radio-borde);
+}
+
+
+/*   FILTROS
+*/
+
+.seccion-filtros {
+    margin-bottom: var(--espacio-xl);
+}
+
+.formulario-filtros {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espacio-md);
+
+    padding: var(--espacio-md);
+
+    background-color: var(--color-blanco);
+
+    border: 0.0625rem solid var(--color-borde-suave);
+    border-radius: var(--radio-borde);
+}
+
+.formulario-filtros select {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: var(--espacio-sm) var(--espacio-md);
+
+    color: var(--color-texto);
+    background-color: var(--color-blanco);
+
+    border: 0.125rem solid var(--color-borde);
+    border-radius: var(--radio-borde);
+}
+
+.formulario-filtros select:hover {
+    border-color: var(--color-primario);
+}
+
+.boton-filtrar {
+    width: 100%;
+}
+
+
+/*   CATÁLOGO
+
+   CSS Grid se utiliza para distribuir las tarjetas porque
+   permite cambiar de una a varias columnas sin utilizar
+   anchos fijos.
+*/
+.catalogo-vehiculos {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espacio-lg);
+}
+
+
+/*   TARJETAS DE VEHÍCULOS
+
+   Flexbox se utiliza dentro de cada tarjeta para distribuir
+   el contenido interno y permitir que los elementos se
+   acomoden sin desbordarse.
+*/
+.tarjeta-vehiculo {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    background-color: var(--color-blanco);
+
+    border: 0.0625rem solid var(--color-borde-suave);
+    border-radius: var(--radio-borde);
+}
+
+.imagen-vehiculo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 10rem;
+
+    background-color: #E5E7EB;
+
+    font-size: 4rem;
+}
+
+.contenido-tarjeta-vehiculo {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    padding: var(--espacio-md);
+}
+
+.encabezado-tarjeta-vehiculo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--espacio-sm);
+}
+
+.encabezado-tarjeta-vehiculo h3 {
+    margin: 0;
+
+    font-size: 1.125rem;
+    line-height: 1.3;
+}
+
+.datos-catalogo {
+    margin-block: var(--espacio-sm) var(--espacio-lg);
+
+    color: var(--color-texto-secundario);
+}
+
+.boton-detalle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    margin-top: auto;
+
+    text-decoration: none;
+}
+
+
+/*   ESTADO EN MANTENIMIENTO
+*/
+.estado-mantenimiento {
+    color: #991B1B;
+    background-color: #FEE2E2;
+}
+
+
+/*   PAGINACIÓN
+
+   Flexbox permite distribuir los controles de paginación
+   y envolverlos cuando no existe suficiente espacio.
+*/
+.paginacion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--espacio-md);
+
+    margin-top: var(--espacio-xl);
+}
+
+.paginacion > span {
+    font-weight: 600;
+}
+
+
+/*   CATÁLOGO - BREAKPOINT 1
+   40rem / 640px
+*/
+@media (min-width: 40rem) {
+
+    .aviso-informativo {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--espacio-sm);
+    }
+
+    .formulario-filtros {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .boton-filtrar {
+        align-self: end;
+    }
+
+    .catalogo-vehiculos {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+/*   CATÁLOGO - BREAKPOINT 2
+   56.25rem / 900px
+*/
+@media (min-width: 56.25rem) {
+
+    .formulario-filtros {
+        grid-template-columns:
+            minmax(14rem, 2fr)
+            minmax(10rem, 1fr)
+            minmax(10rem, 1fr)
+            auto;
+
+        align-items: end;
+    }
+
+    .boton-filtrar {
+        width: auto;
+        min-width: 9rem;
+    }
+
+    .catalogo-vehiculos {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+}
+
+
+   /*CATÁLOGO - BREAKPOINT 3
+   75rem / 1200px*/
+
+@media (min-width: 75rem) {
+
+    .catalogo-vehiculos {
+        gap: var(--espacio-xl);
+    }
+
+    .contenido-tarjeta-vehiculo {
+        padding: var(--espacio-lg);
+    }
+
+}
+
+/* GESTIÓN DE VEHÍCULOS
+La cabecera utiliza Flexbox para permitir que el título y la acción
+principal se apilen en móvil y se distribuyan horizontalmente en
+pantallas más amplias.
+*/
+
+.cabecera-gestion {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espacio-md);
+
+    margin-bottom: var(--espacio-lg);
+}
+
+.cabecera-gestion .encabezado-pagina {
+    margin-bottom: 0;
+}
+
+.boton-registrar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+
+    text-decoration: none;
+}
+
+
+/* FILTROS DE GESTIÓN
+Grid permite reorganizar los filtros desde una sola columna en móvil
+hasta varias columnas en pantallas de mayor tamaño.
+*/
+
+.formulario-filtros-gestion {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+
+/* LISTADO DE VEHÍCULOS */
+
+.seccion-tabla-vehiculos {
+    padding: var(--espacio-md);
+
+    background-color: var(--color-blanco);
+
+    border: 0.0625rem solid var(--color-borde-suave);
+    border-radius: var(--radio-borde);
+}
+
+.encabezado-listado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-sm);
+
+    margin-bottom: var(--espacio-md);
+}
+
+.encabezado-listado h2 {
+    margin: 0;
+
+    font-size: 1.25rem;
+}
+
+.encabezado-listado p {
+    margin: 0;
+
+    color: var(--color-texto-secundario);
+    font-size: 0.875rem;
+}
+
+
+/* TABLA RESPONSIVA
+La tabla conserva su estructura semántica. En pantallas pequeñas el
+contenedor permite desplazamiento horizontal en lugar de comprimir
+las columnas hasta volver ilegible el contenido.
+*/
+
+.contenedor-tabla {
+    width: 100%;
+
+    overflow-x: auto;
+
+    border: 0.0625rem solid var(--color-borde-suave);
+    border-radius: var(--radio-borde);
+}
+
+.contenedor-tabla:focus-visible {
+    outline: 0.1875rem solid var(--color-primario);
+    outline-offset: 0.1875rem;
+}
+
+.tabla-vehiculos {
+    width: 100%;
+    min-width: 58rem;
+
+    border-collapse: collapse;
+
+    background-color: var(--color-blanco);
+}
+
+.tabla-vehiculos th,
+.tabla-vehiculos td {
+    padding: var(--espacio-md);
+
+    text-align: left;
+    vertical-align: middle;
+
+    border-bottom: 0.0625rem solid var(--color-borde-suave);
+}
+
+.tabla-vehiculos th {
+    color: var(--color-texto);
+    background-color: #F3F4F6;
+
+    font-size: 0.875rem;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.tabla-vehiculos td {
+    font-size: 0.9375rem;
+}
+
+.tabla-vehiculos tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.tabla-vehiculos tbody tr:hover {
+    background-color: #F9FAFB;
+}
+
+
+/* ACCIONES DE LA TABLA
+Flexbox se utiliza porque las acciones pertenecen a una misma fila
+y deben mantener una distribución clara y flexible.
+*/
+
+.acciones-tabla {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-sm);
+}
+
+.accion-tabla {
+    margin: 0;
+    padding: 0;
+
+    color: var(--color-primario);
+    background: transparent;
+
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+
+    border: 0;
+    border-bottom: 0.125rem solid transparent;
+
+    cursor: pointer;
+}
+
+.accion-tabla:hover {
+    border-bottom-color: currentColor;
+}
+
+.accion-eliminar {
+    color: var(--color-error);
+}
+
+.accion-tabla:disabled {
+    color: var(--color-deshabilitado);
+
+    text-decoration: none;
+
+    cursor: not-allowed;
+}
+
+
+/* ESTADOS ADICIONALES */
+
+.estado-venta {
+    color: #854D0E;
+    background-color: #FEF9C3;
+}
+
+.estado-inactivo {
+    color: #374151;
+    background-color: #E5E7EB;
+}
+
+
+/* MENSAJE DE ADVERTENCIA */
+
+.mensaje-advertencia {
+    margin: var(--espacio-md) 0 0;
+    padding: var(--espacio-md);
+
+    color: #92400E;
+    background-color: #FEF3C7;
+
+    font-size: 0.875rem;
+
+    border-left: 0.25rem solid var(--color-secundario);
+    border-radius: var(--radio-borde);
+}
+
+
+/* PAGINACIÓN NUMÉRICA */
+
+.paginacion-numerica {
+    margin-top: var(--espacio-lg);
+}
+
+.pagina-actual,
+.pagina-enlace {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: var(--espacio-sm);
+
+    font-weight: 600;
+    text-decoration: none;
+
+    border-radius: var(--radio-borde);
+}
+
+.pagina-actual {
+    color: var(--color-blanco);
+    background-color: var(--color-primario);
+}
+
+.pagina-enlace {
+    color: var(--color-texto);
+    background-color: var(--color-blanco);
+
+    border: 0.125rem solid var(--color-borde);
+}
+
+.pagina-enlace:hover {
+    color: var(--color-primario);
+    border-color: var(--color-primario);
+}
+
+
+/* BREAKPOINT 1: 40rem / 640px */
+
+@media (min-width: 40rem) {
+
+    .cabecera-gestion {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .boton-registrar {
+        width: auto;
+    }
+
+    .formulario-filtros-gestion {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+/* BREAKPOINT 2: 56.25rem / 900px */
+
+@media (min-width: 56.25rem) {
+
+    .formulario-filtros-gestion {
+        grid-template-columns:
+            minmax(14rem, 2fr)
+            minmax(10rem, 1fr)
+            minmax(10rem, 1fr)
+            auto;
+
+        align-items: end;
+    }
+
+    .seccion-tabla-vehiculos {
+        padding: var(--espacio-lg);
+    }
+
+}
+
+
+/* BREAKPOINT 3: 75rem / 1200px */
+
+@media (min-width: 75rem) {
+
+    .tabla-vehiculos th,
+    .tabla-vehiculos td {
+        padding-inline: var(--espacio-lg);
+    }
+
+}

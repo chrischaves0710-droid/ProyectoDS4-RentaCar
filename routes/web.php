@@ -12,14 +12,35 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::view('/lab8/nueva-renta', 'lab8.nueva-renta')
-    ->name('lab8.nueva-renta');
+// ==========================================
+// Vistas del Gerente General
+// ==========================================
+Route::view('/lab8/gestion-clientes', 'lab8.Vistas_Gerente_General.gestion-clientes')
+    ->name('lab8.gestion-clientes');
 
-Route::view('/lab8/catalogo', 'lab8.catalogo')
+Route::view('/lab8/registrar-cliente', 'lab8.Vistas_Gerente_General.registrar-cliente')
+    ->name('lab8.registrar-cliente');
+
+Route::view('/lab8/editar-cliente', 'lab8.Vistas_Gerente_General.editar-cliente')
+    ->name('lab8.editar-cliente');
+
+// ==========================================
+// Vistas del Admin de Inventario
+// ==========================================
+Route::view('/lab8/gestion-vehiculos', 'lab8.Vistas_Admin_Inventario.gestion-vehiculos')
+    ->name('lab8.gestion-vehiculos');
+
+// ==========================================
+// Vistas del Cliente
+// ==========================================
+Route::view('/lab8/catalogo', 'lab8.Vistas_Cliente.catalogo')
     ->name('lab8.catalogo');
 
-Route::view('/lab8/gestion-vehiculos', 'lab8.gestion-vehiculos')
-    ->name('lab8.gestion-vehiculos');
+// ==========================================
+// Vistas del Gestor de Rentas
+// ==========================================
+Route::view('/lab8/nueva-renta', 'lab8.Vistas_Gestor_Rentas.nueva-renta')
+    ->name('lab8.nueva-renta');
 
 // Documentación Swagger UI en el navegador
 Route::view('/docs', 'docs.index');

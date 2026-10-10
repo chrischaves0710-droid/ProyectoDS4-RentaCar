@@ -1,4 +1,5 @@
-  /* VARIABLES DEL SISTEMA DE DISEÑO */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
     --color-primario: #1D4ED8;
@@ -13,11 +14,28 @@
     --color-borde-suave: #E5E7EB;
     --color-texto-secundario: #4B5563;
     --color-deshabilitado: #9CA3AF;
+    --color-azul-suave: #EFF6FF;
+    --color-gris-suave: #F3F4F6;
+    --color-mantenimiento-fondo: #FEE2E2;
+    --color-mantenimiento-texto: #991B1B;
+    --color-venta-fondo: #FEF9C3;
+    --color-venta-texto: #854D0E;
+    --color-inactivo-texto: #374151;
 
     --color-disponible-fondo: #DCFCE7;
     --color-disponible-texto: #166534;
     --color-alquilado-fondo: #FEF3C7;
     --color-alquilado-texto: #92400E;
+
+    /* Escala oficial: H1=32, H2=24, H3=20, cuerpo=16, pequeno=14 px
+       con una fuente raiz de 16 px; no se bloquea el zoom del usuario. */
+    --fuente-principal: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    --texto-h1: 2rem;
+    --texto-h2: 1.5rem;
+    --texto-h3: 1.25rem;
+    --texto-cuerpo: 1rem;
+    --texto-pequeno: 0.875rem;
 
     --espacio-xs: 0.25rem;
     --espacio-sm: 0.5rem;
@@ -38,6 +56,7 @@
 }
 
 html {
+    /* Respetar el tamano de letra elegido por la persona en el navegador. */
     font-size: 100%;
 }
 
@@ -45,14 +64,15 @@ body {
     margin: 0;
     min-height: 100vh;
 
-    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
-        "Segoe UI", sans-serif;
+    font-family: var(--fuente-principal);
 
-    font-size: 1rem;
+    font-size: var(--texto-cuerpo);
     line-height: 1.5;
 
     color: var(--color-texto);
     background-color: var(--color-fondo);
+    /* Permite partir correos y otros datos largos en tarjetas estrechas. */
+    overflow-wrap: anywhere;
 }
 
 button,
@@ -60,11 +80,27 @@ input,
 select,
 textarea {
     font: inherit;
+    /* Evita desbordamientos por anchos minimos nativos de formularios. */
+    min-width: 0;
+    max-width: 100%;
 }
 
 a {
     color: var(--color-primario);
 }
+
+/* Las cadenas largas, rutas, montos y etiquetas pueden partirse al 200 %. */
+p, h1, h2, h3, dt, dd, label, a, button, legend, span {
+    overflow-wrap: anywhere;
+}
+
+/* Impide que elementos internos determinen un ancho mayor que el viewport. */
+main, section, article, aside, nav, form, fieldset, .campo,
+.secciones-formulario, .formulario-filtros > *, .cabecera-gestion > * {
+    min-width: 0;
+}
+
+/* Focus robusto en cualquier control de formulario. */
 
 
 /*   ACCESIBILIDAD Y FOCO DE TECLADO
@@ -73,7 +109,8 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+[tabindex]:focus-visible {
     outline: 0.1875rem solid var(--color-primario);
     outline-offset: 0.1875rem;
 }
@@ -100,7 +137,7 @@ textarea:focus-visible {
     width: fit-content;
 
     color: var(--color-primario);
-    font-size: 1.5rem;
+    font-size: var(--texto-h2);
     font-weight: 700;
     text-decoration: none;
 }
@@ -130,7 +167,7 @@ textarea:focus-visible {
 .menu-principal a:hover,
 .menu-principal a[aria-current="page"] {
     color: var(--color-primario);
-    background-color: #EFF6FF;
+    background-color: var(--color-azul-suave);
 }
 
 .sesion {
@@ -139,7 +176,7 @@ textarea:focus-visible {
     align-items: flex-start;
     gap: var(--espacio-sm);
 
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
 }
 
 .sesion button {
@@ -161,10 +198,17 @@ textarea:focus-visible {
 
 /*   CONTENIDO PRINCIPAL 
 */
+/* Grid exterior: ordena encabezados, filtros, contenido y paginacion de
+   las tres pantallas en una columna en movil, sin alturas predeterminadas. */
 .contenido-principal {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     width: min(100% - 2rem, 75rem);
     margin-inline: auto;
     padding-block: var(--espacio-lg) var(--espacio-xl);
+    /* Permite adaptar las columnas segun el espacio realmente disponible,
+       incluso con la tipografia ampliada al 200 %. */
+    container-type: inline-size;
 }
 
 .migas-pan {
@@ -174,7 +218,7 @@ textarea:focus-visible {
 
     margin-bottom: var(--espacio-md);
 
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
 }
 
 .migas-pan a {
@@ -189,7 +233,7 @@ textarea:focus-visible {
 .encabezado-pagina h1 {
     margin: 0 0 var(--espacio-sm);
 
-    font-size: 2rem;
+    font-size: var(--texto-h1);
     line-height: 1.2;
     font-weight: 700;
 }
@@ -200,14 +244,17 @@ textarea:focus-visible {
 }
 
 
-/*   MAQUETACIÓN GENERAL DEL FORMULARIO
-*/
+/* MAQUETACION PRINCIPAL - GRID
+   Grid organiza las grandes areas de Nueva renta (secciones y resumen).
+   Base movil: una unica columna. La segunda columna solo se activa
+   cuando el contenedor tiene espacio real suficiente. */
 .formulario-renta {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--espacio-lg);
 }
 
+/* Grid alinea las secciones verticalmente sin anchuras rigidas. */
 .secciones-formulario {
     display: grid;
     gap: var(--espacio-lg);
@@ -232,7 +279,7 @@ textarea:focus-visible {
     max-width: 100%;
     padding-inline: var(--espacio-xs);
 
-    font-size: 1.25rem;
+    font-size: var(--texto-h3);
     font-weight: 500;
 }
 
@@ -248,15 +295,16 @@ textarea:focus-visible {
     color: var(--color-blanco);
     background-color: var(--color-primario);
 
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
     font-weight: 700;
 
     border-radius: 50%;
 }
 
 
-/*   CAMPOS
-*/
+/* FLEXBOX INTERNO
+   Flexbox distribuye etiqueta, control y ayuda dentro de cada campo;
+   se apilan para mantener la lectura natural en movil. */
 .campo {
     display: flex;
     flex-direction: column;
@@ -290,23 +338,23 @@ textarea:focus-visible {
 
 .campo small {
     color: var(--color-texto-secundario);
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
 }
 
 .seleccion-actual {
+    overflow-wrap: anywhere;
     margin-top: var(--espacio-md);
     padding: var(--espacio-md);
 
-    background-color: #EFF6FF;
+    background-color: var(--color-azul-suave);
 
     border-left: 0.25rem solid var(--color-primario);
     border-radius: var(--radio-borde);
 }
 
 
-/* 
-   CHECKBOX Y RADIO
- */
+/* Flexbox alinea controles de seleccion con su texto sin anchos fijos.
+   flex-wrap permite que sus detalles salten de linea al ampliar texto. */
 
 .campo-checkbox {
     display: flex;
@@ -358,7 +406,7 @@ textarea:focus-visible {
 
 .opcion-vehiculo:has(input:checked) {
     border-color: var(--color-primario);
-    background-color: #EFF6FF;
+    background-color: var(--color-azul-suave);
 }
 
 .datos-vehiculo {
@@ -369,14 +417,14 @@ textarea:focus-visible {
 
 .datos-vehiculo > span {
     color: var(--color-texto-secundario);
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
 }
 
 .estado {
     display: inline-block;
     padding: var(--espacio-xs) var(--espacio-sm);
 
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
     font-weight: 600;
 
     border-radius: 999rem;
@@ -394,7 +442,7 @@ textarea:focus-visible {
 
 .opcion-deshabilitada {
     color: var(--color-texto-secundario);
-    background-color: #F3F4F6;
+    background-color: var(--color-gris-suave);
 
     cursor: not-allowed;
 }
@@ -403,14 +451,14 @@ textarea:focus-visible {
     width: 100%;
 
     color: var(--color-error);
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
     font-weight: 600;
 }
 
 
-/* 
-   ACCESORIOS
- */
+/* ACCESORIOS - FLEXBOX
+   Una columna en movil; se reorganiza en filas cuando cabe.
+   Los elementos pueden volver a apilarse si la letra es grande. */
 
 .lista-accesorios {
     display: flex;
@@ -444,9 +492,9 @@ textarea:focus-visible {
 }
 
 
-/* 
-   FECHAS
-   */
+/* FECHAS - GRID
+   auto-fit evita columnas demasiado estrechas al 200 %:
+   si no caben dos campos de al menos 14rem, vuelve a una columna. */
 
 .grupo-fechas {
     display: grid;
@@ -463,7 +511,7 @@ textarea:focus-visible {
     display: none;
 
     color: var(--color-error);
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
     font-weight: 500;
 }
 
@@ -490,7 +538,7 @@ textarea:focus-visible {
 
     margin: 0 0 var(--espacio-lg);
 
-    font-size: 1.5rem;
+    font-size: var(--texto-h2);
     font-weight: 600;
 }
 
@@ -510,7 +558,7 @@ textarea:focus-visible {
 
 .datos-resumen dt {
     color: var(--color-texto-secundario);
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
 }
 
 .datos-resumen dd {
@@ -533,12 +581,12 @@ textarea:focus-visible {
 
 .total-renta strong {
     color: var(--color-primario);
-    font-size: 1.5rem;
+    font-size: var(--texto-h2);
 }
 
 .nota-resumen {
     color: var(--color-texto-secundario);
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
 }
 
 
@@ -620,12 +668,13 @@ textarea:focus-visible {
 
     .accesorio {
         flex-direction: row;
+        flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
     }
 
     .grupo-fechas {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
     }
 
     .acciones-formulario {
@@ -649,19 +698,9 @@ textarea:focus-visible {
         padding-block: var(--espacio-xl);
     }
 
-    .formulario-renta {
-        grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
-        align-items: start;
-    }
-
-    .resumen-renta {
-        position: sticky;
-        top: var(--espacio-md);
-    }
-
-    .grupo-fechas {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+    /* La distribucion de formulario/aside depende del contenedor:
+       ver @container mas abajo. No forzar 2 columnas aqui: al 200 %
+       se perderia legibilidad. */
 
     .datos-resumen div {
         flex-direction: row;
@@ -752,7 +791,7 @@ textarea:focus-visible {
     padding: var(--espacio-md);
 
     color: var(--color-primario-oscuro);
-    background-color: #EFF6FF;
+    background-color: var(--color-azul-suave);
 
     border-left: 0.25rem solid var(--color-primario);
     border-radius: var(--radio-borde);
@@ -864,7 +903,7 @@ textarea:focus-visible {
 .encabezado-tarjeta-vehiculo h3 {
     margin: 0;
 
-    font-size: 1.125rem;
+    font-size: var(--texto-h3);
     line-height: 1.3;
 }
 
@@ -889,8 +928,8 @@ textarea:focus-visible {
 /*   ESTADO EN MANTENIMIENTO
 */
 .estado-mantenimiento {
-    color: #991B1B;
-    background-color: #FEE2E2;
+    color: var(--color-mantenimiento-texto);
+    background-color: var(--color-mantenimiento-fondo);
 }
 
 
@@ -927,7 +966,7 @@ textarea:focus-visible {
 
     .formulario-filtros {
         grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+            repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
     }
 
     .boton-filtrar {
@@ -936,7 +975,7 @@ textarea:focus-visible {
 
     .catalogo-vehiculos {
         grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+            repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
     }
 
 }
@@ -948,23 +987,20 @@ textarea:focus-visible {
 @media (min-width: 56.25rem) {
 
     .formulario-filtros {
+        /* Columnas autoajustables: no impone minimos que rompan la pagina. */
         grid-template-columns:
-            minmax(14rem, 2fr)
-            minmax(10rem, 1fr)
-            minmax(10rem, 1fr)
-            auto;
-
+            repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
         align-items: end;
     }
 
     .boton-filtrar {
-        width: auto;
-        min-width: 9rem;
+        width: 100%;
+        min-width: 0;
     }
 
     .catalogo-vehiculos {
         grid-template-columns:
-            repeat(3, minmax(0, 1fr));
+            repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
     }
 
 }
@@ -1049,14 +1085,14 @@ hasta varias columnas en pantallas de mayor tamaño.
 .encabezado-listado h2 {
     margin: 0;
 
-    font-size: 1.25rem;
+    font-size: var(--texto-h2);
 }
 
 .encabezado-listado p {
     margin: 0;
 
     color: var(--color-texto-secundario);
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
 }
 
 
@@ -1101,16 +1137,19 @@ las columnas hasta volver ilegible el contenido.
 
 .tabla-vehiculos th {
     color: var(--color-texto);
-    background-color: #F3F4F6;
+    background-color: var(--color-gris-suave);
 
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
     font-weight: 700;
 
     white-space: nowrap;
 }
 
 .tabla-vehiculos td {
-    font-size: 0.9375rem;
+    font-size: var(--texto-cuerpo);
+    /* No dividir placas, anios ni modelos al 200 %: desplazar
+       horizontalmente la tabla dentro de su contenedor. */
+    white-space: nowrap;
 }
 
 .tabla-vehiculos tbody tr:last-child td {
@@ -1142,7 +1181,7 @@ y deben mantener una distribución clara y flexible.
     background: transparent;
 
     font: inherit;
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
     font-weight: 600;
     text-decoration: none;
 
@@ -1172,12 +1211,12 @@ y deben mantener una distribución clara y flexible.
 /* ESTADOS ADICIONALES */
 
 .estado-venta {
-    color: #854D0E;
-    background-color: #FEF9C3;
+    color: var(--color-venta-texto);
+    background-color: var(--color-venta-fondo);
 }
 
 .estado-inactivo {
-    color: #374151;
+    color: var(--color-inactivo-texto);
     background-color: #E5E7EB;
 }
 
@@ -1191,7 +1230,7 @@ y deben mantener una distribución clara y flexible.
     color: #92400E;
     background-color: #FEF3C7;
 
-    font-size: 0.875rem;
+    font-size: var(--texto-pequeno);
 
     border-left: 0.25rem solid var(--color-secundario);
     border-radius: var(--radio-borde);
@@ -1254,7 +1293,7 @@ y deben mantener una distribución clara y flexible.
 
     .formulario-filtros-gestion {
         grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+            repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
     }
 
 }
@@ -1265,12 +1304,9 @@ y deben mantener una distribución clara y flexible.
 @media (min-width: 56.25rem) {
 
     .formulario-filtros-gestion {
+        /* Reaprovecha el grid auto-fit: evita desbordamiento con 200 %. */
         grid-template-columns:
-            minmax(14rem, 2fr)
-            minmax(10rem, 1fr)
-            minmax(10rem, 1fr)
-            auto;
-
+            repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
         align-items: end;
     }
 
@@ -1291,3 +1327,39 @@ y deben mantener una distribución clara y flexible.
     }
 
 }
+
+/* =============================================================
+   CONTENIDO ADAPTABLE A TEXTO AMPLIADO (hasta 200 % y mas)
+   Esta consulta de CONTENEDOR no reemplaza los 3 breakpoints:
+   se aplica cuando el main tiene espacio para dos columnas
+   de al menos 24rem cada una; con fuente al 200 % vuelve a una.
+   ============================================================= */
+@container (min-width: 48rem) {
+    .formulario-renta {
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .resumen-renta {
+        position: sticky;
+        top: var(--espacio-md);
+    }
+}
+
+/* No ocultar contenido ni recortar los textos o controles a gran escala. */
+.tarjeta-formulario, .resumen-renta, .seccion-tabla-vehiculos,
+.contenido-tarjeta-vehiculo, .accesorio, .lista-opciones,
+.opcion-vehiculo, .contenedor-tabla, .formulario-filtros {
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* El scroll horizontal es intencional SOLO para la tabla de inventario. */
+.contenedor-tabla { overflow-x: auto; }
+
+/* Breakpoints de ventana (mobile first):
+   40rem   = 640px  : tablet pequena / menu flexible y 2+ columnas si caben.
+   56.25rem= 900px  : escritorio intermedio, filtros fluidos y espacio extra.
+   75rem   = 1200px : escritorio ancho, mayores margenes y separaciones.
+   NO modificar html font-size a pixeles: debe respetarse zoom 200 %.
+*/

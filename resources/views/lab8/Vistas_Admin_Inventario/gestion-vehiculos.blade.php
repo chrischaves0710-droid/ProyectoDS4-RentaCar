@@ -14,13 +14,13 @@
     <header class="encabezado-principal">
         <div class="barra-navegacion">
 
-            <a href="#" class="marca">RentaCar</a>
+            <a href="{{ url('/') }}" class="marca">RentaCar</a>
 
             <nav aria-label="Navegación principal">
                 <ul class="menu-principal">
                     <li><a href="#">Inicio</a></li>
                     <li>
-                        <a href="#" aria-current="page">Vehículos</a>
+                        <a href="{{ route('lab8.gestion-vehiculos') }}" aria-current="page">Vehículos</a>
                     </li>
                     <li><a href="#">Categorías</a></li>
                     <li><a href="#">Estados</a></li>
@@ -76,7 +76,7 @@
 
             <form
                 class="formulario-filtros formulario-filtros-gestion"
-                action="#"
+                action="{{ route('lab8.gestion-vehiculos') }}"
                 method="get"
             >
 
@@ -205,17 +205,18 @@
 
                             <td>
                                 <div class="acciones-tabla">
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Consultar Toyota Corolla, placa BCD-123">
                                         Consultar
                                     </a>
 
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Editar Toyota Corolla, placa BCD-123">
                                         Editar
                                     </a>
 
                                     <button
                                         type="button"
                                         class="accion-tabla accion-eliminar"
+                                        aria-label="Eliminar Toyota Corolla, placa BCD-123"
                                     >
                                         Eliminar
                                     </button>
@@ -240,17 +241,18 @@
 
                             <td>
                                 <div class="acciones-tabla">
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Consultar Hyundai Tucson, placa EFG-456">
                                         Consultar
                                     </a>
 
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Editar Hyundai Tucson, placa EFG-456">
                                         Editar
                                     </a>
 
                                     <button
                                         type="button"
                                         class="accion-tabla accion-eliminar"
+                                        aria-label="Eliminar Hyundai Tucson, placa EFG-456"
                                     >
                                         Eliminar
                                     </button>
@@ -275,17 +277,18 @@
 
                             <td>
                                 <div class="acciones-tabla">
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Consultar Suzuki Swift, placa HIJ-789">
                                         Consultar
                                     </a>
 
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Editar Suzuki Swift, placa HIJ-789">
                                         Editar
                                     </a>
 
                                     <button
                                         type="button"
                                         class="accion-tabla accion-eliminar"
+                                        aria-label="Eliminar Suzuki Swift, placa HIJ-789"
                                         disabled
                                         aria-describedby="mensaje-eliminacion"
                                     >
@@ -312,17 +315,18 @@
 
                             <td>
                                 <div class="acciones-tabla">
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Consultar Kia Niro, placa KLM-321">
                                         Consultar
                                     </a>
 
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Editar Kia Niro, placa KLM-321">
                                         Editar
                                     </a>
 
                                     <button
                                         type="button"
                                         class="accion-tabla accion-eliminar"
+                                        aria-label="Eliminar Kia Niro, placa KLM-321"
                                     >
                                         Eliminar
                                     </button>
@@ -347,17 +351,18 @@
 
                             <td>
                                 <div class="acciones-tabla">
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Consultar Nissan Versa, placa NOP-654">
                                         Consultar
                                     </a>
 
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Editar Nissan Versa, placa NOP-654">
                                         Editar
                                     </a>
 
                                     <button
                                         type="button"
                                         class="accion-tabla accion-eliminar"
+                                        aria-label="Eliminar Nissan Versa, placa NOP-654"
                                     >
                                         Eliminar
                                     </button>
@@ -382,17 +387,18 @@
 
                             <td>
                                 <div class="acciones-tabla">
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Consultar Ford Ranger, placa QRS-987">
                                         Consultar
                                     </a>
 
-                                    <a href="#" class="accion-tabla">
+                                    <a href="#" class="accion-tabla" aria-label="Editar Ford Ranger, placa QRS-987">
                                         Editar
                                     </a>
 
                                     <button
                                         type="button"
                                         class="accion-tabla accion-eliminar"
+                                        aria-label="Eliminar Ford Ranger, placa QRS-987"
                                     >
                                         Eliminar
                                     </button>
@@ -430,13 +436,12 @@
                 Anterior
             </button>
 
-            <a
-                href="#"
+            <span
                 class="pagina-actual"
                 aria-current="page"
             >
                 1
-            </a>
+            </span>
 
             <a href="#" class="pagina-enlace">2</a>
             <a href="#" class="pagina-enlace">3</a>

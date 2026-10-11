@@ -14,12 +14,12 @@
     <header class="encabezado-principal">
         <div class="barra-navegacion">
 
-            <a href="#" class="marca">RentaCar</a>
+            <a href="{{ url('/') }}" class="marca">RentaCar</a>
 
             <nav aria-label="Navegación principal">
                 <ul class="menu-principal">
                     <li>
-                        <a href="#" aria-current="page">Catálogo</a>
+                        <a href="{{ route('lab8.catalogo') }}" aria-current="page">Catálogo</a>
                     </li>
 
                     <li>
@@ -78,7 +78,7 @@
                 Filtros del catálogo
             </h2>
 
-            <form class="formulario-filtros" action="#" method="get">
+            <form class="formulario-filtros" action="{{ route('lab8.catalogo') }}" method="get">
 
                 <div class="campo">
                     <label for="buscar-vehiculo">
@@ -176,6 +176,7 @@
 
                     <a
                         href="#"
+                        aria-label="Ver detalles de Toyota Corolla"
                         class="boton boton-secundario boton-detalle"
                     >
                         Ver detalles
@@ -211,6 +212,7 @@
 
                     <a
                         href="#"
+                        aria-label="Ver detalles de Hyundai Tucson"
                         class="boton boton-secundario boton-detalle"
                     >
                         Ver detalles
@@ -246,6 +248,7 @@
 
                     <a
                         href="#"
+                        aria-label="Ver detalles de Suzuki Swift"
                         class="boton boton-secundario boton-detalle"
                     >
                         Ver detalles
@@ -281,6 +284,7 @@
 
                     <a
                         href="#"
+                        aria-label="Ver detalles de Toyota Hilux"
                         class="boton boton-secundario boton-detalle"
                     >
                         Ver detalles
@@ -316,6 +320,7 @@
 
                     <a
                         href="#"
+                        aria-label="Ver detalles de Kia Niro"
                         class="boton boton-secundario boton-detalle"
                     >
                         Ver detalles
@@ -351,6 +356,7 @@
 
                     <a
                         href="#"
+                        aria-label="Ver detalles de Nissan Versa"
                         class="boton boton-secundario boton-detalle"
                     >
                         Ver detalles

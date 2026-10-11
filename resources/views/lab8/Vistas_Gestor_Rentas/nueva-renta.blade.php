@@ -14,7 +14,7 @@
     <header class="encabezado-principal">
         <div class="barra-navegacion">
 
-            <a href="#" class="marca">RentaCar</a>
+            <a href="{{ url('/') }}" class="marca">RentaCar</a>
 
             <nav aria-label="Navegación principal">
                 <ul class="menu-principal">
@@ -22,7 +22,7 @@
                     <li><a href="#">Clientes</a></li>
                     <li><a href="#">Vehículos</a></li>
                     <li><a href="#">Accesorios</a></li>
-                    <li><a href="#" aria-current="page">Rentas</a></li>
+                    <li><a href="{{ route('lab8.nueva-renta') }}" aria-current="page">Rentas</a></li>
                 </ul>
             </nav>
 
@@ -39,7 +39,7 @@
         <nav class="migas-pan" aria-label="Migas de pan">
             <a href="#">Rentas</a>
             <span aria-hidden="true">/</span>
-            <span>Nueva renta</span>
+            <span aria-current="page">Nueva renta</span>
         </nav>
 
         <header class="encabezado-pagina">
@@ -49,7 +49,7 @@
             </p>
         </header>
 
-        <form class="formulario-renta" action="#" method="post">
+        <form class="formulario-renta" action="{{ route('lab8.nueva-renta') }}" method="get">
 
             <div class="secciones-formulario">
 
@@ -68,8 +68,16 @@
                             name="buscar_cliente"
                             placeholder="Ej: Rojas"
                             required
-                            aria-describedby="ayuda-cliente"
+                            aria-describedby="ayuda-cliente error-buscar-cliente"
                         >
+
+                        <span
+                            id="error-buscar-cliente"
+                            class="mensaje-error"
+                            aria-live="polite"
+                        >
+                            Ingrese un cliente antes de continuar.
+                        </span>
 
                         <small id="ayuda-cliente">
                             Ingrese el nombre o identificación del cliente.
@@ -205,6 +213,7 @@
                                     id="cantidad-gps"
                                     name="cantidad_gps"
                                     min="1"
+                                    step="1"
                                     value="1"
                                 >
                             </div>
@@ -233,6 +242,7 @@
                                     id="cantidad-silla"
                                     name="cantidad_silla"
                                     min="1"
+                                    step="1"
                                     value="1"
                                 >
                             </div>
@@ -263,6 +273,7 @@
                                     id="cantidad-portabicicletas"
                                     name="cantidad_portabicicletas"
                                     min="1"
+                                    step="1"
                                     value="1"
                                 >
                             </div>
@@ -290,9 +301,14 @@
                                 id="fecha-inicio"
                                 name="fecha_inicio"
                                 required
+                                aria-describedby="error-fecha-inicio"
                             >
 
-                            <span class="mensaje-error" aria-live="polite">
+                            <span
+                                id="error-fecha-inicio"
+                                class="mensaje-error"
+                                aria-live="polite"
+                            >
                                 Seleccione una fecha de inicio válida.
                             </span>
                         </div>
@@ -308,9 +324,14 @@
                                 id="fecha-final"
                                 name="fecha_final"
                                 required
+                                aria-describedby="error-fecha-final"
                             >
 
-                            <span class="mensaje-error" aria-live="polite">
+                            <span
+                                id="error-fecha-final"
+                                class="mensaje-error"
+                                aria-live="polite"
+                            >
                                 Seleccione una fecha de finalización válida.
                             </span>
                         </div>
@@ -329,7 +350,16 @@
                                 min="0"
                                 step="0.01"
                                 required
+                                aria-describedby="error-precio-diario"
                             >
+
+                            <span
+                                id="error-precio-diario"
+                                class="mensaje-error"
+                                aria-live="polite"
+                            >
+                                Ingrese un precio diario válido.
+                            </span>
                         </div>
 
                     </div>

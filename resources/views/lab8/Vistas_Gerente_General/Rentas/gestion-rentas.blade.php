@@ -11,14 +11,14 @@
     <header class="encabezado-principal">
         <div class="barra-navegacion">
 
-            <a href="#" class="marca">RentaCar</a>
+            <a href="{{ url('/') }}" class="marca">RentaCar</a>
 
             <nav aria-label="Navegación principal">
                 <ul class="menu-principal">
-                    <li><a href="#">Inicio</a></li>
-                    <li><a href="#">Clientes</a></li>
-                    <li><a href="#" aria-current="page">Rentas</a></li>
-                    <li><a href="#">Vehículos</a></li>
+                    <li><a href="{{ url('/') }}">Inicio</a></li>
+                    <li><a href="{{ route('gerente.gestion-clientes') }}">Clientes</a></li>
+                    <li><a href="{{ route('gerente.gestion-rentas') }}" aria-current="page">Rentas</a></li>
+                    <li><a href="{{ route('gerente.gestion-vehiculos') }}">Vehículos</a></li>
                     <li><a href="#">Reportes</a></li>
                 </ul>
             </nav>
@@ -39,7 +39,7 @@
                 <p>Monitoreo general de contratos de alquiler e historial de transacciones.</p>
             </header>
 
-            <a href="#" class="boton boton-primario boton-registrar">
+            <a href="{{ route('gerente.nueva-renta') }}" class="boton boton-primario boton-registrar">
                 Nueva Renta
             </a>
         </div>
@@ -49,7 +49,7 @@
                 Filtros de búsqueda de rentas
             </h2>
 
-            <form class="formulario-filtros formulario-filtros-gestion" action="#" method="get">
+            <form class="formulario-filtros" action="{{ route('gerente.gestion-rentas') }}" method="get">
                 
                 <div class="campo" style="grid-column: 1 / -2;">
                     <label for="buscar-renta">Buscar por N° Contrato o Cliente</label>
@@ -116,8 +116,8 @@
                             </td>
                             <td>
                                 <div class="acciones-tabla">
-                                    <a href="#" class="accion-tabla">Consultar</a>
-                                    <a href="#" class="accion-tabla">Editar</a>
+                                    <a href="{{ route('gerente.consultar-renta') }}" class="accion-tabla">Consultar</a>
+                                    <a href="{{ route('gerente.editar-renta') }}" class="accion-tabla">Editar</a>
                                     <button type="button" class="accion-tabla" style="color: #0056b3;">Finalizar</button>
                                 </div>
                             </td>
@@ -134,7 +134,7 @@
                             </td>
                             <td>
                                 <div class="acciones-tabla">
-                                    <a href="#" class="accion-tabla">Consultar</a>
+                                    <a href="{{ route('gerente.consultar-renta') }}" class="accion-tabla">Consultar</a>
                                 </div>
                             </td>
                         </tr>
@@ -150,7 +150,7 @@
                             </td>
                             <td>
                                 <div class="acciones-tabla">
-                                    <a href="#" class="accion-tabla">Consultar</a>
+                                    <a href="{{ route('gerente.consultar-renta') }}" class="accion-tabla">Consultar</a>
                                 </div>
                             </td>
                         </tr>

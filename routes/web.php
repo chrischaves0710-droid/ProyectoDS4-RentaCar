@@ -35,7 +35,7 @@ Route::view('/lab8/gerente/clientes/editar', 'lab8.Vistas_Gerente_General.Client
 Route::view('/lab8/gerente/rentas', 'lab8.Vistas_Gerente_General.Rentas.gestion-rentas')->name('gerente.gestion-rentas');
 Route::view('/lab8/gerente/rentas/consultar', 'lab8.Vistas_Gerente_General.Rentas.consultar-renta')->name('gerente.consultar-renta');
 Route::view('/lab8/gerente/rentas/editar', 'lab8.Vistas_Gerente_General.Rentas.editar-renta')->name('gerente.editar-renta');
-Route::view('/lab8/gerente/rentas/nueva', 'lab8.Vistas_Gestor_Rentas.nueva-renta')->name('gerente.nueva-renta'); // Reutilizando el archivo físico del gestor
+Route::view('/lab8/gerente/rentas/nueva', 'lab8.Vistas_Gerente_General.Rentas.nueva-renta')->name('gerente.nueva-renta');
 
 
 // ==========================================

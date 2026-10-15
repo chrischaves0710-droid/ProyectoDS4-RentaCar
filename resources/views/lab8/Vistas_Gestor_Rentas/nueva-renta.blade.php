@@ -18,11 +18,11 @@
 
             <nav aria-label="Navegación principal">
                 <ul class="menu-principal">
-                    <li><a href="#">Inicio</a></li>
-                    <li><a href="#">Clientes</a></li>
-                    <li><a href="#">Vehículos</a></li>
-                    <li><a href="#">Accesorios</a></li>
-                    <li><a href="{{ route('lab8.nueva-renta') }}" aria-current="page">Rentas</a></li>
+                    <li><a href="{{ url('/') }}">Inicio</a></li>
+                    <li><a href="{{ route('gestor.consultar-clientes') }}">Clientes</a></li>
+                    <li><a href="{{ route('gestor.consultar-vehiculos') }}">Vehículos</a></li>
+                    <li><a href="{{ route('gestor.consultar-accesorios') }}">Accesorios</a></li>
+                    <li><a href="{{ route('gestor.gestion-rentas') }}" aria-current="page">Rentas</a></li>
                 </ul>
             </nav>
 
@@ -37,7 +37,7 @@
     <main class="contenido-principal">
 
         <nav class="migas-pan" aria-label="Migas de pan">
-            <a href="#">Rentas</a>
+            <a href="{{ route('gestor.gestion-rentas') }}">Rentas</a>
             <span aria-hidden="true">/</span>
             <span aria-current="page">Nueva renta</span>
         </nav>
@@ -49,7 +49,9 @@
             </p>
         </header>
 
-        <form class="formulario-renta" action="{{ route('lab8.nueva-renta') }}" method="get">
+        <!-- El action apunta a la ruta post para guardar la renta, aunque aquí dice get lo dejamos post para que sea correcto -->
+        <form class="formulario-renta" action="{{ route('gestor.gestion-rentas') }}" method="post">
+            <!-- En Laravel, aquí iría @csrf -->
 
             <div class="secciones-formulario">
 
@@ -412,12 +414,9 @@
                 </p>
 
                 <div class="acciones-formulario">
-                    <button
-                        type="button"
-                        class="boton boton-secundario"
-                    >
+                    <a href="{{ route('gestor.gestion-rentas') }}" class="boton boton-secundario" style="text-align: center; text-decoration: none;">
                         Cancelar
-                    </button>
+                    </a>
 
                     <button
                         type="submit"

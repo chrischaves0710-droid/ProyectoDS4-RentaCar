@@ -13,34 +13,80 @@ Route::get('/', function () {
 });
 
 // ==========================================
-// Vistas del Gerente General
+// 1. Vistas del Gerente General (Admin_General)
 // ==========================================
-Route::view('/lab8/gestion-clientes', 'lab8.Vistas_Gerente_General.gestion-clientes')
-    ->name('lab8.gestion-clientes');
 
-Route::view('/lab8/registrar-cliente', 'lab8.Vistas_Gerente_General.registrar-cliente')
-    ->name('lab8.registrar-cliente');
+// Módulo de Vehículos (Carpeta: Vistas_Gerente_General/Vehiculos)
+Route::view('/lab8/gerente/vehiculos', 'lab8.Vistas_Gerente_General.Vehiculos.gestion-vehiculos')->name('gerente.gestion-vehiculos');
+Route::view('/lab8/gerente/vehiculos/crear', 'lab8.Vistas_Gerente_General.Vehiculos.crear-vehiculo')->name('gerente.crear-vehiculo');
+Route::view('/lab8/gerente/vehiculos/editar', 'lab8.Vistas_Gerente_General.Vehiculos.editar-vehiculo')->name('gerente.editar-vehiculo');
 
-Route::view('/lab8/editar-cliente', 'lab8.Vistas_Gerente_General.editar-cliente')
-    ->name('lab8.editar-cliente');
+// Módulo de Accesorios (Carpeta: Vistas_Gerente_General/Accesorios)
+Route::view('/lab8/gerente/accesorios', 'lab8.Vistas_Gerente_General.Accesorios.gestion-accesorios')->name('gerente.gestion-accesorios');
+Route::view('/lab8/gerente/accesorios/crear', 'lab8.Vistas_Gerente_General.Accesorios.crear-accesorio')->name('gerente.crear-accesorio');
+Route::view('/lab8/gerente/accesorios/editar', 'lab8.Vistas_Gerente_General.Accesorios.editar-accesorio')->name('gerente.editar-accesorio');
+
+// Módulo de Clientes (Carpeta: Vistas_Gerente_General/Clientes)
+Route::view('/lab8/gerente/clientes', 'lab8.Vistas_Gerente_General.Clientes.gestion-clientes')->name('gerente.gestion-clientes');
+Route::view('/lab8/gerente/clientes/registrar', 'lab8.Vistas_Gerente_General.Clientes.registrar-cliente')->name('gerente.registrar-cliente');
+Route::view('/lab8/gerente/clientes/editar', 'lab8.Vistas_Gerente_General.Clientes.editar-cliente')->name('gerente.editar-cliente');
+
+// Módulo de Rentas (Carpeta: Vistas_Gerente_General/Rentas y Vistas_Gestor_Rentas)
+Route::view('/lab8/gerente/rentas', 'lab8.Vistas_Gerente_General.Rentas.gestion-rentas')->name('gerente.gestion-rentas');
+Route::view('/lab8/gerente/rentas/consultar', 'lab8.Vistas_Gerente_General.Rentas.consultar-renta')->name('gerente.consultar-renta');
+Route::view('/lab8/gerente/rentas/editar', 'lab8.Vistas_Gerente_General.Rentas.editar-renta')->name('gerente.editar-renta');
+Route::view('/lab8/gerente/rentas/nueva', 'lab8.Vistas_Gestor_Rentas.nueva-renta')->name('gerente.nueva-renta'); // Reutilizando el archivo físico del gestor
+
 
 // ==========================================
-// Vistas del Admin de Inventario
+// 2. Vistas del Admin de Inventarios
 // ==========================================
-Route::view('/lab8/gestion-vehiculos', 'lab8.Vistas_Admin_Inventario.gestion-vehiculos')
-    ->name('lab8.gestion-vehiculos');
+
+// Módulo de Vehículos (Carpeta: Vistas_Admin_Inventarios/Vehiculos)
+Route::view('/lab8/admin/vehiculos', 'lab8.Vistas_Admin_Inventarios.Vehiculos.gestion-vehiculos')->name('admin.gestion-vehiculos');
+Route::view('/lab8/admin/vehiculos/crear', 'lab8.Vistas_Admin_Inventarios.Vehiculos.crear-vehiculo')->name('admin.crear-vehiculo');
+Route::view('/lab8/admin/vehiculos/editar', 'lab8.Vistas_Admin_Inventarios.Vehiculos.editar-vehiculo')->name('admin.editar-vehiculo');
+
+// Módulo de Accesorios (Carpeta: Vistas_Admin_Inventarios/Accesorios)
+Route::view('/lab8/admin/accesorios', 'lab8.Vistas_Admin_Inventarios.Accesorios.gestion-accesorio')->name('admin.gestion-accesorios');
+Route::view('/lab8/admin/accesorios/crear', 'lab8.Vistas_Admin_Inventarios.Accesorios.crear-accesorio')->name('admin.crear-accesorio');
+Route::view('/lab8/admin/accesorios/editar', 'lab8.Vistas_Admin_Inventarios.Accesorios.editar-accesorio')->name('admin.editar-accesorio');
+
+// Módulo de Categorías (Carpeta: Vistas_Admin_Inventarios/Categorias)
+Route::view('/lab8/admin/categorias', 'lab8.Vistas_Admin_Inventarios.Categorias.gestion-categorias')->name('admin.gestion-categorias');
+Route::view('/lab8/admin/categorias/crear', 'lab8.Vistas_Admin_Inventarios.Categorias.crear-categoria')->name('admin.crear-categoria');
+Route::view('/lab8/admin/categorias/editar', 'lab8.Vistas_Admin_Inventarios.Categorias.editar-categoria')->name('admin.editar-categoria');
+
+// Módulo de Estados (Carpeta: Vistas_Admin_Inventarios/Estados)
+Route::view('/lab8/admin/estados', 'lab8.Vistas_Admin_Inventarios.Estados.gestion-estados')->name('admin.gestion-estados');
+Route::view('/lab8/admin/estados/crear', 'lab8.Vistas_Admin_Inventarios.Estados.crear-estado')->name('admin.crear-estado');
+Route::view('/lab8/admin/estados/editar', 'lab8.Vistas_Admin_Inventarios.Estados.editar-estado')->name('admin.editar-estado');
+
 
 // ==========================================
-// Vistas del Cliente
+// 3. Vistas del Gestor de Rentas
 // ==========================================
-Route::view('/lab8/catalogo', 'lab8.Vistas_Cliente.catalogo')
-    ->name('lab8.catalogo');
+
+// Módulo de Rentas (CRUD Activo - Carpeta: Vistas_Gestor_Rentas)
+Route::view('/lab8/gestor/rentas', 'lab8.Vistas_Gestor_Rentas.gestion-rentas')->name('gestor.gestion-rentas');
+Route::view('/lab8/gestor/rentas/nueva', 'lab8.Vistas_Gestor_Rentas.nueva-renta')->name('gestor.nueva-renta');
+Route::view('/lab8/gestor/rentas/consultar', 'lab8.Vistas_Gestor_Rentas.consultar-renta')->name('gestor.consultar-renta');
+Route::view('/lab8/gestor/rentas/editar', 'lab8.Vistas_Gestor_Rentas.editar-renta')->name('gestor.editar-renta');
+
+// Vistas de Consultas pasivas (Carpeta: Vistas_Gestor_Rentas/Vistas_Consultas)
+Route::view('/lab8/gestor/consultar/vehiculos', 'lab8.Vistas_Gestor_Rentas.Vistas_Consultas.consultar-vehiculos')->name('gestor.consultar-vehiculos');
+Route::view('/lab8/gestor/consultar/accesorios', 'lab8.Vistas_Gestor_Rentas.Vistas_Consultas.consultar-accesorios')->name('gestor.consultar-accesorios');
+Route::view('/lab8/gestor/consultar/clientes', 'lab8.Vistas_Gestor_Rentas.Vistas_Consultas.consultar-clientes')->name('gestor.consultar-clientes');
+
 
 // ==========================================
-// Vistas del Gestor de Rentas
+// 4. Vistas del Cliente
 // ==========================================
-Route::view('/lab8/nueva-renta', 'lab8.Vistas_Gestor_Rentas.nueva-renta')
-    ->name('lab8.nueva-renta');
+
+// Vistas de solo lectura y perfil (Carpeta: Vistas_Cliente)
+Route::view('/lab8/cliente/catalogo', 'lab8.Vistas_Cliente.catalogo')->name('cliente.catalogo');
+Route::view('/lab8/cliente/mis-rentas', 'lab8.Vistas_Cliente.mis-rentas')->name('cliente.mis-rentas');
+Route::view('/lab8/cliente/mi-perfil', 'lab8.Vistas_Cliente.mi-perfil')->name('cliente.mi-perfil');
 
 // Documentación Swagger UI en el navegador
 Route::view('/docs', 'docs.index');

@@ -28,6 +28,11 @@ export default defineConfig({
                 'resources/js/views/vistas-cliente/accesorios.js',
                 'resources/js/views/vistas-cliente/mis-rentas.js',
                 'resources/js/views/vistas-cliente/mi-perfil.js',
+
+                // Vistas del Gestor (solo lectura)
+                'resources/js/views/vistas-gestor/consultar-vehiculos.js',
+                'resources/js/views/vistas-gestor/consultar-accesorios.js',
+                'resources/js/views/vistas-gestor/consultar-clientes.js',
             ],
             refresh: true,
             fonts: [

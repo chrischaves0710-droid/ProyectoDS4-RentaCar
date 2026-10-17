@@ -96,6 +96,7 @@ Route::view('/lab8/gestor/consultar/clientes', 'lab8.Vistas_Gestor_Rentas.Vistas
 Route::view('/lab8/cliente/catalogo', 'lab8.Vistas_Cliente.catalogo')->name('cliente.catalogo');
 Route::view('/lab8/cliente/mis-rentas', 'lab8.Vistas_Cliente.mis-rentas')->name('cliente.mis-rentas');
 Route::view('/lab8/cliente/mi-perfil', 'lab8.Vistas_Cliente.mi-perfil')->name('cliente.mi-perfil');
+Route::view('/lab8/cliente/accesorios', 'lab8.Vistas_Cliente.accesorios')->name('cliente.accesorios');
 
 // Documentación Swagger UI en el navegador
 Route::view('/docs', 'docs.index');

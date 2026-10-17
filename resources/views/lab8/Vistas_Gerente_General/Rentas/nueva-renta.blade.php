@@ -6,7 +6,7 @@
 
     <title>Nueva renta | RentaCar</title>
 
-    @vite('resources/css/lab8.css')
+    @vite(['resources/css/lab8.css', 'resources/js/views/rentas/formulario-renta.js'])
 </head>
 
 <body>

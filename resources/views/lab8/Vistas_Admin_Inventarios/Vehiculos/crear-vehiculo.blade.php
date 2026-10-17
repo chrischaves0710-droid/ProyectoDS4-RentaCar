@@ -1,0 +1,1 @@
+// @vite(['resources/css/lab8.css', 'resources/js/views/vehiculos/formulario-vehiculo.js'])

@@ -37,6 +37,15 @@ Route::view('/lab8/gerente/rentas/consultar', 'lab8.Vistas_Gerente_General.Renta
 Route::view('/lab8/gerente/rentas/editar', 'lab8.Vistas_Gerente_General.Rentas.editar-renta')->name('gerente.editar-renta');
 Route::view('/lab8/gerente/rentas/nueva', 'lab8.Vistas_Gerente_General.Rentas.nueva-renta')->name('gerente.nueva-renta');
 
+// Módulo de Categorías (Carpeta: Vistas_Gerente_General/Categorias)
+Route::view('/lab8/gerente/categorias', 'lab8.Vistas_Gerente_General.Categorias.gestion-categorias')->name('gerente.gestion-categorias');
+Route::view('/lab8/gerente/categorias/crear', 'lab8.Vistas_Gerente_General.Categorias.crear-categoria')->name('gerente.crear-categoria');
+Route::view('/lab8/gerente/categorias/editar', 'lab8.Vistas_Gerente_General.Categorias.editar-categoria')->name('gerente.editar-categoria');
+
+// Módulo de Estados (Carpeta: Vistas_Gerente_General/Estados)
+Route::view('/lab8/gerente/estados', 'lab8.Vistas_Gerente_General.Estados.gestion-estados')->name('gerente.gestion-estados');
+Route::view('/lab8/gerente/estados/crear', 'lab8.Vistas_Gerente_General.Estados.crear-estado')->name('gerente.crear-estado');
+Route::view('/lab8/gerente/estados/editar', 'lab8.Vistas_Gerente_General.Estados.editar-estado')->name('gerente.editar-estado');
 
 // ==========================================
 // 2. Vistas del Admin de Inventarios
@@ -48,7 +57,7 @@ Route::view('/lab8/admin/vehiculos/crear', 'lab8.Vistas_Admin_Inventarios.Vehicu
 Route::view('/lab8/admin/vehiculos/editar', 'lab8.Vistas_Admin_Inventarios.Vehiculos.editar-vehiculo')->name('admin.editar-vehiculo');
 
 // Módulo de Accesorios (Carpeta: Vistas_Admin_Inventarios/Accesorios)
-Route::view('/lab8/admin/accesorios', 'lab8.Vistas_Admin_Inventarios.Accesorios.gestion-accesorio')->name('admin.gestion-accesorios');
+Route::view('/lab8/admin/accesorios', 'lab8.Vistas_Admin_Inventarios.Accesorios.gestion-accesorios')->name('admin.gestion-accesorios');
 Route::view('/lab8/admin/accesorios/crear', 'lab8.Vistas_Admin_Inventarios.Accesorios.crear-accesorio')->name('admin.crear-accesorio');
 Route::view('/lab8/admin/accesorios/editar', 'lab8.Vistas_Admin_Inventarios.Accesorios.editar-accesorio')->name('admin.editar-accesorio');
 

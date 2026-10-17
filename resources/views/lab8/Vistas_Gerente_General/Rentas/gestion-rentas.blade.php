@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de rentas | RentaCar</title>
-    @vite('resources/css/lab8.css')
+    @vite(['resources/css/lab8.css', 'resources/js/views/rentas/listado-rentas.js'])
 </head>
 <body>
 

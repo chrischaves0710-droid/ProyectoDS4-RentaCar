@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreVehiculoRequest;
 use App\Http\Requests\UpdateVehiculoRequest;
-use App\Http\Resources\VehiculoResource; 
 use App\Models\Vehiculo;
 use App\Services\VehiculoService;
 use Illuminate\Http\Request;
+use App\Http\Resources\VehiculoResource;
 
 class VehiculoController extends Controller
 {
@@ -17,10 +17,13 @@ class VehiculoController extends Controller
     public function index(Request $request)
     {
         // se agrupan los filtros para pasarlos limpiamente al servicio
-        $filtros = [
-            'categoria_id' => $request->input('categoria_id'),
-            'q' => $request->input('q')
-        ];
+     
+    $filtros = [
+    'categoria_id' => $request->input('categoria_id'),
+    'estado_id' => $request->input('estado_id'),
+    'q' => $request->input('q')
+    ];
+
         
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');

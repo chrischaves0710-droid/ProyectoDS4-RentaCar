@@ -32,18 +32,65 @@ class RentaService
         ]);
 
         if ($user->hasAnyRole(['Admin_General', 'Gestor_Rentas'])) {
+
+            // Filtrar por cliente
             if (!empty($filtros['cliente_id'])) {
                 $query->where('cliente_id', $filtros['cliente_id']);
             }
 
+            // Filtrar por vehículo
             if (!empty($filtros['vehiculo_id'])) {
                 $query->where('vehiculo_id', $filtros['vehiculo_id']);
             }
 
-            return $query->paginate(10);
+            // Buscar por contrato o nombre del cliente
+            $texto = trim((string) ($filtros['q'] ?? ''));
+
+            if ($texto !== '') {
+
+                // Buscar por ID: RN-1045 o 1045
+                if (preg_match('/^(?:RN-)?(\d+)$/i', $texto, $coincidencias)) {
+
+                    $query->whereKey((int) $coincidencias[1]);
+
+                } else {
+
+                    // Separar las palabras de la búsqueda
+                    $palabras = preg_split(
+                        '/\s+/u',
+                        $texto,
+                        -1,
+                        PREG_SPLIT_NO_EMPTY
+                    );
+
+                    // Buscar en los nombres y apellidos del cliente
+                    $query->whereHas('cliente', function ($cliente) use ($palabras) {
+
+                        foreach ($palabras as $palabra) {
+
+                            $cliente->where(function ($nombre) use ($palabra) {
+
+                                $patron = '%' . $palabra . '%';
+
+                                $nombre->where('nombre1', 'like', $patron)
+                                    ->orWhere('nombre2', 'like', $patron)
+                                    ->orWhere('apellido1', 'like', $patron)
+                                    ->orWhere('apellido2', 'like', $patron);
+                            });
+                        }
+                    });
+                }
+            }
+
+            // Ordenar y paginar las rentas
+            return $query
+                ->orderByDesc('id')
+                ->paginate(10);
         }
 
+        // Los clientes solamente pueden consultar sus propias rentas
         if ($user->hasRole('Cliente')) {
+
             $cliente = Cliente::where('correo', $user->email)->first();
 
             if (!$cliente) {
@@ -110,6 +157,7 @@ class RentaService
         $datos['monto_total'] = $dias * $datos['precio_diario'];
 
         return DB::transaction(function () use ($datos, $vehiculo) {
+
             $renta = Renta::create($datos);
 
             $estadoAlquilado = Estado::where(
@@ -200,7 +248,9 @@ class RentaService
         $vehiculo = $renta->vehiculo;
 
         DB::transaction(function () use ($renta, $vehiculo) {
+
             if ($vehiculo && $vehiculo->estado?->nombre === 'Alquilado') {
+
                 $estadoDisponible = Estado::where(
                     'nombre',
                     'Disponible'
@@ -245,6 +295,7 @@ class RentaService
             $renta,
             $estadoDisponible
         ) {
+
             $renta->vehiculo->update([
                 'estado_id' => $estadoDisponible->id,
             ]);
@@ -307,6 +358,7 @@ class RentaService
         }
 
         if ($user->hasRole('Cliente')) {
+
             Gate::forUser($user)
                 ->authorize('view', $renta);
 

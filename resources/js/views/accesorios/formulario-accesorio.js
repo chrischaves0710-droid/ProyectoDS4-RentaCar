@@ -1,129 +1,251 @@
+
 import { ApiClient } from '../../api/ApiClient.js';
+import { AppState } from '../../store/AppState.js';
 
-const api = new ApiClient('/api');
+const formulario = document.querySelector('.secciones-formulario');
 
-// Se selecciona el formulario principal
-const formAccesorio = document.querySelector('.secciones-formulario') || document.querySelector('form');
+if (formulario) {
+    const api = new ApiClient('/api');
 
-// =====================================================================
-// 1. REQUERIMIENTO: Restaurar datos tras expiración de Token (401)
-// =====================================================================
-document.addEventListener('DOMContentLoaded', () => {
-    const backupData = sessionStorage.getItem('form_backup_401');
-    
-    if (backupData && formAccesorio) {
-        const data = JSON.parse(backupData);
-        
-        // Se rellenan los campos con los datos guardados
-        Object.keys(data).forEach(key => {
-            const input = formAccesorio.elements[key];
-            if (input) {
-                input.value = data[key];
+    const campoNombre = formulario.elements.namedItem('nombre');
+    const campoPrecio = formulario.elements.namedItem('precio_unitario');
+    const botonGuardar = formulario.querySelector('button[type="submit"]');
+
+    const rutaActual = window.location.pathname.replace(/\/+$/, '');
+    const esEdicion = rutaActual.endsWith('/editar');
+
+    const idAccesorio = new URLSearchParams(
+        window.location.search
+    ).get('id');
+
+    const rutaListado = rutaActual.startsWith('/lab8/admin/')
+        ? '/lab8/admin/accesorios'
+        : '/lab8/gerente/accesorios';
+
+    const textoBoton = botonGuardar?.textContent ?? 'Guardar accesorio';
+
+    // Estado de la aplicación
+    const estado = new AppState({
+        cargando: true,
+        guardando: false,
+        listo: false,
+        mensaje: 'Cargando formulario...',
+        errores: {}
+    });
+
+    // Contenedor para mensajes generales
+    const avisoGeneral = document.createElement('p');
+    avisoGeneral.id = 'mensaje-formulario-accesorio';
+    avisoGeneral.setAttribute('role', 'status');
+    avisoGeneral.style.marginBottom = '1rem';
+
+    formulario.prepend(avisoGeneral);
+
+    // Crear espacios para los errores de cada campo
+    function avisoCampo(campo) {
+        const id = `error-${campo.name}`;
+        let aviso = document.getElementById(id);
+
+        if (!aviso) {
+            aviso = document.createElement('span');
+            aviso.id = id;
+            aviso.className = 'mensaje-error';
+            aviso.style.color = '#dc2626';
+            aviso.style.display = 'block';
+            aviso.style.fontSize = '0.875rem';
+
+            campo.insertAdjacentElement('afterend', aviso);
+        }
+
+        campo.setAttribute('aria-describedby', id);
+
+        return aviso;
+    }
+
+    [campoNombre, campoPrecio].filter(Boolean).forEach(avisoCampo);
+
+    // Sincronizar estado con el formulario
+    estado.subscribe((datos) => {
+        const bloqueado =
+            !datos.listo || datos.cargando || datos.guardando;
+
+        if (botonGuardar) {
+            botonGuardar.disabled = bloqueado;
+
+            botonGuardar.textContent = datos.guardando
+                ? 'Guardando...'
+                : textoBoton;
+        }
+
+        for (const campo of [campoNombre, campoPrecio]) {
+            if (!campo) continue;
+
+            campo.disabled =
+                datos.cargando || (!datos.listo && !datos.guardando);
+
+            const mensajes = datos.errores[campo.name];
+
+            campo.setAttribute(
+                'aria-invalid',
+                mensajes ? 'true' : 'false'
+            );
+
+            const aviso = document.getElementById(
+                `error-${campo.name}`
+            );
+
+            if (aviso) {
+                aviso.textContent = Array.isArray(mensajes)
+                    ? String(mensajes[0] ?? '')
+                    : String(mensajes ?? '');
             }
+        }
+
+        avisoGeneral.textContent = datos.mensaje;
+
+        avisoGeneral.setAttribute(
+            'role',
+            Object.keys(datos.errores).length ? 'alert' : 'status'
+        );
+    });
+
+    estado.notify();
+
+    // Recuperar datos después de una sesión expirada
+    function recuperarDatos() {
+        const respaldo = sessionStorage.getItem('form_backup_401');
+
+        if (!respaldo) return false;
+
+        try {
+            const datos = JSON.parse(respaldo);
+
+            if (
+                !datos ||
+                typeof datos !== 'object' ||
+                !Object.hasOwn(datos, 'nombre') ||
+                !Object.hasOwn(datos, 'precio_unitario')
+            ) {
+                return false;
+            }
+
+            campoNombre.value = datos.nombre ?? '';
+            campoPrecio.value = datos.precio_unitario ?? '';
+
+            sessionStorage.removeItem('form_backup_401');
+
+            return true;
+
+        } catch {
+            sessionStorage.removeItem('form_backup_401');
+            return false;
+        }
+    }
+
+    // Cargar información al abrir el formulario
+    async function iniciar() {
+        if (!campoNombre || !campoPrecio || !botonGuardar) return;
+
+        if (esEdicion && !idAccesorio) {
+            estado.setState({
+                cargando: false,
+                mensaje: 'Falta el identificador del accesorio en la URL.'
+            });
+            return;
+        }
+
+        try {
+            if (esEdicion) {
+                const respuesta = await api.get(
+                    `/accesorios/${encodeURIComponent(idAccesorio)}`
+                );
+
+                const accesorio = respuesta.data ?? respuesta;
+
+                campoNombre.value = accesorio.nombre ?? '';
+                campoPrecio.value = accesorio.precio_unitario ?? '';
+            }
+
+            const restaurado = recuperarDatos();
+
+            estado.setState({
+                cargando: false,
+                listo: true,
+                mensaje: restaurado
+                    ? 'Se recuperaron los datos guardados antes de la expiración de sesión.'
+                    : ''
+            });
+
+        } catch (error) {
+            if (error?.status !== 401) {
+                estado.setState({
+                    cargando: false,
+                    listo: false,
+                    mensaje: error?.message ??
+                        'No fue posible cargar el accesorio.'
+                });
+            }
+        }
+    }
+
+    // Crear o actualizar un accesorio
+    formulario.addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+
+        if (!estado.getState().listo ||
+            estado.getState().guardando) {
+            return;
+        }
+
+        estado.setState({
+            guardando: true,
+            errores: {},
+            mensaje: ''
         });
 
-        // Se limpia el respaldo y se muestra un aviso
-        sessionStorage.removeItem('form_backup_401');
-        
-        const alerta = document.createElement('div');
-        alerta.style.cssText = 'background-color: #fef08a; color: #854d0e; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;';
-        alerta.innerText = '💡 Se han restaurado los datos ingresados antes de la expiración de la sesión.';
-        formAccesorio.prepend(alerta);
-    }
-});
+        const datos = {
+            nombre: campoNombre.value.trim(),
+            precio_unitario: campoPrecio.value
+        };
 
-// =====================================================================
-// 2. REQUERIMIENTO: Envío asíncrono y Errores de Validación (422)
-// =====================================================================
-formAccesorio?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    limpiarErrores();
-
-    // Se establece el estado de carga en el botón
-    const btnSubmit = formAccesorio.querySelector('button[type="submit"]');
-    const textoOriginal = btnSubmit.innerText;
-    btnSubmit.innerText = 'Guardando...';
-    btnSubmit.disabled = true;
-
-    // Se recopilan los datos del formulario
-    const formData = new FormData(formAccesorio);
-    const payload = Object.fromEntries(formData.entries());
-    
-    // Se verifica si existe un ID en la URL para determinar la acción (PUT o POST)
-    const idAccesorio = new URLSearchParams(window.location.search).get('id') || payload.id;
-
-    try {
-        if (idAccesorio) {
-            await api.put(`/accesorios/${idAccesorio}`, payload);
-            alert('Accesorio actualizado correctamente.');
-        } else {
-            await api.post('/accesorios', payload);
-            alert('Accesorio registrado exitosamente.');
-        }
-        
-        // Se determina la redirección dependiendo de la ruta actual
-        const redirectUrl = window.location.pathname.includes('admin') 
-            ? '/lab8/admin/accesorios' 
-            : '/lab8/gerente/accesorios';
-        
-        window.location.href = redirectUrl;
-
-    } catch (error) {
-        // Se capturan los errores de validación del backend
-        if (error.status === 422 && error.errors) {
-            mostrarErrores(error.errors);
-        } else if (error.status !== 401) {
-            alert('Ocurrió un error al guardar: ' + (error.message || 'Intente nuevamente.'));
-        }
-    } finally {
-        // Se restaura el estado original del botón
-        btnSubmit.innerText = textoOriginal;
-        btnSubmit.disabled = false;
-    }
-});
-
-// =====================================================================
-// 3. Funciones auxiliares para la interfaz de errores
-// =====================================================================
-function mostrarErrores(errores) {
-    Object.keys(errores).forEach(campo => {
-        const input = formAccesorio.querySelector(`[name="${campo}"]`);
-        let spanError = document.getElementById(`error-${campo}`); 
-        
-        if (input) {
-            input.style.borderColor = '#dc2626';
-            input.setAttribute('aria-invalid', 'true');
-            
-            // Si el span no existe, se crea dinámicamente debajo del campo
-            if (!spanError) {
-                spanError = document.createElement('span');
-                spanError.id = `error-${campo}`;
-                spanError.className = 'mensaje-error';
-                input.parentNode.appendChild(spanError);
+        try {
+            if (esEdicion) {
+                await api.put(
+                    `/accesorios/${encodeURIComponent(idAccesorio)}`,
+                    datos
+                );
+            } else {
+                await api.post('/accesorios', datos);
             }
-        }
-        
-        if (spanError) {
-            spanError.textContent = errores[campo][0];
-            spanError.style.display = 'block';
-            spanError.style.color = '#dc2626';
-            spanError.style.fontSize = '0.875rem';
-            spanError.style.marginTop = '0.25rem';
-        }
-    });
-    
-    // Se enfoca el primer campo con error para facilitar correcciones
-    const primerError = formAccesorio.querySelector('[aria-invalid="true"]');
-    if (primerError) primerError.focus();
-}
 
-function limpiarErrores() {
-    formAccesorio.querySelectorAll('.mensaje-error, [id^="error-"]').forEach(span => {
-        span.textContent = '';
-        span.style.display = 'none';
+            // Volver al listado del rol correspondiente
+            window.location.assign(rutaListado);
+
+        } catch (error) {
+            if (error?.status === 422) {
+                estado.setState({
+                    errores: error.errors ?? {},
+                    mensaje: 'Revisa los campos marcados.'
+                });
+
+                formulario.querySelector(
+                    '[aria-invalid="true"]'
+                )?.focus();
+
+            } else if (error?.status !== 401) {
+                estado.setState({
+                    mensaje: error?.message ??
+                        'No se pudo guardar el accesorio.'
+                });
+            }
+
+        } finally {
+            estado.setState({
+                guardando: false
+            });
+        }
     });
-    formAccesorio.querySelectorAll('input, select, textarea').forEach(input => {
-        input.style.borderColor = ''; 
-        input.removeAttribute('aria-invalid');
-    });
+
+    // Ejecutar carga inicial
+    iniciar();
 }

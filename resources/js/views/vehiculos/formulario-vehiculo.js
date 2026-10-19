@@ -1,124 +1,313 @@
+
 import { ApiClient } from '../../api/ApiClient.js';
+import { AppState } from '../../store/AppState.js';
 
-const api = new ApiClient('/api');
+const formulario = document.getElementById('form-vehiculo');
 
-// Se selecciona el formulario (sirve tanto para crear como para editar)
-const formVehiculo = document.getElementById('form-vehiculo') || document.querySelector('form');
+if (formulario) {
+    const api = new ApiClient('/api');
 
-// =====================================================================
-// 1. REQUERIMIENTO: Restaurar datos tras expiración de Token (401)
-// =====================================================================
-document.addEventListener('DOMContentLoaded', () => {
-    const backupData = sessionStorage.getItem('form_backup_401');
-    
-    if (backupData && formVehiculo) {
-        const data = JSON.parse(backupData);
-        
-        // Se rellenan los campos con los datos guardados
-        Object.keys(data).forEach(key => {
-            const input = formVehiculo.elements[key];
-            if (input) {
-                if (input.type === 'checkbox' || input.type === 'radio') {
-                    input.checked = (input.value === data[key]);
-                } else {
-                    input.value = data[key];
-                }
+    const estado = new AppState({
+        listo: false,
+        guardando: false,
+        errores: {},
+        mensaje: ''
+    });
+
+    const campos = [
+        'placa',
+        'marca',
+        'modelo',
+        'anno',
+        'kilometraje',
+        'precio_diario',
+        'categoria_id'
+    ];
+
+    const boton = formulario.querySelector('button[type="submit"]');
+    const textoBoton = boton.textContent;
+
+    const rutaActual = window.location.pathname.replace(/\/$/, '');
+    const esEdicion = rutaActual.endsWith('/editar');
+
+    const idVehiculo =
+        new URLSearchParams(window.location.search).get('id') ||
+        formulario.elements.namedItem('id')?.value;
+
+    const rutaListado = rutaActual.startsWith('/lab8/admin/')
+        ? '/lab8/admin/vehiculos'
+        : '/lab8/gerente/vehiculos';
+
+    // Actualizar la vista cuando cambie el estado
+    estado.subscribe((datos) => {
+        boton.disabled = !datos.listo || datos.guardando;
+
+        boton.textContent = datos.guardando
+            ? 'Guardando...'
+            : textoBoton;
+
+        mostrarErrores(datos.errores);
+        mostrarMensaje(datos.mensaje);
+    });
+
+    estado.notify();
+
+    // Iniciar y cargar los datos del formulario
+    async function iniciar() {
+
+        if (esEdicion && !idVehiculo) {
+            estado.setState({
+                mensaje: 'No se indicó qué vehículo se desea editar.'
+            });
+            return;
+        }
+
+        try {
+            await cargarCategorias();
+
+            if (esEdicion) {
+                const respuesta = await api.get(
+                    `/vehiculos/${encodeURIComponent(idVehiculo)}`
+                );
+
+                const vehiculo = respuesta.data ?? respuesta;
+
+                rellenarCampos({
+                    placa: vehiculo.placa ?? vehiculo.matricula,
+                    marca: vehiculo.marca,
+                    modelo: vehiculo.modelo,
+                    anno: vehiculo.anno ??
+                        vehiculo.anio_fabricacion ??
+                        vehiculo.anio,
+                    kilometraje: vehiculo.kilometraje,
+                    precio_diario: vehiculo.precio_diario,
+                    categoria_id: vehiculo.categoria_id
+                });
             }
+
+            const recuperado = restaurarDatos();
+
+            estado.setState({
+                listo: true,
+                mensaje: recuperado
+                    ? 'Se recuperaron los datos guardados antes de la expiración de sesión.'
+                    : ''
+            });
+
+        } catch (error) {
+            if (error.status !== 401) {
+                estado.setState({
+                    mensaje: error.message ||
+                        'No se pudo cargar el formulario.'
+                });
+            }
+        }
+    }
+
+    // Obtener las categorías desde Laravel
+    async function cargarCategorias() {
+
+        const select = formulario.elements.namedItem('categoria_id');
+
+        select.replaceChildren(
+            new Option('Seleccione una categoría', '')
+        );
+
+        let pagina = 1;
+        let totalPaginas = 1;
+
+        do {
+            const respuesta = await api.get(
+                `/categorias?per_page=50&page=${pagina}`
+            );
+
+            const categorias = Array.isArray(respuesta.data)
+                ? respuesta.data
+                : [];
+
+            for (const categoria of categorias) {
+                select.add(
+                    new Option(categoria.nombre, categoria.id)
+                );
+            }
+
+            totalPaginas = Number(
+                respuesta.meta?.last_page ??
+                respuesta.meta?.total_pages ??
+                1
+            );
+
+            pagina++;
+
+        } while (pagina <= totalPaginas);
+
+        if (select.options.length === 1) {
+            throw new Error(
+                'No hay categorías registradas para seleccionar.'
+            );
+        }
+    }
+
+    // Colocar valores dentro del formulario
+    function rellenarCampos(datos) {
+
+        for (const nombre of campos) {
+
+            const campo = formulario.elements.namedItem(nombre);
+
+            if (
+                campo &&
+                datos[nombre] !== undefined &&
+                datos[nombre] !== null
+            ) {
+                campo.value = datos[nombre];
+            }
+        }
+    }
+
+    // Restaurar información guardada ante un error 401
+    function restaurarDatos() {
+
+        const respaldo = sessionStorage.getItem('form_backup_401');
+
+        if (!respaldo) return false;
+
+        try {
+            const datos = JSON.parse(respaldo);
+
+            if (
+                !datos ||
+                !campos.some(nombre => Object.hasOwn(datos, nombre))
+            ) {
+                return false;
+            }
+
+            rellenarCampos(datos);
+
+            sessionStorage.removeItem('form_backup_401');
+
+            return true;
+
+        } catch {
+            sessionStorage.removeItem('form_backup_401');
+            return false;
+        }
+    }
+
+    // Guardar o actualizar un vehículo
+    formulario.addEventListener('submit', async (evento) => {
+
+        evento.preventDefault();
+
+        if (
+            !estado.getState().listo ||
+            estado.getState().guardando
+        ) {
+            return;
+        }
+
+        estado.setState({
+            guardando: true,
+            errores: {},
+            mensaje: ''
         });
 
-        // Se limpia el respaldo y se muestra un aviso
-        sessionStorage.removeItem('form_backup_401');
-        
-        const alerta = document.createElement('div');
-        alerta.style.cssText = 'background-color: #fef08a; color: #854d0e; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;';
-        alerta.innerText = '💡 Se han restaurado los datos ingresados antes de la expiración de la sesión.';
-        formVehiculo.prepend(alerta);
+        const datos = new FormData(formulario);
+
+        const vehiculo = Object.fromEntries(
+            campos.map(nombre => [nombre, datos.get(nombre)])
+        );
+
+        try {
+            if (esEdicion) {
+
+                await api.put(
+                    `/vehiculos/${encodeURIComponent(idVehiculo)}`,
+                    vehiculo
+                );
+
+            } else {
+
+                await api.post('/vehiculos', vehiculo);
+            }
+
+            window.location.assign(rutaListado);
+
+        } catch (error) {
+
+            if (error.status === 422) {
+
+                estado.setState({
+                    errores: error.errors || {},
+                    mensaje: 'Revisa los campos marcados y vuelve a intentarlo.'
+                });
+
+            } else if (error.status !== 401) {
+
+                estado.setState({
+                    mensaje: error.message ||
+                        'No se pudo guardar el vehículo.'
+                });
+            }
+
+        } finally {
+            estado.setState({
+                guardando: false
+            });
+        }
+    });
+
+    // Mostrar errores debajo de cada campo
+    function mostrarErrores(errores) {
+
+        formulario.querySelectorAll('.mensaje-error').forEach(elemento => {
+            elemento.textContent = '';
+            elemento.style.display = 'none';
+        });
+
+        formulario.querySelectorAll('[aria-invalid="true"]').forEach(elemento => {
+            elemento.removeAttribute('aria-invalid');
+        });
+
+        for (const [nombre, mensajes] of Object.entries(errores || {})) {
+
+            if (!campos.includes(nombre)) continue;
+
+            const campo = formulario.elements.namedItem(nombre);
+            const aviso = document.getElementById(`error-${nombre}`);
+
+            if (campo) {
+                campo.setAttribute('aria-invalid', 'true');
+            }
+
+            if (aviso) {
+                aviso.textContent = Array.isArray(mensajes)
+                    ? mensajes[0]
+                    : String(mensajes);
+
+                aviso.style.display = 'block';
+            }
+        }
+
+        formulario.querySelector('[aria-invalid="true"]')?.focus();
     }
-});
 
-// =====================================================================
-// 2. REQUERIMIENTO: Envío asíncrono y Errores de Validación (422)
-// =====================================================================
-formVehiculo?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    limpiarErrores();
+    // Mostrar mensajes generales
+    function mostrarMensaje(texto) {
 
-    // Se establece el estado de carga en el botón
-    const btnSubmit = formVehiculo.querySelector('button[type="submit"]');
-    const textoOriginal = btnSubmit.innerText;
-    btnSubmit.innerText = 'Guardando...';
-    btnSubmit.disabled = true;
+        let aviso = document.getElementById('mensaje-formulario');
 
-    // Se recopilan los datos del formulario
-    const formData = new FormData(formVehiculo);
-    const payload = Object.fromEntries(formData.entries());
-    
-    // Se verifica si existe un ID (por URL o input oculto) para determinar si es Edición (PUT) o Creación (POST)
-    const idVehiculo = new URLSearchParams(window.location.search).get('id') || payload.id;
+        if (!aviso) {
+            aviso = document.createElement('div');
+            aviso.id = 'mensaje-formulario';
+            aviso.setAttribute('role', 'alert');
+            aviso.style.marginBottom = '1rem';
 
-    try {
-        if (idVehiculo) {
-            await api.put(`/vehiculos/${idVehiculo}`, payload);
-            alert('Vehículo actualizado correctamente.');
-        } else {
-            await api.post('/vehiculos', payload);
-            alert('Vehículo registrado correctamente.');
+            formulario.prepend(aviso);
         }
-        
-        // Se redirige al listado tras éxito (ajustar la ruta según sea necesario)
-        window.location.href = '/lab8/gerente/vehiculos';
 
-    } catch (error) {
-        // Se capturan los errores de validación del backend
-        if (error.status === 422 && error.errors) {
-            mostrarErrores(error.errors);
-        } else if (error.status !== 401) {
-            // Si el error no es 401 ni 422, se muestra un error general
-            alert('Ocurrió un error al guardar: ' + (error.message || 'Intente nuevamente.'));
-        }
-    } finally {
-        // Se restaura el estado original del botón
-        btnSubmit.innerText = textoOriginal;
-        btnSubmit.disabled = false;
+        aviso.textContent = texto;
     }
-});
 
-// =====================================================================
-// 3. Funciones auxiliares para la interfaz de errores
-// =====================================================================
-function mostrarErrores(errores) {
-    Object.keys(errores).forEach(campo => {
-        const input = formVehiculo.querySelector(`[name="${campo}"]`);
-        
-        // Se busca el span correspondiente al error del campo (Ej: error-placa)
-        const spanError = document.getElementById(`error-${campo}`); 
-        
-        if (input) {
-            input.style.borderColor = '#dc2626'; // Borde rojo
-            input.setAttribute('aria-invalid', 'true');
-        }
-        
-        if (spanError) {
-            spanError.textContent = errores[campo][0];
-            spanError.style.display = 'block';
-            spanError.style.color = '#dc2626';
-            spanError.style.fontSize = '0.875rem';
-            spanError.style.marginTop = '0.25rem';
-        }
-    });
-    
-    // Se enfoca el primer campo con error para accesibilidad
-    const primerError = formVehiculo.querySelector('[aria-invalid="true"]');
-    if (primerError) primerError.focus();
-}
-
-function limpiarErrores() {
-    formVehiculo.querySelectorAll('.mensaje-error, [id^="error-"]').forEach(span => {
-        span.textContent = '';
-        span.style.display = 'none';
-    });
-    formVehiculo.querySelectorAll('input, select, textarea').forEach(input => {
-        input.style.borderColor = ''; 
-        input.removeAttribute('aria-invalid');
-    });
+    iniciar();
 }

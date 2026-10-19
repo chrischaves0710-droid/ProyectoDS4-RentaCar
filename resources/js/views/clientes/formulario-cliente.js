@@ -1,132 +1,323 @@
+
 import { ApiClient } from '../../api/ApiClient.js';
+import { AppState } from '../../store/AppState.js';
 
-const api = new ApiClient('/api');
+const formulario = document.querySelector('form.secciones-formulario');
 
-// Se selecciona el formulario principal (sirve tanto para crear como para editar)
-const formCliente = document.querySelector('.secciones-formulario') || document.querySelector('form');
+if (formulario) {
+    const api = new ApiClient('/api');
 
-// =====================================================================
-// 1. REQUERIMIENTO: Restaurar datos tras expiración de Token (401)
-// =====================================================================
-document.addEventListener('DOMContentLoaded', () => {
-    const backupData = sessionStorage.getItem('form_backup_401');
-    
-    if (backupData && formCliente) {
-        const data = JSON.parse(backupData);
-        
-        // Se rellenan los campos con los datos guardados
-        Object.keys(data).forEach(key => {
-            const input = formCliente.elements[key];
-            if (input) {
-                if (input.type === 'checkbox' || input.type === 'radio') {
-                    input.checked = (input.value === data[key]);
-                } else {
-                    input.value = data[key];
-                }
+    const rutaActual = window.location.pathname.replace(/\/+$/, '');
+    const esEdicion = rutaActual.endsWith('/editar');
+
+    const idCliente = new URLSearchParams(
+        window.location.search
+    ).get('id');
+
+    const rutaListado = '/lab8/gerente/clientes';
+
+    // Campos que utiliza la API de clientes
+    const nombres = [
+        'cedula',
+        'anno_nacimiento',
+        'nombre1',
+        'nombre2',
+        'apellido1',
+        'apellido2',
+        'correo',
+        'telefono'
+    ];
+
+    const botonGuardar = formulario.querySelector(
+        'button[type="submit"]'
+    );
+
+    const botonCancelar = formulario.querySelector(
+        'button.boton-secundario[type="button"]'
+    );
+
+    const textoGuardar = botonGuardar?.textContent ?? 'Guardar cliente';
+
+    // Permitir que Laravel devuelva los errores de validación
+    formulario.noValidate = true;
+
+    // Mensaje general del formulario
+    const mensaje = document.createElement('p');
+    mensaje.id = 'mensaje-formulario-cliente';
+    mensaje.setAttribute('role', 'status');
+
+    formulario.prepend(mensaje);
+
+    // Estado de la aplicación
+    const estado = new AppState({
+        listo: false,
+        cargando: true,
+        guardando: false,
+        errores: {},
+        mensaje: 'Cargando formulario...'
+    });
+
+    // Obtener un campo por su nombre
+    function obtenerCampo(nombre) {
+        return formulario.elements.namedItem(nombre);
+    }
+
+    // Mostrar los errores debajo de cada campo
+    function mostrarErrores(errores) {
+
+        for (const nombre of nombres) {
+
+            const campo = obtenerCampo(nombre);
+
+            if (!campo) continue;
+
+            let aviso = document.getElementById(`error-${nombre}`);
+
+            if (!aviso) {
+                aviso = document.createElement('span');
+                aviso.id = `error-${nombre}`;
+                aviso.className = 'mensaje-error';
+                aviso.style.color = '#dc2626';
+                aviso.style.display = 'block';
+
+                campo.insertAdjacentElement('afterend', aviso);
             }
+
+            const erroresCampo = errores[nombre];
+
+            aviso.textContent = Array.isArray(erroresCampo)
+                ? String(erroresCampo[0] ?? '')
+                : String(erroresCampo ?? '');
+
+            if (erroresCampo) {
+                campo.setAttribute('aria-invalid', 'true');
+            } else {
+                campo.removeAttribute('aria-invalid');
+            }
+        }
+    }
+
+    // Sincronizar el estado con la interfaz
+    estado.subscribe(datos => {
+
+        if (botonGuardar) {
+            botonGuardar.disabled =
+                !datos.listo || datos.cargando || datos.guardando;
+
+            botonGuardar.textContent = datos.guardando
+                ? 'Guardando...'
+                : textoGuardar;
+        }
+
+        for (const nombre of nombres) {
+
+            const campo = obtenerCampo(nombre);
+
+            if (campo) {
+                campo.disabled = datos.cargando;
+            }
+        }
+
+        mensaje.textContent = datos.mensaje;
+
+        mensaje.setAttribute(
+            'role',
+            Object.keys(datos.errores).length ? 'alert' : 'status'
+        );
+
+        mostrarErrores(datos.errores);
+    });
+
+    estado.notify();
+
+    // Rellenar los campos con datos existentes
+    function rellenarCampos(cliente) {
+
+        for (const nombre of nombres) {
+
+            const campo = obtenerCampo(nombre);
+
+            if (
+                campo &&
+                cliente[nombre] !== undefined &&
+                cliente[nombre] !== null
+            ) {
+                campo.value = cliente[nombre];
+            }
+        }
+    }
+
+    // Recuperar datos guardados tras una respuesta 401
+    function recuperarDatos() {
+
+        const respaldo = sessionStorage.getItem('form_backup_401');
+
+        if (!respaldo) return false;
+
+        try {
+            const datos = JSON.parse(respaldo);
+
+            if (
+                !datos ||
+                typeof datos !== 'object' ||
+                !('cedula' in datos) ||
+                !('nombre1' in datos) ||
+                !('apellido1' in datos)
+            ) {
+                return false;
+            }
+
+            rellenarCampos(datos);
+
+            sessionStorage.removeItem('form_backup_401');
+
+            return true;
+
+        } catch {
+            return false;
+        }
+    }
+
+    // Cargar los datos al abrir el formulario
+    async function iniciar() {
+
+        if (
+            !botonGuardar ||
+            nombres.some(nombre => !obtenerCampo(nombre))
+        ) {
+            estado.setState({
+                cargando: false,
+                mensaje: 'Faltan campos del formulario.'
+            });
+            return;
+        }
+
+        if (esEdicion && !idCliente) {
+            estado.setState({
+                cargando: false,
+                mensaje: 'Falta el ID del cliente en la dirección.'
+            });
+            return;
+        }
+
+        try {
+
+            // Consultar el cliente cuando estamos editando
+            if (esEdicion) {
+
+                const respuesta = await api.get(
+                    `/clientes/${encodeURIComponent(idCliente)}`
+                );
+
+                const cliente = respuesta.data ?? respuesta;
+
+                rellenarCampos(cliente);
+            }
+
+            // Recuperar datos tras una sesión expirada
+            const recuperado = recuperarDatos();
+
+            estado.setState({
+                listo: true,
+                cargando: false,
+                mensaje: recuperado
+                    ? 'Se recuperaron los datos del formulario.'
+                    : ''
+            });
+
+        } catch (error) {
+
+            if (error?.status !== 401) {
+
+                estado.setState({
+                    cargando: false,
+                    mensaje: error?.message ??
+                        'No se pudo cargar el cliente.'
+                });
+            }
+        }
+    }
+
+    // Registrar o actualizar un cliente
+    formulario.addEventListener('submit', async evento => {
+
+        evento.preventDefault();
+
+        if (
+            !estado.getState().listo ||
+            estado.getState().guardando
+        ) {
+            return;
+        }
+
+        // Recopilar los datos del formulario
+        const datos = Object.fromEntries(
+            nombres.map(nombre => [
+                nombre,
+                obtenerCampo(nombre).value
+            ])
+        );
+
+        estado.setState({
+            guardando: true,
+            errores: {},
+            mensaje: ''
         });
 
-        // Se limpia el respaldo y se muestra un aviso
-        sessionStorage.removeItem('form_backup_401');
-        
-        const alerta = document.createElement('div');
-        alerta.style.cssText = 'background-color: #fef08a; color: #854d0e; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;';
-        alerta.innerText = '💡 Se han restaurado los datos ingresados antes de la expiración de la sesión.';
-        formCliente.prepend(alerta);
-    }
-});
+        try {
 
-// =====================================================================
-// 2. REQUERIMIENTO: Envío asíncrono y Errores de Validación (422)
-// =====================================================================
-formCliente?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    limpiarErrores();
+            if (esEdicion) {
 
-    // Se establece el estado de carga en el botón
-    const btnSubmit = formCliente.querySelector('button[type="submit"]');
-    const textoOriginal = btnSubmit.innerText;
-    btnSubmit.innerText = 'Guardando...';
-    btnSubmit.disabled = true;
+                // Actualizar un cliente existente
+                await api.put(
+                    `/clientes/${encodeURIComponent(idCliente)}`,
+                    datos
+                );
 
-    // Se recopilan los datos del formulario
-    const formData = new FormData(formCliente);
-    const payload = Object.fromEntries(formData.entries());
-    
-    // Se verifica si existe un ID en la URL para determinar si es Edición (PUT) o Creación (POST)
-    const idCliente = new URLSearchParams(window.location.search).get('id') || payload.id;
+            } else {
 
-    try {
-        if (idCliente) {
-            await api.put(`/clientes/${idCliente}`, payload);
-            alert('Cliente actualizado correctamente.');
-        } else {
-            await api.post('/clientes', payload);
-            alert('Cliente registrado exitosamente.');
-        }
-        
-        // Se redirige al listado tras éxito
-        window.location.href = '/lab8/gerente/clientes';
-
-    } catch (error) {
-        // Se capturan los errores de validación del backend
-        if (error.status === 422 && error.errors) {
-            mostrarErrores(error.errors);
-        } else if (error.status !== 401) {
-            // Si el error no es 401 ni 422, se muestra un error general
-            alert('Ocurrió un error al guardar: ' + (error.message || 'Intente nuevamente.'));
-        }
-    } finally {
-        // Se restaura el estado original del botón
-        btnSubmit.innerText = textoOriginal;
-        btnSubmit.disabled = false;
-    }
-});
-
-// =====================================================================
-// 3. Funciones auxiliares para la interfaz de errores
-// =====================================================================
-function mostrarErrores(errores) {
-    Object.keys(errores).forEach(campo => {
-        const input = formCliente.querySelector(`[name="${campo}"]`);
-        
-        // Se busca el span correspondiente al error del campo (Ej: error-cedula)
-        let spanError = document.getElementById(`error-${campo}`); 
-        
-        if (input) {
-            input.style.borderColor = '#dc2626'; // Borde rojo
-            input.setAttribute('aria-invalid', 'true');
-            
-            // Si no existe un span de error en el HTML, se crea dinámicamente debajo del input
-            if (!spanError) {
-                spanError = document.createElement('span');
-                spanError.id = `error-${campo}`;
-                spanError.className = 'mensaje-error';
-                input.parentNode.appendChild(spanError);
+                // Registrar un cliente nuevo
+                await api.post('/clientes', datos);
             }
-        }
-        
-        if (spanError) {
-            spanError.textContent = errores[campo][0];
-            spanError.style.display = 'block';
-            spanError.style.color = '#dc2626';
-            spanError.style.fontSize = '0.875rem';
-            spanError.style.marginTop = '0.25rem';
-        }
-    });
-    
-    // Se enfoca el primer campo con error para accesibilidad
-    const primerError = formCliente.querySelector('[aria-invalid="true"]');
-    if (primerError) primerError.focus();
-}
 
-function limpiarErrores() {
-    formCliente.querySelectorAll('.mensaje-error, [id^="error-"]').forEach(span => {
-        span.textContent = '';
-        span.style.display = 'none';
+            // Regresar al directorio de clientes
+            window.location.assign(rutaListado);
+
+        } catch (error) {
+
+            if (error?.status === 422) {
+
+                // Mostrar errores devueltos por Laravel
+                estado.setState({
+                    errores: error.errors ?? {},
+                    mensaje: 'Revisa los campos marcados.'
+                });
+
+                formulario.querySelector(
+                    '[aria-invalid="true"]'
+                )?.focus();
+
+            } else if (error?.status !== 401) {
+
+                estado.setState({
+                    mensaje: error?.message ??
+                        'No se pudo guardar el cliente.'
+                });
+            }
+
+        } finally {
+
+            estado.setState({
+                guardando: false
+            });
+        }
     });
-    formCliente.querySelectorAll('input, select, textarea').forEach(input => {
-        input.style.borderColor = ''; 
-        input.removeAttribute('aria-invalid');
+
+    // Funcionamiento del botón Cancelar
+    botonCancelar?.addEventListener('click', () => {
+        window.location.assign(rutaListado);
     });
+
+    // Iniciar el formulario
+    iniciar();
 }

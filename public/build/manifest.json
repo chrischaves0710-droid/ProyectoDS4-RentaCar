@@ -1,4 +1,12 @@
 {
+  "_ApiClient-B4CE_Sca.js": {
+    "file": "assets/ApiClient-B4CE_Sca.js",
+    "name": "ApiClient"
+  },
+  "_AppState-BANczeEP.js": {
+    "file": "assets/AppState-BANczeEP.js",
+    "name": "AppState"
+  },
   "_fonts-C9MNnjVw.css": {
     "file": "assets/fonts-C9MNnjVw.css",
     "src": "_fonts-C9MNnjVw.css"
@@ -28,7 +36,7 @@
     "src": "_instrument-sans-600-normal-B9e8oLYv.woff"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DWDf5_L4.css",
+    "file": "assets/app-CWu-A7nN.css",
     "name": "app",
     "names": [
       "app.css"
@@ -50,5 +58,201 @@
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
+  },
+  "resources/js/views/accesorios/formulario-accesorio.js": {
+    "file": "assets/formulario-accesorio-TL7ejizo.js",
+    "name": "formulario-accesorio",
+    "src": "resources/js/views/accesorios/formulario-accesorio.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/accesorios/listado-accesorios.js": {
+    "file": "assets/listado-accesorios-14rJkwHh.js",
+    "name": "listado-accesorios",
+    "src": "resources/js/views/accesorios/listado-accesorios.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/auth/login.js": {
+    "file": "assets/login-DT_6WMJf.js",
+    "name": "login",
+    "src": "resources/js/views/auth/login.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js"
+    ]
+  },
+  "resources/js/views/categorias/formulario-categoria.js": {
+    "file": "assets/formulario-categoria-AnQFNe2-.js",
+    "name": "formulario-categoria",
+    "src": "resources/js/views/categorias/formulario-categoria.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js"
+    ]
+  },
+  "resources/js/views/categorias/listado-categorias.js": {
+    "file": "assets/listado-categorias-B9eXZq5y.js",
+    "name": "listado-categorias",
+    "src": "resources/js/views/categorias/listado-categorias.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/clientes/formulario-cliente.js": {
+    "file": "assets/formulario-cliente-CfSmiLlk.js",
+    "name": "formulario-cliente",
+    "src": "resources/js/views/clientes/formulario-cliente.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/clientes/listado-clientes.js": {
+    "file": "assets/listado-clientes-CkPEkUp8.js",
+    "name": "listado-clientes",
+    "src": "resources/js/views/clientes/listado-clientes.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/estados/formulario-estado.js": {
+    "file": "assets/formulario-estado-B7jRblWb.js",
+    "name": "formulario-estado",
+    "src": "resources/js/views/estados/formulario-estado.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js"
+    ]
+  },
+  "resources/js/views/estados/listado-estados.js": {
+    "file": "assets/listado-estados-BqMI4PJ4.js",
+    "name": "listado-estados",
+    "src": "resources/js/views/estados/listado-estados.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/rentas/formulario-renta.js": {
+    "file": "assets/formulario-renta-6ENvzxf0.js",
+    "name": "formulario-renta",
+    "src": "resources/js/views/rentas/formulario-renta.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/rentas/listado-rentas.js": {
+    "file": "assets/listado-rentas-CDcPoa2a.js",
+    "name": "listado-rentas",
+    "src": "resources/js/views/rentas/listado-rentas.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/vehiculos/formulario-vehiculo.js": {
+    "file": "assets/formulario-vehiculo-CUF4no9O.js",
+    "name": "formulario-vehiculo",
+    "src": "resources/js/views/vehiculos/formulario-vehiculo.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/vehiculos/listado-vehiculos.js": {
+    "file": "assets/listado-vehiculos-DnNLe3rH.js",
+    "name": "listado-vehiculos",
+    "src": "resources/js/views/vehiculos/listado-vehiculos.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/vistas-cliente/accesorios.js": {
+    "file": "assets/accesorios-CyrrMG2O.js",
+    "name": "accesorios",
+    "src": "resources/js/views/vistas-cliente/accesorios.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/vistas-cliente/catalogo.js": {
+    "file": "assets/catalogo-DTvvczBK.js",
+    "name": "catalogo",
+    "src": "resources/js/views/vistas-cliente/catalogo.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/vistas-cliente/mi-perfil.js": {
+    "file": "assets/mi-perfil-Cs9DM7Qi.js",
+    "name": "mi-perfil",
+    "src": "resources/js/views/vistas-cliente/mi-perfil.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js"
+    ]
+  },
+  "resources/js/views/vistas-cliente/mis-rentas.js": {
+    "file": "assets/mis-rentas-BkM9DFM9.js",
+    "name": "mis-rentas",
+    "src": "resources/js/views/vistas-cliente/mis-rentas.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/vistas-gestor/consultar-accesorios.js": {
+    "file": "assets/consultar-accesorios-B3DDiOqv.js",
+    "name": "consultar-accesorios",
+    "src": "resources/js/views/vistas-gestor/consultar-accesorios.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/vistas-gestor/consultar-clientes.js": {
+    "file": "assets/consultar-clientes-Ce9EVrpj.js",
+    "name": "consultar-clientes",
+    "src": "resources/js/views/vistas-gestor/consultar-clientes.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
+  },
+  "resources/js/views/vistas-gestor/consultar-vehiculos.js": {
+    "file": "assets/consultar-vehiculos-D-GFbn6a.js",
+    "name": "consultar-vehiculos",
+    "src": "resources/js/views/vistas-gestor/consultar-vehiculos.js",
+    "isEntry": true,
+    "imports": [
+      "_ApiClient-B4CE_Sca.js",
+      "_AppState-BANczeEP.js"
+    ]
   }
 }

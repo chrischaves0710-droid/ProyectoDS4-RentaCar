@@ -16,21 +16,26 @@ class Vehiculo extends Model
     protected $table = 'vehiculos';
 
     // Campos permitidos para guardar
-    protected $fillable = [
-        'placa',
-        'marca',
-        'modelo',
-        'anno',
-        'kilometraje',
-        'categoria_id',
-        'estado_id',
-    ];
+  
+protected $fillable = [
+    'placa',
+    'marca',
+    'modelo',
+    'anno',
+    'kilometraje',
+    'precio_diario',
+    'categoria_id',
+    'estado_id',
+];
 
     // Convertir tipos de datos a numeros enteros
-    protected $casts = [
-        'anno' => 'integer',
-        'kilometraje' => 'integer',
-    ];
+    
+protected $casts = [
+    'anno' => 'integer',
+    'kilometraje' => 'integer',
+    'precio_diario' => 'decimal:2',
+];
+
 
     // un carro pertenece a una categoría
     public function categoria(): BelongsTo

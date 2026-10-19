@@ -1,0 +1,1 @@
+var e=class{constructor(e={}){this.state={data:[],pagination:{},loading:!1,error:null,...e},this.subscribers=[]}subscribe(e){this.subscribers.push(e)}notify(){this.subscribers.forEach(e=>e(this.state))}setState(e){this.state={...this.state,...e},this.notify()}getState(){return{...this.state}}};export{e as t};

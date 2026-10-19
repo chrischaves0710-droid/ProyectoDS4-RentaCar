@@ -1,8 +1,9 @@
+
 import { ApiClient } from '../../api/ApiClient.js';
 import { AppState } from '../../store/AppState.js';
 
-// 1. Instancias de los módulos base
 const api = new ApiClient('/api');
+
 const store = new AppState({
     data: [],
     pagination: {},
@@ -12,200 +13,515 @@ const store = new AppState({
     busqueda: ''
 });
 
-let debounceTimer = null;
-let currentAbortController = null;
+const tabla = document.querySelector('.contenedor-tabla');
+const paginacion = document.querySelector('.paginacion');
+const busqueda = document.getElementById('buscar-cliente');
+const formularioFiltros = document.querySelector('.formulario-filtros');
+const resumen = document.querySelector('.encabezado-listado p');
 
-// Se seleccionan los elementos del DOM
-const contenedorTabla = document.querySelector('.contenedor-tabla');
-const inputBusqueda = document.getElementById('buscar-cliente');
-const formFiltros = document.querySelector('.formulario-filtros');
-const navPaginacion = document.querySelector('.paginacion');
+let temporizador = null;
+let solicitudActual = null;
+let versionSolicitud = 0;
 
-// 2. Suscripción al estado (renderizado reactivo)
-store.subscribe((state) => {
-    
-    // Se maneja el estado de carga
-    if (state.loading) {
-        if (contenedorTabla) {
-            contenedorTabla.innerHTML = `
-                <div style="text-align: center; padding: 2.5rem; color: #64748b;">
-                    <p>⏳ Cargando directorio de clientes...</p>
-                </div>`;
-        }
-        return;
-    }
+// Evitar que los datos recibidos se interpreten como HTML
+function escaparHTML(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[caracter]);
+}
 
-    // Se maneja el estado de error con opción de reintento
-    if (state.error) {
-        if (contenedorTabla) {
-            contenedorTabla.innerHTML = `
-                <div style="text-align: center; padding: 2.5rem; color: #dc2626;">
-                    <p>⚠️ ${state.error}</p>
-                    <button type="button" id="btn-reintentar" class="boton boton-secundario" style="margin-top: 0.75rem;">
-                        Reintentar
-                    </button>
-                </div>`;
-            document.getElementById('btn-reintentar')?.addEventListener('click', () => cargarClientes(state.paginaActual));
-        }
-        return;
-    }
+// Construir el nombre completo del cliente
+function nombreCompleto(cliente) {
+    return [
+        cliente.nombre1,
+        cliente.nombre2,
+        cliente.apellido1,
+        cliente.apellido2
+    ]
+        .filter(parte =>
+            parte !== null &&
+            parte !== undefined &&
+            parte !== ''
+        )
+        .join(' ');
+}
 
-    // Se maneja el estado vacío
-    if (!state.data || state.data.length === 0) {
-        if (contenedorTabla) {
-            contenedorTabla.innerHTML = `
-                <div style="text-align: center; padding: 2.5rem; color: #64748b;">
-                    <p>🔍 No se encontraron clientes que coincidan con la búsqueda.</p>
-                </div>`;
-        }
-        if (navPaginacion) navPaginacion.innerHTML = '';
-        return;
-    }
+// Cancelar solicitudes anteriores
+function cancelarSolicitud() {
+    versionSolicitud++;
+    solicitudActual?.abort();
+    solicitudActual = null;
+}
 
-    // Se renderiza la lista poblada y la paginación
-    renderTabla(state.data);
-    renderPaginacion(state.pagination);
-});
+// Mostrar la tabla de clientes
+function mostrarTabla(clientes) {
 
-// 3. Se renderizan las filas y la tabla
-function renderTabla(clientes) {
-    if (!contenedorTabla) return;
+    const filas = clientes.map(cliente => {
 
-    const filasHTML = clientes.map(c => `
-        <tr>
-            <td>${c.cedula || 'N/A'}</td>
-            <td>${c.nombre || c.nombre_completo || 'N/A'}</td>
-            <td>${c.anio_nacimiento || c.anio_nac || 'N/A'}</td>
-            <td>${c.correo || c.email || 'N/A'}</td>
-            <td>${c.telefono || 'N/A'}</td>
-            <td>
-                <div class="acciones-tabla">
-                    <a href="/lab8/gerente/clientes/consultar?id=${c.id}" class="accion-tabla">Consultar</a>
-                    <a href="/lab8/gerente/clientes/editar?id=${c.id}" class="accion-tabla">Editar</a>
-                    <button 
-                        type="button" 
-                        class="accion-tabla accion-eliminar" 
-                        ${c.tiene_rentas ? 'disabled aria-describedby="mensaje-eliminacion-cliente"' : ''}
-                        onclick="eliminarCliente(${c.id})"
-                    >
-                        Eliminar
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+        const id = escaparHTML(cliente.id);
 
-    contenedorTabla.innerHTML = `
+        return `
+            <tr>
+                <td>${escaparHTML(cliente.cedula)}</td>
+                <td>${escaparHTML(nombreCompleto(cliente))}</td>
+                <td>${escaparHTML(cliente.anno_nacimiento)}</td>
+                <td>${escaparHTML(cliente.correo)}</td>
+                <td>${escaparHTML(cliente.telefono)}</td>
+
+                <td>
+                    <div class="acciones-tabla">
+
+                        <button type="button"
+                                class="accion-tabla"
+                                data-consultar-id="${id}">
+                            Consultar
+                        </button>
+
+                        <a class="accion-tabla"
+                           href="/lab8/gerente/clientes/editar?id=${encodeURIComponent(String(cliente.id))}">
+                            Editar
+                        </a>
+
+                        <button type="button"
+                                class="accion-tabla accion-eliminar"
+                                data-eliminar-id="${id}">
+                            Eliminar
+                        </button>
+
+                    </div>
+                </td>
+            </tr>`;
+    }).join('');
+
+    tabla.innerHTML = `
         <table class="tabla-vehiculos">
+
+            <caption class="visualmente-oculto">
+                Directorio de clientes
+            </caption>
+
             <thead>
                 <tr>
-                    <th scope="col">Cédula</th>
-                    <th scope="col">Nombre Completo</th>
-                    <th scope="col">Año Nac.</th>
-                    <th scope="col">Correo Electrónico</th>
-                    <th scope="col">Teléfono</th>
-                    <th scope="col">Acciones</th>
+                    <th>Cédula</th>
+                    <th>Nombre completo</th>
+                    <th>Año Nac.</th>
+                    <th>Correo electrónico</th>
+                    <th>Teléfono</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody>
-                ${filasHTML}
-            </tbody>
+
+            <tbody>${filas}</tbody>
+
         </table>`;
 }
 
-// 4. Se renderiza la paginación funcional
-function renderPaginacion(meta) {
-    if (!navPaginacion || !meta || !meta.last_page) return;
+// Mostrar la paginación
+function mostrarPaginacion(meta) {
 
-    const { current_page, last_page } = meta;
+    const actual = Math.max(
+        1,
+        Number(meta.current_page) || 1
+    );
 
-    navPaginacion.innerHTML = `
-        <button type="button" class="boton boton-secundario" id="btn-prev" ${current_page <= 1 ? 'disabled' : ''}>
+    const ultima = Math.max(
+        1,
+        Number(meta.last_page ?? meta.total_pages) || 1
+    );
+
+    paginacion.innerHTML = `
+        <button type="button"
+                class="boton boton-secundario"
+                data-pagina="${actual - 1}"
+                ${actual <= 1 ? 'disabled' : ''}>
             Anterior
         </button>
-        <span class="pagina-actual">${current_page} de ${last_page}</span>
-        <button type="button" class="boton boton-secundario" id="btn-next" ${current_page >= last_page ? 'disabled' : ''}>
+
+        <span class="pagina-actual" aria-current="page">
+            ${actual} de ${ultima}
+        </span>
+
+        <button type="button"
+                class="boton boton-secundario"
+                data-pagina="${actual + 1}"
+                ${actual >= ultima ? 'disabled' : ''}>
             Siguiente
-        </button>
-    `;
-
-    document.getElementById('btn-prev')?.addEventListener('click', () => {
-        if (current_page > 1) cargarClientes(current_page - 1);
-    });
-
-    document.getElementById('btn-next')?.addEventListener('click', () => {
-        if (current_page < last_page) cargarClientes(current_page + 1);
-    });
+        </button>`;
 }
 
-// 5. Se realiza la petición asíncrona con AbortController
-async function cargarClientes(pagina = 1) {
-    store.setState({ loading: true, error: null });
+// Sincronizar el estado con la interfaz
+store.subscribe(estado => {
 
-    // Se cancela la petición anterior si aún está en curso
-    if (currentAbortController) {
-        currentAbortController.abort();
-    }
-    currentAbortController = new AbortController();
+    if (!tabla || !paginacion) return;
 
-    try {
-        const query = new URLSearchParams({
-            page: pagina,
-            buscar: store.state.busqueda
-        }).toString();
+    // Estado de carga
+    if (estado.loading) {
 
-        const respuesta = await api.get(`/clientes?${query}`, {
-            signal: currentAbortController.signal
-        });
+        tabla.innerHTML = `
+            <p role="status"
+               style="padding:2rem;text-align:center">
+                Cargando clientes...
+            </p>`;
 
-        if (respuesta && !respuesta.aborted) {
-            store.setState({
-                data: respuesta.data || respuesta,
-                pagination: respuesta.meta || { current_page: pagina, last_page: 1 },
-                loading: false,
-                paginaActual: pagina
-            });
+        paginacion.innerHTML = '';
+
+        if (resumen) {
+            resumen.textContent = 'Cargando...';
         }
-    } catch (err) {
-        if (err.status !== 401) {
-            store.setState({
-                loading: false,
-                error: err.message || 'Error al conectar con el servidor.'
-            });
-        }
-    }
-}
 
-// 6. Se configuran los listeners para debounce y filtros
-inputBusqueda?.addEventListener('input', (e) => {
-    clearTimeout(debounceTimer);
-    
-    debounceTimer = setTimeout(() => {
-        store.setState({ busqueda: e.target.value.trim() });
-        cargarClientes(1);
-    }, 400); // Se aplica un retardo de 400 ms
+        return;
+    }
+
+    // Estado de error con opción de reintento
+    if (estado.error) {
+
+        tabla.innerHTML = `
+            <div style="padding:2rem;text-align:center">
+
+                <p role="alert">
+                    ${escaparHTML(estado.error)}
+                </p>
+
+                <button type="button"
+                        id="reintentar-clientes"
+                        class="boton boton-secundario">
+                    Reintentar
+                </button>
+
+            </div>`;
+
+        paginacion.innerHTML = '';
+
+        if (resumen) {
+            resumen.textContent =
+                'No se pudo consultar el directorio';
+        }
+
+        document.getElementById('reintentar-clientes')
+            ?.addEventListener('click', () => {
+
+                cargarClientes(estado.paginaActual);
+            });
+
+        return;
+    }
+
+    // Estado vacío
+    if (estado.data.length === 0) {
+
+        tabla.innerHTML = `
+            <p style="padding:2rem;text-align:center">
+                No se encontraron clientes.
+            </p>`;
+
+        paginacion.innerHTML = '';
+
+        if (resumen) {
+            resumen.textContent = '0 clientes encontrados';
+        }
+
+        return;
+    }
+
+    // Estado con datos
+    mostrarTabla(estado.data);
+    mostrarPaginacion(estado.pagination);
+
+    if (resumen) {
+
+        const total = estado.pagination.total ??
+            estado.data.length;
+
+        resumen.textContent =
+            `${total} clientes encontrados`;
+    }
 });
 
-formFiltros?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    store.setState({ busqueda: inputBusqueda?.value.trim() || '' });
+// Consultar clientes de forma asíncrona
+async function cargarClientes(pagina = 1) {
+
+    cancelarSolicitud();
+
+    const miVersion = versionSolicitud;
+    const controlador = new AbortController();
+
+    solicitudActual = controlador;
+
+    store.setState({
+        loading: true,
+        error: null,
+        paginaActual: pagina
+    });
+
+    const parametros = new URLSearchParams({
+        page: String(pagina),
+        perPage: '10'
+    });
+
+    // Laravel espera q para la búsqueda
+    const criterio = store.getState().busqueda;
+
+    if (criterio) {
+        parametros.set('q', criterio);
+    }
+
+    try {
+
+        const respuesta = await api.get(
+            `/clientes?${parametros.toString()}`,
+            { signal: controlador.signal }
+        );
+
+        // Ignorar respuestas antiguas o canceladas
+        if (
+            miVersion !== versionSolicitud ||
+            controlador.signal.aborted ||
+            respuesta?.aborted
+        ) {
+            return;
+        }
+
+        store.setState({
+
+            data: Array.isArray(respuesta?.data)
+                ? respuesta.data
+                : [],
+
+            pagination: respuesta?.meta ?? {
+                current_page: pagina,
+                last_page: 1
+            },
+
+            loading: false,
+            error: null
+        });
+
+    } catch (error) {
+
+        if (
+            miVersion !== versionSolicitud ||
+            controlador.signal.aborted ||
+            error?.name === 'AbortError'
+        ) {
+            return;
+        }
+
+        if (error?.status !== 401) {
+
+            store.setState({
+                loading: false,
+                error: error?.message ??
+                    'No se pudo consultar el directorio.'
+            });
+        }
+
+    } finally {
+
+        if (solicitudActual === controlador) {
+            solicitudActual = null;
+        }
+    }
+}
+
+// Búsqueda con debounce y cancelación inmediata
+busqueda?.addEventListener('input', () => {
+
+    clearTimeout(temporizador);
+
+    cancelarSolicitud();
+
+    store.setState({
+        busqueda: busqueda.value.trim(),
+        paginaActual: 1,
+        loading: true,
+        error: null
+    });
+
+    temporizador = setTimeout(() => {
+        cargarClientes(1);
+    }, 400);
+});
+
+// Aplicar filtros sin recargar la página
+formularioFiltros?.addEventListener('submit', evento => {
+
+    evento.preventDefault();
+
+    clearTimeout(temporizador);
+
+    store.setState({
+        busqueda: busqueda?.value.trim() ?? ''
+    });
+
     cargarClientes(1);
 });
 
-// Función auxiliar para eliminar cliente
-window.eliminarCliente = async function(id) {
-    if (!confirm('¿Está seguro de que desea eliminar este cliente?')) return;
-    
+// Cambiar de página
+paginacion?.addEventListener('click', evento => {
+
+    const boton = evento.target.closest(
+        'button[data-pagina]'
+    );
+
+    if (boton && !boton.disabled) {
+        cargarClientes(Number(boton.dataset.pagina));
+    }
+});
+
+// Consultar los datos completos de un cliente
+async function consultarCliente(id) {
+
     try {
-        await api.delete(`/clientes/${id}`);
-        alert('Cliente eliminado correctamente.');
-        cargarClientes(store.state.paginaActual);
+
+        const respuesta = await api.get(
+            `/clientes/${encodeURIComponent(id)}`
+        );
+
+        const cliente = respuesta.data ?? respuesta;
+
+        const detalle = document.createElement('dialog');
+
+        detalle.style.cssText =
+            'max-width:450px;width:90%;padding:1.5rem;' +
+            'border:1px solid #cbd5e1;border-radius:8px;';
+
+        const titulo = document.createElement('h2');
+        titulo.textContent = 'Datos del cliente';
+
+        detalle.append(titulo);
+
+        const campos = {
+            'Cédula': cliente.cedula,
+            'Nombre': nombreCompleto(cliente),
+            'Año de nacimiento': cliente.anno_nacimiento,
+            'Correo': cliente.correo,
+            'Teléfono': cliente.telefono
+        };
+
+        for (const [etiqueta, valor] of Object.entries(campos)) {
+
+            const parrafo = document.createElement('p');
+
+            parrafo.textContent =
+                `${etiqueta}: ${valor ?? 'N/A'}`;
+
+            detalle.append(parrafo);
+        }
+
+        const cerrar = document.createElement('button');
+
+        cerrar.type = 'button';
+        cerrar.className = 'boton boton-secundario';
+        cerrar.textContent = 'Cerrar';
+
+        cerrar.addEventListener('click', () => {
+            detalle.close();
+        });
+
+        detalle.append(cerrar);
+
+        detalle.addEventListener('close', () => {
+            detalle.remove();
+        });
+
+        document.body.append(detalle);
+
+        detalle.showModal();
+
     } catch (error) {
-        if (error.status !== 401) {
-            alert('Error al eliminar: ' + (error.message || 'El cliente no puede ser eliminado.'));
+
+        if (error?.status !== 401) {
+
+            alert(
+                error?.message ??
+                'No se pudo consultar el cliente.'
+            );
         }
     }
-};
+}
 
-// Se inicializa la vista al cargar la página
-cargarClientes(1);
+// Acciones de consultar y eliminar
+tabla?.addEventListener('click', async evento => {
+
+    const consultar = evento.target.closest(
+        'button[data-consultar-id]'
+    );
+
+    if (consultar) {
+
+        await consultarCliente(
+            consultar.dataset.consultarId
+        );
+
+        return;
+    }
+
+    const eliminar = evento.target.closest(
+        'button[data-eliminar-id]'
+    );
+
+    if (!eliminar) return;
+
+    if (!confirm(
+        '¿Está seguro de que desea eliminar este cliente?'
+    )) {
+        return;
+    }
+
+    eliminar.disabled = true;
+
+    try {
+
+        await api.delete(
+            `/clientes/${encodeURIComponent(eliminar.dataset.eliminarId)}`
+        );
+
+        const { paginaActual, data } = store.getState();
+
+        const paginaDestino =
+            data.length === 1 && paginaActual > 1
+                ? paginaActual - 1
+                : paginaActual;
+
+        await cargarClientes(paginaDestino);
+
+    } catch (error) {
+
+        if (error?.status !== 401) {
+
+            alert(
+                error?.message ??
+                'No se pudo eliminar el cliente.'
+            );
+
+            eliminar.disabled = false;
+        }
+    }
+});
+
+// Corregir el enlace Registrar cliente
+const enlaceRegistrar = document.querySelector('.boton-registrar');
+
+if (enlaceRegistrar) {
+    enlaceRegistrar.href =
+        '/lab8/gerente/clientes/registrar';
+}
+
+// Mensaje de restricciones de eliminación
+const advertencia = document.getElementById(
+    'mensaje-eliminacion-cliente'
+);
+
+if (advertencia) {
+    advertencia.textContent =
+        'Los clientes con rentas asociadas no se pueden eliminar.';
+}
+
+// Cargar el listado inicial
+if (tabla && paginacion) {
+    cargarClientes(1);
+}

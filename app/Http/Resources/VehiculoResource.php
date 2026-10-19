@@ -9,17 +9,40 @@ class VehiculoResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        // transforma el modelo en arreglo
+
+
         return [
             'id' => $this->id,
-            'matricula' => $this->placa, // cambia nombre
+
+            // Datos del vehículo
+            'placa' => $this->placa,
+            'matricula' => $this->placa,
             'marca' => $this->marca,
             'modelo' => $this->modelo,
-            'anio_fabricacion' => $this->anno, // cambia nombre
+
+            // Año del vehículo
+            'anno' => $this->anno,
+            'anio' => $this->anno,
+            'anio_fabricacion' => $this->anno,
+
+            // Kilometraje y precio
             'kilometraje' => $this->kilometraje,
             'precio_diario' => (float) $this->precio_diario,
-            'categoria' => $this->whenLoaded('categoria', fn () => $this->categoria->nombre), // carga relacion
-            'estado' => $this->whenLoaded('estado', fn () => $this->estado->nombre), // carga relacion
+
+            // Identificadores de relaciones
+            'categoria_id' => $this->categoria_id,
+            'estado_id' => $this->estado_id,
+
+            // Información de las relaciones
+            'categoria' => $this->whenLoaded(
+                'categoria',
+                fn () => $this->categoria->nombre
+            ),
+
+            'estado' => $this->whenLoaded(
+                'estado',
+                fn () => $this->estado->nombre
+            ),
         ];
     }
 }

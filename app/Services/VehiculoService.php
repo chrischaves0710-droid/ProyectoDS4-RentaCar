@@ -60,15 +60,26 @@ class VehiculoService
 
         $order = strtolower($order) === 'asc' ? 'asc' : 'desc';
 
-        return Vehiculo::with(['categoria', 'estado']) 
-            ->when($filtros['categoria_id'] ?? null, fn($q, $cat) => $q->where('categoria_id', $cat))
-            ->when($filtros['q'] ?? null, fn($q, $search) => 
-                $q->where('placa', 'like', "{$search}%")
-                  ->orWhere('modelo', 'like', "%{$search}%")
-            )
-            ->orderBy($sortBy, $order)
-            ->orderBy('id', 'desc')
-            ->paginate($limit);
+       
+return Vehiculo::with(['categoria', 'estado'])
+    ->when(
+        $filtros['categoria_id'] ?? null,
+        fn ($query, $categoriaId) => $query->where('categoria_id', $categoriaId)
+    )
+    ->when(
+        $filtros['estado_id'] ?? null,
+        fn ($query, $estadoId) => $query->where('estado_id', $estadoId)
+    )
+    ->when($filtros['q'] ?? null, function ($query, $busqueda) {
+        $query->where(function ($subconsulta) use ($busqueda) {
+            $subconsulta->where('placa', 'like', "%{$busqueda}%")
+                ->orWhere('modelo', 'like', "%{$busqueda}%");
+        });
+    })
+    ->orderBy($sortBy, $order)
+    ->orderBy('id', 'desc')
+    ->paginate($limit);
+
     }
 
     public function mostrar(Vehiculo $vehiculo): Vehiculo

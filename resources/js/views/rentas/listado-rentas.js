@@ -1,207 +1,398 @@
+
 import { ApiClient } from '../../api/ApiClient.js';
 import { AppState } from '../../store/AppState.js';
 
-// 1. Instancias de los módulos base
-const api = new ApiClient('/api');
-const store = new AppState({
-    data: [],
-    pagination: {},
-    loading: false,
-    error: null,
-    paginaActual: 1,
-    busqueda: '',
-    estadoFiltro: ''
-});
+const tabla = document.querySelector('.contenedor-tabla');
+const paginacion = document.querySelector('.paginacion');
 
-let debounceTimer = null;
-let currentAbortController = null;
+if (tabla && paginacion) {
+    const api = new ApiClient('/api');
 
-// Se seleccionan los elementos del DOM
-const contenedorTabla = document.querySelector('.contenedor-tabla');
-const inputBusqueda = document.getElementById('buscar-renta');
-const selectEstado = document.getElementById('estado-renta');
-const formFiltros = document.querySelector('.formulario-filtros');
-const navPaginacion = document.querySelector('.paginacion');
+    const store = new AppState({
+        data: [],
+        pagination: {},
+        loading: false,
+        error: null,
+        paginaActual: 1,
+        busqueda: ''
+    });
 
-// 2. Suscripción al estado (renderizado reactivo)
-store.subscribe((state) => {
-    
-    if (state.loading) {
-        if (contenedorTabla) {
-            contenedorTabla.innerHTML = `
-                <div style="text-align: center; padding: 2.5rem; color: #64748b;">
-                    <p>⏳ Cargando listado de rentas...</p>
-                </div>`;
-        }
-        return;
+    const inputBusqueda = document.getElementById('buscar-renta');
+    const formFiltros = document.querySelector('.formulario-filtros');
+    const selectEstado = document.getElementById('estado-renta');
+    const resumen = document.querySelector('.encabezado-listado p');
+
+    const esGestor = location.pathname.startsWith('/lab8/gestor/');
+
+    const rutaBase = esGestor
+        ? '/lab8/gestor/rentas'
+        : '/lab8/gerente/rentas';
+
+    let temporizador = null;
+    let controladorActivo = null;
+    let versionSolicitud = 0;
+
+    // El modelo actual no guarda estados de renta.
+    // Desactivar el filtro hasta que exista en la API.
+    if (selectEstado) {
+        selectEstado.value = '';
+        selectEstado.disabled = true;
+        selectEstado.title =
+            'El filtro necesita un estado de renta en el modelo y la API.';
     }
 
-    if (state.error) {
-        if (contenedorTabla) {
-            contenedorTabla.innerHTML = `
-                <div style="text-align: center; padding: 2.5rem; color: #dc2626;">
-                    <p>⚠️ ${state.error}</p>
-                    <button type="button" id="btn-reintentar" class="boton boton-secundario" style="margin-top: 0.75rem;">
+    // Evitar interpretar datos recibidos como HTML
+    function escaparHTML(valor) {
+        return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[caracter]);
+    }
+
+    // Cancelar solicitudes anteriores
+    function cancelarSolicitud() {
+        versionSolicitud++;
+        controladorActivo?.abort();
+        controladorActivo = null;
+    }
+
+    // Mostrar los datos recibidos de Laravel
+    function mostrarTabla(rentas) {
+
+        const filas = rentas.map(renta => {
+
+            const id = encodeURIComponent(String(renta.id));
+
+            const cliente = renta.cliente?.nombre_completo
+                ?? 'Sin cliente';
+
+            const vehiculo = [
+                renta.vehiculo?.marca,
+                renta.vehiculo?.modelo
+            ].filter(Boolean).join(' ') || 'Sin vehículo';
+
+            const monto = Number(renta.monto_total);
+
+            const total = Number.isFinite(monto)
+                ? monto.toFixed(2)
+                : '0.00';
+
+            const nombreEstado = typeof renta.estado === 'string'
+                ? renta.estado
+                : (renta.estado?.nombre ?? 'No registrado');
+
+            return `
+                <tr>
+                    <td>
+                        <strong>RN-${escaparHTML(renta.id)}</strong>
+                    </td>
+
+                    <td>${escaparHTML(cliente)}</td>
+
+                    <td>${escaparHTML(vehiculo)}</td>
+
+                    <td>
+                        ${escaparHTML(renta.fecha_inicio)}
+                        -
+                        ${escaparHTML(renta.fecha_fin)}
+                    </td>
+
+                    <td>$${total}</td>
+
+                    <td>${escaparHTML(nombreEstado)}</td>
+
+                    <td>
+                        <div class="acciones-tabla">
+
+                            <a class="accion-tabla"
+                               href="${rutaBase}/consultar?id=${id}">
+                                Consultar
+                            </a>
+
+                            <a class="accion-tabla"
+                               href="${rutaBase}/editar?id=${id}">
+                                Editar
+                            </a>
+
+                        </div>
+                    </td>
+                </tr>`;
+        }).join('');
+
+        tabla.innerHTML = `
+            <table class="tabla-vehiculos">
+
+                <caption class="visualmente-oculto">
+                    Contratos de alquiler
+                </caption>
+
+                <thead>
+                    <tr>
+                        <th>N° Contrato</th>
+                        <th>Cliente</th>
+                        <th>Vehículo</th>
+                        <th>Período</th>
+                        <th>Total Estimado</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>${filas}</tbody>
+
+            </table>`;
+    }
+
+    // Paginación del listado
+    function mostrarPaginacion(meta) {
+
+        const actual = Math.max(
+            1,
+            Number(meta.current_page) || 1
+        );
+
+        const ultima = Math.max(
+            1,
+            Number(meta.last_page) || 1
+        );
+
+        paginacion.innerHTML = `
+            <button type="button"
+                    class="boton boton-secundario"
+                    data-pagina="${actual - 1}"
+                    ${actual <= 1 ? 'disabled' : ''}>
+                Anterior
+            </button>
+
+            <span class="pagina-actual" aria-current="page">
+                ${actual} de ${ultima}
+            </span>
+
+            <button type="button"
+                    class="boton boton-secundario"
+                    data-pagina="${actual + 1}"
+                    ${actual >= ultima ? 'disabled' : ''}>
+                Siguiente
+            </button>`;
+    }
+
+    // Sincronización entre estado y vista
+    store.subscribe(estado => {
+
+        // Estado de carga
+        if (estado.loading) {
+
+            tabla.innerHTML = `
+                <p role="status"
+                   style="padding:2rem;text-align:center">
+                    Cargando rentas...
+                </p>`;
+
+            paginacion.innerHTML = '';
+
+            if (resumen) {
+                resumen.textContent = 'Cargando...';
+            }
+
+            return;
+        }
+
+        // Estado de error con reintento
+        if (estado.error) {
+
+            tabla.innerHTML = `
+                <div style="padding:2rem;text-align:center">
+
+                    <p role="alert">
+                        ${escaparHTML(estado.error)}
+                    </p>
+
+                    <button type="button"
+                            id="reintentar-rentas"
+                            class="boton boton-secundario">
                         Reintentar
                     </button>
+
                 </div>`;
-            document.getElementById('btn-reintentar')?.addEventListener('click', () => cargarRentas(state.paginaActual));
-        }
-        return;
-    }
 
-    if (!state.data || state.data.length === 0) {
-        if (contenedorTabla) {
-            contenedorTabla.innerHTML = `
-                <div style="text-align: center; padding: 2.5rem; color: #64748b;">
-                    <p>🔍 No se encontraron rentas que coincidan con los criterios de búsqueda.</p>
-                </div>`;
-        }
-        if (navPaginacion) navPaginacion.innerHTML = '';
-        return;
-    }
+            paginacion.innerHTML = '';
 
-    renderTabla(state.data);
-    renderPaginacion(state.pagination);
-});
+            if (resumen) {
+                resumen.textContent = 'Error al consultar las rentas';
+            }
 
-// 3. Se renderizan las filas y la tabla
-function renderTabla(rentas) {
-    if (!contenedorTabla) return;
+            document.getElementById('reintentar-rentas')
+                ?.addEventListener('click', () => {
+                    cargarRentas(estado.paginaActual);
+                });
 
-    const filasHTML = rentas.map(renta => {
-        // Se determina el color del estado
-        let claseEstado = 'estado-inactivo';
-        const estadoNombre = (renta.estado?.nombre || renta.estado || '').toLowerCase();
-        if (estadoNombre.includes('activa') || estadoNombre.includes('curso')) {
-            claseEstado = 'estado-disponible';
+            return;
         }
 
-        return `
-        <tr>
-            <td><strong>RN-${renta.id || 'N/A'}</strong></td>
-            <td>${renta.cliente?.nombre || 'N/A'}</td>
-            <td>${renta.vehiculo?.marca || ''} ${renta.vehiculo?.modelo || ''}</td>
-            <td>${renta.fecha_inicio || 'N/A'} - ${renta.fecha_final || renta.fecha_fin || 'N/A'}</td>
-            <td>$${parseFloat(renta.total || renta.monto_total || 0).toFixed(2)}</td>
-            <td>
-                <span class="estado ${claseEstado}">
-                    ${renta.estado?.nombre || renta.estado || 'N/A'}
-                </span>
-            </td>
-            <td>
-                <div class="acciones-tabla">
-                    <a href="/lab8/gerente/rentas/consultar?id=${renta.id}" class="accion-tabla">Consultar</a>
-                    <a href="/lab8/gerente/rentas/editar?id=${renta.id}" class="accion-tabla">Editar</a>
-                </div>
-            </td>
-        </tr>
-    `}).join('');
+        // Estado vacío
+        if (estado.data.length === 0) {
 
-    contenedorTabla.innerHTML = `
-        <table class="tabla-vehiculos">
-            <thead>
-                <tr>
-                    <th scope="col">N° Contrato</th>
-                    <th scope="col">Cliente</th>
-                    <th scope="col">Vehículo</th>
-                    <th scope="col">Período</th>
-                    <th scope="col">Total Estimado</th>
-                    <th scope="col">Estado</th>
-                    <th scope="col">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${filasHTML}
-            </tbody>
-        </table>`;
-}
+            tabla.innerHTML = `
+                <p style="padding:2rem;text-align:center">
+                    No se encontraron rentas.
+                </p>`;
 
-// 4. Se renderiza la paginación
-function renderPaginacion(meta) {
-    if (!navPaginacion || !meta || !meta.last_page) return;
+            paginacion.innerHTML = '';
 
-    const { current_page, last_page } = meta;
+            if (resumen) {
+                resumen.textContent = '0 rentas encontradas';
+            }
 
-    navPaginacion.innerHTML = `
-        <button type="button" class="boton boton-secundario" id="btn-prev" ${current_page <= 1 ? 'disabled' : ''}>
-            Anterior
-        </button>
-        <span class="pagina-actual">${current_page} de ${last_page}</span>
-        <button type="button" class="boton boton-secundario" id="btn-next" ${current_page >= last_page ? 'disabled' : ''}>
-            Siguiente
-        </button>
-    `;
+            return;
+        }
 
-    document.getElementById('btn-prev')?.addEventListener('click', () => {
-        if (current_page > 1) cargarRentas(current_page - 1);
+        // Estado con datos
+        mostrarTabla(estado.data);
+        mostrarPaginacion(estado.pagination);
+
+        if (resumen) {
+            resumen.textContent =
+                `${estado.pagination.total ?? estado.data.length} rentas encontradas`;
+        }
     });
 
-    document.getElementById('btn-next')?.addEventListener('click', () => {
-        if (current_page < last_page) cargarRentas(current_page + 1);
-    });
-}
+    // Consultar la API de manera asíncrona
+    async function cargarRentas(pagina = 1) {
 
-// 5. Se realiza la petición asíncrona
-async function cargarRentas(pagina = 1) {
-    store.setState({ loading: true, error: null });
+        cancelarSolicitud();
 
-    if (currentAbortController) {
-        currentAbortController.abort();
-    }
-    currentAbortController = new AbortController();
+        const miVersion = versionSolicitud;
+        const controlador = new AbortController();
 
-    try {
-        const query = new URLSearchParams({
-            page: pagina,
-            buscar: store.state.busqueda,
-            estado: store.state.estadoFiltro
-        }).toString();
+        controladorActivo = controlador;
 
-        const respuesta = await api.get(`/rentas?${query}`, {
-            signal: currentAbortController.signal
+        store.setState({
+            loading: true,
+            error: null,
+            paginaActual: pagina
         });
 
-        if (respuesta && !respuesta.aborted) {
-            store.setState({
-                data: respuesta.data || respuesta,
-                pagination: respuesta.meta || { current_page: pagina, last_page: 1 },
-                loading: false,
-                paginaActual: pagina
-            });
+        const parametros = new URLSearchParams({
+            page: String(pagina)
+        });
+
+        const busqueda = store.getState().busqueda;
+
+        // El servicio espera q
+        if (busqueda) {
+            parametros.set('q', busqueda);
         }
-    } catch (err) {
-        if (err.status !== 401) {
+
+        try {
+
+            const respuesta = await api.get(
+                `/rentas?${parametros.toString()}`,
+                {
+                    signal: controlador.signal
+                }
+            );
+
+            if (
+                miVersion !== versionSolicitud ||
+                controlador.signal.aborted ||
+                respuesta?.aborted
+            ) {
+                return;
+            }
+
+            if (!Array.isArray(respuesta?.data)) {
+                throw new Error(
+                    'La API devolvió un listado con formato inesperado.'
+                );
+            }
+
             store.setState({
+                data: respuesta.data,
+
+                pagination: respuesta.meta ?? {
+                    current_page: pagina,
+                    last_page: 1
+                },
+
                 loading: false,
-                error: err.message || 'Error al conectar con el servidor.'
+                error: null
             });
+
+        } catch (error) {
+
+            if (
+                miVersion !== versionSolicitud ||
+                controlador.signal.aborted ||
+                error?.name === 'AbortError'
+            ) {
+                return;
+            }
+
+            if (error?.status !== 401) {
+                store.setState({
+                    loading: false,
+                    error: error?.message ??
+                        'No se pudieron cargar las rentas.'
+                });
+            }
+
+        } finally {
+
+            if (controladorActivo === controlador) {
+                controladorActivo = null;
+            }
         }
     }
-}
 
-// 6. Se configuran los listeners para filtros
-inputBusqueda?.addEventListener('input', (e) => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        store.setState({ busqueda: e.target.value.trim() });
-        cargarRentas(1);
-    }, 400);
-});
+    // Búsqueda con debounce de 400 ms
+    inputBusqueda?.addEventListener('input', () => {
 
-selectEstado?.addEventListener('change', (e) => {
-    store.setState({ estadoFiltro: e.target.value });
-    cargarRentas(1);
-});
+        clearTimeout(temporizador);
 
-formFiltros?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    store.setState({
-        busqueda: inputBusqueda?.value.trim() || '',
-        estadoFiltro: selectEstado?.value || ''
+        // Cancelar de inmediato la solicitud anterior
+        cancelarSolicitud();
+
+        store.setState({
+            busqueda: inputBusqueda.value.trim(),
+            paginaActual: 1,
+            loading: true,
+            error: null
+        });
+
+        temporizador = setTimeout(() => {
+            cargarRentas(1);
+        }, 400);
     });
-    cargarRentas(1);
-});
 
-// Se inicializa la vista
-cargarRentas(1);
+    // Búsqueda desde el botón Filtrar
+    formFiltros?.addEventListener('submit', evento => {
+
+        evento.preventDefault();
+
+        clearTimeout(temporizador);
+
+        store.setState({
+            busqueda: inputBusqueda?.value.trim() ?? ''
+        });
+
+        cargarRentas(1);
+    });
+
+    // Paginación sin recargar la página
+    paginacion.addEventListener('click', evento => {
+
+        const boton = evento.target.closest(
+            'button[data-pagina]'
+        );
+
+        if (boton && !boton.disabled) {
+            cargarRentas(Number(boton.dataset.pagina));
+        }
+    });
+
+    // Cargar registros iniciales
+    cargarRentas(1);
+}

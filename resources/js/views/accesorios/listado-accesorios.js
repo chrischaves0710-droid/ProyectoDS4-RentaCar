@@ -1,8 +1,9 @@
+
 import { ApiClient } from '../../api/ApiClient.js';
 import { AppState } from '../../store/AppState.js';
 
-// 1. Instancias de los módulos base
 const api = new ApiClient('/api');
+
 const store = new AppState({
     data: [],
     pagination: {},
@@ -12,200 +13,390 @@ const store = new AppState({
     busqueda: ''
 });
 
-let debounceTimer = null;
-let currentAbortController = null;
+const tabla = document.querySelector('.contenedor-tabla');
+const paginacion = document.querySelector('.paginacion');
+const busqueda = document.getElementById('buscar-accesorio');
+const filtros = document.querySelector('.formulario-filtros');
+const resumen = document.querySelector('.encabezado-listado p');
 
-// Se seleccionan los elementos del DOM
-const contenedorTabla = document.querySelector('.contenedor-tabla');
-const inputBusqueda = document.getElementById('buscar-accesorio');
-const formFiltros = document.querySelector('.formulario-filtros');
-const navPaginacion = document.querySelector('.paginacion');
+const esAdmin = location.pathname.startsWith('/lab8/admin/');
 
-// 2. Suscripción al estado (renderizado reactivo)
-store.subscribe((state) => {
-    
-    // Se maneja el estado de carga
-    if (state.loading) {
-        if (contenedorTabla) {
-            contenedorTabla.innerHTML = `
-                <div style="text-align: center; padding: 2.5rem; color: #64748b;">
-                    <p>⏳ Cargando catálogo de accesorios...</p>
-                </div>`;
-        }
-        return;
-    }
+const rutaEditar = esAdmin
+    ? '/lab8/admin/accesorios/editar'
+    : '/lab8/gerente/accesorios/editar';
 
-    // Se maneja el estado de error con opción de reintento
-    if (state.error) {
-        if (contenedorTabla) {
-            contenedorTabla.innerHTML = `
-                <div style="text-align: center; padding: 2.5rem; color: #dc2626;">
-                    <p>⚠️ ${state.error}</p>
-                    <button type="button" id="btn-reintentar" class="boton boton-secundario" style="margin-top: 0.75rem;">
-                        Reintentar
-                    </button>
-                </div>`;
-            document.getElementById('btn-reintentar')?.addEventListener('click', () => cargarAccesorios(state.paginaActual));
-        }
-        return;
-    }
+let temporizador = null;
+let solicitud = null;
+let version = 0;
 
-    // Se maneja el estado vacío
-    if (!state.data || state.data.length === 0) {
-        if (contenedorTabla) {
-            contenedorTabla.innerHTML = `
-                <div style="text-align: center; padding: 2.5rem; color: #64748b;">
-                    <p>🔍 No se encontraron accesorios que coincidan con la búsqueda.</p>
-                </div>`;
-        }
-        if (navPaginacion) navPaginacion.innerHTML = '';
-        return;
-    }
+// Evitar que los datos recibidos se interpreten como HTML
+function escaparHTML(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[caracter]);
+}
 
-    // Se renderiza la lista poblada y la paginación
-    renderTabla(state.data);
-    renderPaginacion(state.pagination);
-});
+// Cancelar solicitudes anteriores
+function cancelarSolicitud() {
+    version++;
+    solicitud?.abort();
+    solicitud = null;
+}
 
-// 3. Se renderizan las filas y la tabla
-function renderTabla(accesorios) {
-    if (!contenedorTabla) return;
+// Mostrar los accesorios en la tabla
+function mostrarTabla(accesorios) {
 
-    // Se determina dinámicamente la ruta de edición según el rol en la URL
-    const baseUrl = window.location.pathname.includes('admin') 
-        ? '/lab8/admin/accesorios/editar' 
-        : '/lab8/gerente/accesorios/editar';
+    const filas = accesorios.map(accesorio => {
 
-    const filasHTML = accesorios.map(a => `
-        <tr>
-            <td><strong>${a.id}</strong></td>
-            <td>${a.nombre || 'N/A'}</td>
-            <td>$${parseFloat(a.precio_unitario || 0).toFixed(2)}</td>
-            <td>
-                <div class="acciones-tabla">
-                    <a href="${baseUrl}?id=${a.id}" class="accion-tabla">Editar</a>
-                    <button 
-                        type="button" 
-                        class="accion-tabla accion-eliminar" 
-                        onclick="eliminarAccesorio(${a.id})"
-                    >
-                        Eliminar
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+        const id = encodeURIComponent(String(accesorio.id));
+        const precio = Number(accesorio.precio_unitario);
 
-    contenedorTabla.innerHTML = `
+        const precioTexto = Number.isFinite(precio)
+            ? precio.toFixed(2)
+            : '0.00';
+
+        return `
+            <tr>
+                <td>
+                    <strong>${escaparHTML(accesorio.id)}</strong>
+                </td>
+
+                <td>${escaparHTML(accesorio.nombre)}</td>
+
+                <td>$${precioTexto}</td>
+
+                <td>
+                    <div class="acciones-tabla">
+
+                        <a class="accion-tabla"
+                           href="${rutaEditar}?id=${id}">
+                            Editar
+                        </a>
+
+                        <button type="button"
+                                class="accion-tabla accion-eliminar"
+                                data-eliminar-id="${id}">
+                            Eliminar
+                        </button>
+
+                    </div>
+                </td>
+            </tr>`;
+    }).join('');
+
+    tabla.innerHTML = `
         <table class="tabla-vehiculos">
-            <caption class="visualmente-oculto">Accesorios registrados en el sistema</caption>
+
+            <caption class="visualmente-oculto">
+                Accesorios registrados
+            </caption>
+
             <thead>
                 <tr>
-                    <th scope="col" style="width: 10%;">ID</th>
-                    <th scope="col">Nombre del Accesorio</th>
-                    <th scope="col">Precio Unitario Diario</th>
-                    <th scope="col" style="width: 25%;">Acciones</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Nombre del accesorio</th>
+                    <th scope="col">Precio unitario diario</th>
+                    <th scope="col">Acciones</th>
                 </tr>
             </thead>
-            <tbody>
-                ${filasHTML}
-            </tbody>
+
+            <tbody>${filas}</tbody>
+
         </table>`;
 }
 
-// 4. Se renderiza la paginación funcional
-function renderPaginacion(meta) {
-    if (!navPaginacion || !meta || !meta.last_page) return;
+// Mostrar los botones de paginación
+function mostrarPaginacion(meta) {
 
-    const { current_page, last_page } = meta;
+    const actual = Math.max(
+        1,
+        Number(meta.current_page) || 1
+    );
 
-    navPaginacion.innerHTML = `
-        <button type="button" class="boton boton-secundario" id="btn-prev" ${current_page <= 1 ? 'disabled' : ''}>
+    const ultima = Math.max(
+        1,
+        Number(meta.last_page ?? meta.total_pages) || 1
+    );
+
+    paginacion.innerHTML = `
+        <button type="button"
+                class="boton boton-secundario"
+                data-pagina="${actual - 1}"
+                ${actual <= 1 ? 'disabled' : ''}>
             Anterior
         </button>
-        <span class="pagina-actual">${current_page} de ${last_page}</span>
-        <button type="button" class="boton boton-secundario" id="btn-next" ${current_page >= last_page ? 'disabled' : ''}>
+
+        <span class="pagina-actual" aria-current="page">
+            ${actual} de ${ultima}
+        </span>
+
+        <button type="button"
+                class="boton boton-secundario"
+                data-pagina="${actual + 1}"
+                ${actual >= ultima ? 'disabled' : ''}>
             Siguiente
-        </button>
-    `;
-
-    document.getElementById('btn-prev')?.addEventListener('click', () => {
-        if (current_page > 1) cargarAccesorios(current_page - 1);
-    });
-
-    document.getElementById('btn-next')?.addEventListener('click', () => {
-        if (current_page < last_page) cargarAccesorios(current_page + 1);
-    });
+        </button>`;
 }
 
-// 5. Se realiza la petición asíncrona con AbortController
-async function cargarAccesorios(pagina = 1) {
-    store.setState({ loading: true, error: null });
+// Sincronizar el estado con la interfaz
+store.subscribe(estado => {
 
-    // Se cancela la petición anterior si aún está en curso
-    if (currentAbortController) {
-        currentAbortController.abort();
+    if (!tabla || !paginacion) return;
+
+    // Estado de carga
+    if (estado.loading) {
+
+        tabla.innerHTML = `
+            <p role="status"
+               style="padding:2rem;text-align:center">
+                Cargando accesorios...
+            </p>`;
+
+        paginacion.innerHTML = '';
+        return;
     }
-    currentAbortController = new AbortController();
+
+    // Estado de error con botón de reintento
+    if (estado.error) {
+
+        tabla.innerHTML = `
+            <div style="padding:2rem;text-align:center">
+
+                <p role="alert">
+                    ${escaparHTML(estado.error)}
+                </p>
+
+                <button type="button"
+                        id="reintentar-accesorios"
+                        class="boton boton-secundario">
+                    Reintentar
+                </button>
+
+            </div>`;
+
+        paginacion.innerHTML = '';
+
+        document.getElementById('reintentar-accesorios')
+            ?.addEventListener('click', () => {
+                cargarAccesorios(estado.paginaActual);
+            });
+
+        return;
+    }
+
+    // Estado vacío
+    if (estado.data.length === 0) {
+
+        tabla.innerHTML = `
+            <p style="padding:2rem;text-align:center">
+                No se encontraron accesorios.
+            </p>`;
+
+        paginacion.innerHTML = '';
+
+        if (resumen) {
+            resumen.textContent = '0 accesorios encontrados';
+        }
+
+        return;
+    }
+
+    // Estado con registros
+    mostrarTabla(estado.data);
+    mostrarPaginacion(estado.pagination);
+
+    if (resumen) {
+
+        resumen.textContent =
+            `${estado.pagination.total ?? estado.data.length} accesorios encontrados`;
+    }
+});
+
+// Obtener los accesorios desde la API
+async function cargarAccesorios(pagina = 1) {
+
+    cancelarSolicitud();
+
+    const miVersion = version;
+    const controlador = new AbortController();
+
+    solicitud = controlador;
+
+    store.setState({
+        loading: true,
+        error: null,
+        paginaActual: pagina
+    });
+
+    const parametros = new URLSearchParams({
+        page: String(pagina),
+        per_page: '10'
+    });
+
+    // Laravel espera q para buscar
+    const texto = store.getState().busqueda;
+
+    if (texto) {
+        parametros.set('q', texto);
+    }
 
     try {
-        const query = new URLSearchParams({
-            page: pagina,
-            buscar: store.state.busqueda
-        }).toString();
 
-        const respuesta = await api.get(`/accesorios?${query}`, {
-            signal: currentAbortController.signal
+        const respuesta = await api.get(
+            `/accesorios?${parametros.toString()}`,
+            {
+                signal: controlador.signal
+            }
+        );
+
+        // Ignorar respuestas antiguas o canceladas
+        if (
+            miVersion !== version ||
+            controlador.signal.aborted ||
+            respuesta?.aborted
+        ) {
+            return;
+        }
+
+        store.setState({
+
+            data: Array.isArray(respuesta?.data)
+                ? respuesta.data
+                : [],
+
+            pagination: respuesta?.meta ?? {
+                current_page: pagina,
+                last_page: 1
+            },
+
+            loading: false,
+            error: null
         });
 
-        if (respuesta && !respuesta.aborted) {
+    } catch (error) {
+
+        if (
+            miVersion !== version ||
+            controlador.signal.aborted ||
+            error?.name === 'AbortError'
+        ) {
+            return;
+        }
+
+        if (error?.status !== 401) {
+
             store.setState({
-                data: respuesta.data || respuesta,
-                pagination: respuesta.meta || { current_page: pagina, last_page: 1 },
                 loading: false,
-                paginaActual: pagina
+                error: error?.message ??
+                    'No se pudieron cargar los accesorios.'
             });
         }
-    } catch (err) {
-        if (err.status !== 401) {
-            store.setState({
-                loading: false,
-                error: err.message || 'Error al conectar con el servidor.'
-            });
+
+    } finally {
+
+        if (solicitud === controlador) {
+            solicitud = null;
         }
     }
 }
 
-// 6. Se configuran los listeners para debounce y filtros
-inputBusqueda?.addEventListener('input', (e) => {
-    clearTimeout(debounceTimer);
-    
-    debounceTimer = setTimeout(() => {
-        store.setState({ busqueda: e.target.value.trim() });
+// Búsqueda con debounce de 400 milisegundos
+busqueda?.addEventListener('input', () => {
+
+    clearTimeout(temporizador);
+
+    // Cancelar inmediatamente la solicitud activa
+    cancelarSolicitud();
+
+    store.setState({
+        busqueda: busqueda.value.trim(),
+        paginaActual: 1,
+        loading: true,
+        error: null
+    });
+
+    temporizador = setTimeout(() => {
         cargarAccesorios(1);
     }, 400);
 });
 
-formFiltros?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    store.setState({ busqueda: inputBusqueda?.value.trim() || '' });
+// Aplicar búsqueda con el botón Filtrar
+filtros?.addEventListener('submit', evento => {
+
+    evento.preventDefault();
+
+    clearTimeout(temporizador);
+
+    store.setState({
+        busqueda: busqueda?.value.trim() ?? ''
+    });
+
     cargarAccesorios(1);
 });
 
-// Función auxiliar para eliminar accesorio
-window.eliminarAccesorio = async function(id) {
-    if (!confirm('¿Está seguro de que desea eliminar este accesorio?')) return;
-    
+// Cambiar de página
+paginacion?.addEventListener('click', evento => {
+
+    const boton = evento.target.closest(
+        'button[data-pagina]'
+    );
+
+    if (boton && !boton.disabled) {
+        cargarAccesorios(Number(boton.dataset.pagina));
+    }
+});
+
+// Eliminar un accesorio desde la API
+tabla?.addEventListener('click', async evento => {
+
+    const boton = evento.target.closest(
+        'button[data-eliminar-id]'
+    );
+
+    if (!boton) return;
+
+    if (!confirm(
+        '¿Está seguro de que desea eliminar este accesorio?'
+    )) {
+        return;
+    }
+
+    boton.disabled = true;
+
     try {
-        await api.delete(`/accesorios/${id}`);
-        alert('Accesorio eliminado correctamente.');
-        cargarAccesorios(store.state.paginaActual);
+
+        await api.delete(
+            `/accesorios/${boton.dataset.eliminarId}`
+        );
+
+        const { paginaActual, data } = store.getState();
+
+        const destino = data.length === 1 && paginaActual > 1
+            ? paginaActual - 1
+            : paginaActual;
+
+        // Actualizar sin recargar toda la página
+        await cargarAccesorios(destino);
+
     } catch (error) {
-        if (error.status !== 401) {
-            alert('Error al eliminar: ' + (error.message || 'El accesorio no puede ser eliminado.'));
+
+        if (error?.status !== 401) {
+
+            alert(
+                error?.message ??
+                'No se pudo eliminar el accesorio.'
+            );
+
+            boton.disabled = false;
         }
     }
-};
+});
 
-// Se inicializa la vista al cargar la página
-cargarAccesorios(1);
+// Cargar el listado inicial
+if (tabla && paginacion) {
+    cargarAccesorios(1);
+}

@@ -1,144 +1,999 @@
+
 import { ApiClient } from '../../api/ApiClient.js';
+import { AppState } from '../../store/AppState.js';
 
-const api = new ApiClient('/api');
+const formulario = document.querySelector(
+    'form.formulario-renta, form.secciones-formulario'
+);
 
-// Se selecciona el formulario por su clase (sirve para nueva-renta y editar-renta)
-const formRenta = document.querySelector('.formulario-renta') || document.querySelector('form');
+if (formulario && location.pathname.includes('/rentas/')) {
 
-// =====================================================================
-// 1. REQUERIMIENTO: Restaurar datos tras expiración de Token (401)
-// =====================================================================
-document.addEventListener('DOMContentLoaded', () => {
-    const backupData = sessionStorage.getItem('form_backup_401');
-    
-    if (backupData && formRenta) {
-        const data = JSON.parse(backupData);
-        
-        // Se rellenan los campos con los datos guardados
-        Object.keys(data).forEach(key => {
-            // Se manejan casos donde existen múltiples elementos (ej: checkboxes de accesorios[])
-            const inputs = formRenta.querySelectorAll(`[name="${key}"]`);
-            
-            inputs.forEach(input => {
-                if (input.type === 'checkbox' || input.type === 'radio') {
-                    // Si el dato guardado es un array (múltiples checkboxes seleccionados)
-                    if (Array.isArray(data[key])) {
-                        input.checked = data[key].includes(input.value);
-                    } else {
-                        input.checked = (input.value === data[key]);
-                    }
-                } else {
-                    input.value = data[key];
-                }
+    const api = new ApiClient('/api');
+
+    const esEdicion = location.pathname
+        .replace(/\/$/, '')
+        .endsWith('/editar');
+
+    const idRenta = new URLSearchParams(
+        location.search
+    ).get('id');
+
+    const rutaListado = location.pathname.startsWith('/lab8/gestor/')
+        ? '/lab8/gestor/rentas'
+        : '/lab8/gerente/rentas';
+
+    const boton = formulario.querySelector(
+        'button[type="submit"]'
+    );
+
+    const textoBoton = boton?.textContent.trim() || 'Guardar';
+
+    // Estado de la aplicación
+    const estado = new AppState({
+        listo: false,
+        guardando: false,
+        errores: {},
+        mensaje: 'Cargando datos...'
+    });
+
+    const aviso = document.createElement('p');
+    aviso.setAttribute('role', 'status');
+    formulario.prepend(aviso);
+
+    formulario.noValidate = true;
+
+    let clientes = [];
+    let vehiculos = [];
+    let accesorios = [];
+
+    let temporizador = null;
+    let controladorClientes = null;
+    let versionClientes = 0;
+    let rentaCreada = false;
+
+    // Limpiar mensajes de ejemplo de las vistas
+    formulario.querySelectorAll('.mensaje-error').forEach(elemento => {
+        elemento.textContent = '';
+        elemento.style.display = 'none';
+    });
+
+    // Buscar un campo del formulario
+    function campo(nombre) {
+
+        if (nombre === 'fecha_fin') {
+            return formulario.querySelector(
+                '[name="fecha_fin"], [name="fecha_final"]'
+            );
+        }
+
+        if (nombre === 'vehiculo_id') {
+            return formulario.querySelector(
+                '[name="vehiculo_id"], [name="vehiculo"]'
+            );
+        }
+
+        return formulario.elements.namedItem(nombre);
+    }
+
+    // Mostrar errores 422 debajo de los campos
+    function errorPorCampo(errores) {
+
+        formulario.querySelectorAll('[data-error-lab9]')
+            .forEach(elemento => elemento.remove());
+
+        formulario.querySelectorAll('[aria-invalid="true"]')
+            .forEach(elemento => {
+                elemento.removeAttribute('aria-invalid');
             });
+
+        formulario.querySelectorAll('.mensaje-error')
+            .forEach(elemento => {
+                elemento.textContent = '';
+                elemento.style.display = 'none';
+            });
+
+        for (const [clave, mensajes] of Object.entries(errores || {})) {
+
+            const nombre = clave.split('.')[0];
+            const entrada = campo(nombre);
+
+            const nodo = entrada instanceof Element
+                ? entrada
+                : entrada?.[0];
+
+            if (!nodo) continue;
+
+            nodo.setAttribute('aria-invalid', 'true');
+
+            const elemento = document.createElement('span');
+
+            elemento.className = 'mensaje-error';
+            elemento.dataset.errorLab9 = nombre;
+            elemento.setAttribute('role', 'alert');
+
+            elemento.textContent = Array.isArray(mensajes)
+                ? mensajes[0]
+                : String(mensajes);
+
+            elemento.style.cssText =
+                'display:block;color:#b91c1c;margin-top:6px';
+
+            const contenedor =
+                nodo.closest('.campo, .lista-opciones') ||
+                nodo.parentElement;
+
+            contenedor.append(elemento);
+        }
+    }
+
+    // Sincronizar estado y vista
+    estado.subscribe(datos => {
+
+        if (boton) {
+
+            boton.disabled =
+                !datos.listo ||
+                datos.guardando ||
+                rentaCreada;
+
+            boton.textContent = datos.guardando
+                ? 'Procesando...'
+                : textoBoton;
+        }
+
+        aviso.textContent = datos.mensaje;
+
+        aviso.setAttribute(
+            'role',
+            Object.keys(datos.errores).length
+                ? 'alert'
+                : 'status'
+        );
+
+        errorPorCampo(datos.errores);
+    });
+
+    estado.notify();
+
+    // Consultar todas las páginas de un catálogo
+    async function consultarPaginas(ruta, parametro, cantidad) {
+
+        const resultado = [];
+
+        let pagina = 1;
+        let ultima = 1;
+
+        do {
+
+            const respuesta = await api.get(
+                `${ruta}?${parametro}=${cantidad}&page=${pagina}`
+            );
+
+            if (!Array.isArray(respuesta?.data)) {
+                throw new Error(
+                    `Formato de respuesta inesperado: ${ruta}`
+                );
+            }
+
+            resultado.push(...respuesta.data);
+
+            ultima = Math.max(
+                1,
+                Number(
+                    respuesta.meta?.last_page ??
+                    respuesta.meta?.total_pages
+                ) || 1
+            );
+
+            pagina++;
+
+        } while (pagina <= ultima);
+
+        return resultado;
+    }
+
+    // Construir nombre completo del cliente
+    function nombreCliente(cliente) {
+
+        return [
+            cliente.nombre1,
+            cliente.nombre2,
+            cliente.apellido1,
+            cliente.apellido2
+        ]
+            .filter(Boolean)
+            .join(' ');
+    }
+
+    // Crear selector de clientes
+    function selectorCliente() {
+
+        const buscar = formulario.querySelector('#buscar-cliente');
+
+        const select = document.createElement('select');
+
+        select.id = 'cliente_id';
+        select.name = 'cliente_id';
+        select.required = true;
+
+        select.setAttribute(
+            'aria-label',
+            'Seleccione un cliente de los resultados'
+        );
+
+        buscar.insertAdjacentElement('afterend', select);
+
+        return { buscar, select };
+    }
+
+    // Consultar clientes con búsqueda asíncrona
+    async function consultarClientes(texto, select) {
+
+        controladorClientes?.abort();
+
+        const controlador = new AbortController();
+
+        controladorClientes = controlador;
+
+        const version = ++versionClientes;
+
+        select.disabled = true;
+
+        select.replaceChildren(
+            new Option('Buscando clientes...', '')
+        );
+
+        const parametros = new URLSearchParams({
+            q: texto,
+            perPage: '25'
         });
 
-        // Se limpia el respaldo y se muestra un aviso
-        sessionStorage.removeItem('form_backup_401');
-        
-        const alerta = document.createElement('div');
-        alerta.style.cssText = 'background-color: #fef08a; color: #854d0e; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;';
-        alerta.innerText = '💡 Se han restaurado los datos ingresados antes de la expiración de la sesión.';
-        formRenta.prepend(alerta);
-    }
-});
+        try {
 
-// =====================================================================
-// 2. REQUERIMIENTO: Envío asíncrono y Errores de Validación (422)
-// =====================================================================
-formRenta?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    limpiarErrores();
+            const respuesta = await api.get(
+                `/clientes?${parametros}`,
+                {
+                    signal: controlador.signal
+                }
+            );
 
-    // Se establece el estado de carga en el botón
-    const btnSubmit = formRenta.querySelector('button[type="submit"]');
-    const textoOriginal = btnSubmit.innerText;
-    btnSubmit.innerText = 'Procesando...';
-    btnSubmit.disabled = true;
-
-    // Se recopilan los datos del formulario
-    const formData = new FormData(formRenta);
-    
-    // Se extraen todos los valores, permitiendo arrays para campos como accesorios[]
-    const payload = {};
-    formData.forEach((value, key) => {
-        if (key.endsWith('[]')) {
-            const cleanKey = key.slice(0, -2);
-            if (!payload[cleanKey]) {
-                payload[cleanKey] = [];
+            if (
+                version !== versionClientes ||
+                controlador.signal.aborted ||
+                respuesta?.aborted
+            ) {
+                return;
             }
-            payload[cleanKey].push(value);
-        } else {
-            payload[key] = value;
-        }
-    });
-    
-    // Se verifica si existe un ID en la URL para determinar si es Edición (PUT) o Creación (POST)
-    const idRenta = new URLSearchParams(window.location.search).get('id') || payload.id;
 
-    try {
-        if (idRenta) {
-            await api.put(`/rentas/${idRenta}`, payload);
-            alert('Contrato de renta actualizado correctamente.');
-        } else {
-            await api.post('/rentas', payload);
-            alert('Contrato de renta registrado exitosamente.');
-        }
-        
-        // Se redirige al listado tras éxito
-        window.location.href = '/lab8/gerente/rentas';
+            clientes = respuesta.data ?? [];
 
-    } catch (error) {
-        // Se capturan los errores de validación del backend
-        if (error.status === 422 && error.errors) {
-            mostrarErrores(error.errors);
-        } else if (error.status !== 401) {
-            alert('Ocurrió un error al procesar la renta: ' + (error.message || 'Intente nuevamente.'));
+            select.replaceChildren(
+                new Option('Seleccione un cliente', '')
+            );
+
+            for (const cliente of clientes) {
+
+                select.add(
+                    new Option(
+                        `${nombreCliente(cliente)} — ${cliente.cedula}`,
+                        cliente.id
+                    )
+                );
+            }
+
+        } catch (error) {
+
+            if (
+                version !== versionClientes ||
+                controlador.signal.aborted ||
+                error?.name === 'AbortError'
+            ) {
+                return;
+            }
+
+            if (error?.status !== 401) {
+
+                select.replaceChildren(
+                    new Option('Error al buscar clientes', '')
+                );
+
+                estado.setState({
+                    mensaje: error?.message ||
+                        'Error al consultar clientes.'
+                });
+            }
+
+        } finally {
+
+            if (
+                version === versionClientes &&
+                !controlador.signal.aborted
+            ) {
+                select.disabled = false;
+            }
         }
-    } finally {
-        // Se restaura el estado original del botón
-        btnSubmit.innerText = textoOriginal;
-        btnSubmit.disabled = false;
     }
-});
 
-// =====================================================================
-// 3. Funciones auxiliares para la interfaz de errores
-// =====================================================================
-function mostrarErrores(errores) {
-    Object.keys(errores).forEach(campo => {
-        // Si el backend devuelve error en un array (ej: accesorios.0), se limpia la clave
-        const nombreCampo = campo.includes('.') ? campo.split('.')[0] + '[]' : campo;
-        const input = formRenta.querySelector(`[name="${nombreCampo}"]`);
-        
-        const spanError = document.getElementById(`error-${campo.replace('.', '-')}`); 
-        
-        if (input) {
-            input.style.borderColor = '#dc2626';
-            input.setAttribute('aria-invalid', 'true');
-        }
-        
-        if (spanError) {
-            spanError.textContent = errores[campo][0];
-            spanError.style.display = 'block';
-            spanError.style.color = '#dc2626';
-            spanError.style.fontSize = '0.875rem';
-            spanError.style.marginTop = '0.25rem';
-        }
-    });
-    
-    // Se enfoca el primer campo con error
-    const primerError = formRenta.querySelector('[aria-invalid="true"]');
-    if (primerError) primerError.focus();
-}
+    // Mostrar vehículos desde la API
+    function mostrarVehiculos(lista, soloDisponibles) {
 
-function limpiarErrores() {
-    formRenta.querySelectorAll('.mensaje-error, [id^="error-"]').forEach(span => {
-        span.textContent = '';
-        span.style.display = 'none';
+        const contenedor = formulario.querySelector(
+            '.lista-opciones'
+        );
+
+        contenedor.replaceChildren();
+
+        for (const vehiculo of lista) {
+
+            const nombreEstado =
+                typeof vehiculo.estado === 'string'
+                    ? vehiculo.estado
+                    : vehiculo.estado?.nombre;
+
+            const disponible =
+                nombreEstado === 'Disponible';
+
+            if (soloDisponibles && !disponible) {
+                continue;
+            }
+
+            const etiqueta = document.createElement('label');
+
+            etiqueta.className = 'opcion-vehiculo';
+
+            const radio = document.createElement('input');
+
+            radio.type = 'radio';
+            radio.name = 'vehiculo_id';
+            radio.value = String(vehiculo.id);
+            radio.disabled = !disponible;
+
+            const descripcion = document.createElement('span');
+
+            descripcion.className = 'datos-vehiculo';
+
+            descripcion.textContent =
+                `${vehiculo.marca} ${vehiculo.modelo} — ` +
+                `${vehiculo.placa ?? vehiculo.matricula}`;
+
+            const estadoVisual = document.createElement('span');
+
+            estadoVisual.className = disponible
+                ? 'estado estado-disponible'
+                : 'estado estado-alquilado';
+
+            estadoVisual.textContent =
+                nombreEstado || 'Sin estado';
+
+            etiqueta.append(
+                radio,
+                descripcion,
+                estadoVisual
+            );
+
+            contenedor.append(etiqueta);
+        }
+
+        if (!contenedor.children.length) {
+            contenedor.textContent =
+                'No hay vehículos disponibles.';
+        }
+    }
+
+    // Mostrar accesorios desde la API
+    function mostrarAccesorios(lista) {
+
+        const contenedor = formulario.querySelector(
+            '.lista-accesorios'
+        );
+
+        contenedor.replaceChildren();
+
+        for (const accesorio of lista) {
+
+            const fila = document.createElement('div');
+
+            fila.className = 'accesorio';
+
+            const etiqueta = document.createElement('label');
+
+            etiqueta.className = 'campo-checkbox';
+
+            const check = document.createElement('input');
+
+            check.type = 'checkbox';
+            check.name = 'accesorios[]';
+            check.value = String(accesorio.id);
+
+            const texto = document.createElement('span');
+
+            texto.textContent =
+                `${accesorio.nombre} — ` +
+                `$${Number(accesorio.precio_unitario).toFixed(2)}`;
+
+            etiqueta.append(check, texto);
+
+            const cantidad = document.createElement('input');
+
+            cantidad.type = 'number';
+            cantidad.min = '1';
+            cantidad.step = '1';
+            cantidad.value = '1';
+
+            cantidad.name = `cantidad_${accesorio.id}`;
+
+            cantidad.setAttribute(
+                'aria-label',
+                `Cantidad de ${accesorio.nombre}`
+            );
+
+            cantidad.disabled = true;
+
+            check.addEventListener('change', () => {
+
+                cantidad.disabled = !check.checked;
+
+                actualizarResumen();
+            });
+
+            cantidad.addEventListener(
+                'input',
+                actualizarResumen
+            );
+
+            fila.append(etiqueta, cantidad);
+
+            contenedor.append(fila);
+        }
+    }
+
+    // Obtener accesorios seleccionados
+    function seleccionAccesorios() {
+
+        return accesorios
+            .filter(accesorio => {
+
+                return formulario.querySelector(
+                    `input[name="accesorios[]"][value="${accesorio.id}"]`
+                )?.checked;
+
+            })
+            .map(accesorio => ({
+
+                id: accesorio.id,
+                nombre: accesorio.nombre,
+                precio: Number(accesorio.precio_unitario),
+
+                cantidad: Number(
+                    formulario.elements.namedItem(
+                        `cantidad_${accesorio.id}`
+                    )?.value
+                )
+            }));
+    }
+
+    // Actualizar resumen sin recargar la página
+    function actualizarResumen() {
+
+        const detalles = formulario.querySelectorAll(
+            '.datos-resumen dd'
+        );
+
+        if (!detalles.length) return;
+
+        const idCliente = formulario.elements.namedItem(
+            'cliente_id'
+        )?.value;
+
+        const cliente = clientes.find(
+            item => String(item.id) === idCliente
+        );
+
+        const radio = formulario.querySelector(
+            '[name="vehiculo_id"]:checked'
+        );
+
+        const vehiculo = vehiculos.find(
+            item => String(item.id) === radio?.value
+        );
+
+        const inicio = formulario.elements.namedItem(
+            'fecha_inicio'
+        )?.value;
+
+        const fin = campo('fecha_fin')?.value;
+
+        const dias = inicio && fin
+            ? Math.max(
+                0,
+                Math.round(
+                    (Date.parse(fin) - Date.parse(inicio)) /
+                    86400000
+                )
+            )
+            : 0;
+
+        const precio = Number(
+            formulario.elements.namedItem('precio_diario')?.value || 0
+        );
+
+        const extras = seleccionAccesorios().reduce(
+            (total, accesorio) =>
+                total + accesorio.precio * accesorio.cantidad,
+            0
+        );
+
+        detalles[0].textContent = cliente
+            ? nombreCliente(cliente)
+            : 'Seleccione un cliente';
+
+        detalles[1].textContent = vehiculo
+            ? `${vehiculo.marca} ${vehiculo.modelo}`
+            : 'Seleccione un vehículo';
+
+        detalles[2].textContent = `${dias} días`;
+
+        detalles[3].textContent =
+            `$${(dias * precio).toFixed(2)}`;
+
+        detalles[4].textContent =
+            `$${extras.toFixed(2)}`;
+
+        const total = formulario.querySelector(
+            '.total-renta strong'
+        );
+
+        if (total) {
+            total.textContent =
+                `$${(dias * precio + extras).toFixed(2)}`;
+        }
+    }
+
+    // Recuperar formulario después de una sesión expirada
+    function restaurar() {
+
+        const guardado = sessionStorage.getItem(
+            'form_backup_401'
+        );
+
+        if (!guardado) return false;
+
+        try {
+
+            const datos = JSON.parse(guardado);
+
+            if (
+                !datos ||
+                typeof datos !== 'object' ||
+                !('fecha_inicio' in datos)
+            ) {
+                return false;
+            }
+
+            for (const [nombre, valor] of Object.entries(datos)) {
+
+                const entrada = formulario.elements.namedItem(nombre);
+
+                if (!entrada) continue;
+
+                if (entrada instanceof RadioNodeList) {
+
+                    for (const nodo of entrada) {
+                        nodo.checked = nodo.value === valor;
+                    }
+
+                } else if (
+                    entrada.type === 'checkbox' ||
+                    entrada.type === 'radio'
+                ) {
+
+                    entrada.checked = entrada.value === valor;
+
+                } else if (
+                    entrada.tagName === 'SELECT' &&
+                    valor &&
+                    ![...entrada.options].some(
+                        opcion => opcion.value === valor
+                    )
+                ) {
+
+                    entrada.add(
+                        new Option(
+                            `Cliente recuperado (ID ${valor})`,
+                            valor
+                        )
+                    );
+
+                    entrada.value = valor;
+
+                } else {
+
+                    entrada.value = valor;
+                }
+            }
+
+            sessionStorage.removeItem('form_backup_401');
+
+            actualizarResumen();
+
+            return true;
+
+        } catch {
+
+            return false;
+        }
+    }
+
+    // Iniciar el formulario de crear renta
+    async function iniciarCreacion() {
+
+        const { buscar, select } = selectorCliente();
+
+        const disponibles = formulario.querySelector(
+            '#solo-disponibles'
+        );
+
+        const listaVehiculos = formulario.querySelector(
+            '.lista-opciones'
+        );
+
+        const listaAccesorios = formulario.querySelector(
+            '.lista-accesorios'
+        );
+
+        listaVehiculos.textContent = 'Cargando vehículos...';
+        listaAccesorios.textContent = 'Cargando accesorios...';
+
+        formulario.querySelector('.seleccion-actual').textContent =
+            'Seleccione un cliente de la lista.';
+
+        // Consultar vehículos y accesorios
+        const [datosVehiculos, datosAccesorios] =
+            await Promise.all([
+
+                consultarPaginas('/vehiculos', 'limit', 50),
+
+                consultarPaginas('/accesorios', 'per_page', 25)
+            ]);
+
+        vehiculos = datosVehiculos;
+        accesorios = datosAccesorios;
+
+        mostrarVehiculos(
+            vehiculos,
+            disponibles?.checked ?? true
+        );
+
+        mostrarAccesorios(accesorios);
+
+        await consultarClientes('', select);
+
+        // Debounce para buscar clientes
+        buscar.addEventListener('input', () => {
+
+            clearTimeout(temporizador);
+
+            controladorClientes?.abort();
+
+            select.value = '';
+
+            formulario.querySelector('.seleccion-actual').textContent =
+                'Seleccione un cliente de la lista.';
+
+            temporizador = setTimeout(() => {
+
+                consultarClientes(
+                    buscar.value.trim(),
+                    select
+                );
+
+            }, 350);
+        });
+
+        // Seleccionar cliente
+        select.addEventListener('change', () => {
+
+            const cliente = clientes.find(
+                item => String(item.id) === select.value
+            );
+
+            formulario.querySelector('.seleccion-actual').textContent =
+                cliente
+                    ? `${nombreCliente(cliente)} — ${cliente.cedula}`
+                    : 'Seleccione un cliente de la lista.';
+
+            actualizarResumen();
+        });
+
+        // Filtrar vehículos disponibles
+        disponibles?.addEventListener('change', () => {
+
+            mostrarVehiculos(
+                vehiculos,
+                disponibles.checked
+            );
+
+            actualizarResumen();
+        });
+
+        formulario.addEventListener(
+            'change',
+            actualizarResumen
+        );
+
+        formulario.addEventListener(
+            'input',
+            actualizarResumen
+        );
+
+        const recuperado = restaurar();
+
+        actualizarResumen();
+
+        estado.setState({
+            listo: true,
+            mensaje: recuperado
+                ? 'Se recuperaron los datos del formulario.'
+                : ''
+        });
+    }
+
+    // Iniciar el formulario de editar renta
+    async function iniciarEdicion() {
+
+        if (!idRenta) {
+            throw new Error(
+                'No se indicó el número de la renta a editar.'
+            );
+        }
+
+        const respuesta = await api.get(
+            `/rentas/${encodeURIComponent(idRenta)}`
+        );
+
+        const renta = respuesta.data ?? respuesta;
+
+        const cliente = formulario.querySelector('#cliente_id');
+        const vehiculo = formulario.querySelector('#vehiculo_id');
+
+        cliente.replaceChildren(
+            new Option(
+                renta.cliente?.nombre_completo || 'Cliente',
+                renta.cliente?.id
+            )
+        );
+
+        vehiculo.replaceChildren(
+            new Option(
+                `${renta.vehiculo?.marca ?? ''} ` +
+                `${renta.vehiculo?.modelo ?? ''}`,
+                renta.vehiculo?.id
+            )
+        );
+
+        // No permitir cambiar cliente ni vehículo
+        cliente.disabled = true;
+        vehiculo.disabled = true;
+
+        formulario.elements.namedItem('fecha_inicio').value =
+            `${renta.fecha_inicio}T00:00`;
+
+        formulario.elements.namedItem('fecha_fin').value =
+            `${renta.fecha_fin}T00:00`;
+
+        // Agregar el precio diario requerido por Laravel
+        const contenedor = formulario.elements.namedItem(
+            'fecha_fin'
+        ).closest('.grupo-fechas');
+
+        const seccion = document.createElement('div');
+
+        seccion.className = 'campo';
+
+        const etiqueta = document.createElement('label');
+
+        etiqueta.htmlFor = 'precio_diario';
+        etiqueta.textContent = 'Precio diario';
+
+        const precio = document.createElement('input');
+
+        precio.id = 'precio_diario';
+        precio.name = 'precio_diario';
+        precio.type = 'number';
+        precio.min = '0';
+        precio.step = '0.01';
+        precio.required = true;
+        precio.value = renta.precio_diario;
+
+        seccion.append(etiqueta, precio);
+
+        contenedor.append(seccion);
+
+        const titulo = document.querySelector(
+            '.encabezado-pagina h1'
+        );
+
+        if (titulo) {
+            titulo.textContent =
+                `Editar contrato: RN-${renta.id}`;
+        }
+
+        const recuperado = restaurar();
+
+        estado.setState({
+            listo: true,
+            mensaje: recuperado
+                ? 'Se recuperaron los datos del formulario.'
+                : ''
+        });
+    }
+
+    // Enviar formulario de forma asíncrona
+    formulario.addEventListener('submit', async evento => {
+
+        evento.preventDefault();
+
+        if (
+            !estado.getState().listo ||
+            estado.getState().guardando ||
+            rentaCreada
+        ) {
+            return;
+        }
+
+        // Validar cantidades de accesorios
+        if (
+            !esEdicion &&
+            seleccionAccesorios().some(
+                accesorio =>
+                    !Number.isInteger(accesorio.cantidad) ||
+                    accesorio.cantidad < 1
+            )
+        ) {
+
+            estado.setState({
+                mensaje:
+                    'Las cantidades de accesorios deben ser enteros mayores que cero.'
+            });
+
+            return;
+        }
+
+        // Preparar datos según la API de Laravel
+        const payload = {
+
+            fecha_inicio: formulario.elements.namedItem(
+                'fecha_inicio'
+            )?.value,
+
+            fecha_fin: campo('fecha_fin')?.value,
+
+            precio_diario: formulario.elements.namedItem(
+                'precio_diario'
+            )?.value
+        };
+
+        if (!esEdicion) {
+
+            payload.cliente_id = formulario.elements.namedItem(
+                'cliente_id'
+            )?.value;
+
+            payload.vehiculo_id = formulario.querySelector(
+                '[name="vehiculo_id"]:checked'
+            )?.value || '';
+        }
+
+        estado.setState({
+            guardando: true,
+            errores: {},
+            mensaje: ''
+        });
+
+        try {
+
+            if (esEdicion) {
+
+                // Actualizar renta existente
+                await api.put(
+                    `/rentas/${encodeURIComponent(idRenta)}`,
+                    payload
+                );
+
+            } else {
+
+                // Crear la renta
+                const respuesta = await api.post(
+                    '/rentas',
+                    payload
+                );
+
+                const creada = respuesta.data ?? respuesta;
+
+                if (!creada?.id) {
+
+                    throw new Error(
+                        'La API no devolvió el identificador del contrato creado.'
+                    );
+                }
+
+                // Evitar crear el mismo contrato nuevamente
+                rentaCreada = true;
+
+                // Asociar accesorios mediante sus endpoints
+                for (const accesorio of seleccionAccesorios()) {
+
+                    await api.post(
+                        `/rentas/${creada.id}/accesorios/${accesorio.id}`,
+                        {
+                            cantidad: accesorio.cantidad
+                        }
+                    );
+                }
+            }
+
+            // Regresar al listado del rol correspondiente
+            window.location.assign(rutaListado);
+
+        } catch (error) {
+
+            if (error?.status === 422) {
+
+                estado.setState({
+                    errores: error.errors ?? {},
+                    mensaje: 'Revisa los campos marcados.'
+                });
+
+                formulario.querySelector(
+                    '[aria-invalid="true"]'
+                )?.focus();
+
+            } else if (error?.status !== 401) {
+
+                estado.setState({
+
+                    mensaje: rentaCreada
+                        ? 'La renta se creó, pero hubo un error al agregar accesorios. Revisa el contrato desde el listado; no vuelvas a enviarlo.'
+                        : (
+                            error?.message ||
+                            'No se pudo guardar la renta.'
+                        )
+                });
+            }
+
+        } finally {
+
+            estado.setState({
+                guardando: false
+            });
+        }
     });
-    formRenta.querySelectorAll('input, select, textarea').forEach(input => {
-        input.style.borderColor = ''; 
-        input.removeAttribute('aria-invalid');
-    });
+
+    // Cargar la pantalla correspondiente
+    (async () => {
+
+        try {
+
+            if (esEdicion) {
+
+                await iniciarEdicion();
+
+            } else {
+
+                await iniciarCreacion();
+            }
+
+        } catch (error) {
+
+            if (error?.status !== 401) {
+
+                estado.setState({
+                    listo: false,
+                    mensaje: error?.message ||
+                        'No fue posible cargar el formulario.'
+                });
+            }
+        }
+
+    })();
 }

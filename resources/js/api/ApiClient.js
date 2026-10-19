@@ -1,101 +1,195 @@
+
 export class ApiClient {
+
+    static redirigiendo = false;
+
     constructor(baseUrl = '/api') {
-        this.baseUrl = baseUrl;
+        this.baseUrl = baseUrl.replace(/\/+$/, '');
     }
 
-    /**
-     * Obtiene el token guardado en el navegador.
-     */
+    // Obtener el token de autenticación
     getToken() {
         return localStorage.getItem('auth_token');
     }
 
-    /**
-     * Petición HTTP centralizada con async/await.
-     */
+    // Realizar peticiones HTTP de manera asíncrona
     async request(endpoint, options = {}) {
+
+        const token = this.getToken();
+
         const headers = {
-            'Content-Type': 'application/json',
             'Accept': 'application/json',
-            ...(this.getToken() && { 'Authorization': `Bearer ${this.getToken()}` }),
+
+            ...(options.body !== undefined
+                ? { 'Content-Type': 'application/json' }
+                : {}),
+
+            ...(token
+                ? { 'Authorization': `Bearer ${token}` }
+                : {}),
+
             ...options.headers
         };
 
         try {
-            const response = await fetch(`${this.baseUrl}${endpoint}`, {
-                ...options,
-                headers
-            });
 
-            // Manejo de expiración de token (401)
+            const response = await fetch(
+                `${this.baseUrl}${endpoint}`,
+                {
+                    ...options,
+                    headers
+                }
+            );
+
+            // Manejar sesión expirada (401)
             if (response.status === 401) {
-                this.handleUnauthorized();
-                throw { status: 401, message: 'La sesión ha expirado.' };
-            }
 
-            // Manejo de errores de validación (422) o del servidor (500)
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
+                // Evitar redirecciones cuando ya estamos en login
+                if (window.location.pathname !== '/login') {
+                    this.handleUnauthorized();
+                }
+
                 throw {
-                    status: response.status,
-                    errors: errorData.errors || {},
-                    message: errorData.message || 'Ocurrió un error en la solicitud.'
+                    status: 401,
+                    message: 'La sesión ha expirado o el token no es válido.'
                 };
             }
 
-            // Si la respuesta no tiene contenido (ej. DELETE 204)
+            // Respuesta sin contenido, por ejemplo DELETE
             if (response.status === 204) {
                 return null;
             }
 
-            return await response.json();
+            const data = await response.json()
+                .catch(() => ({}));
+
+            // Manejo uniforme de errores HTTP
+            if (!response.ok) {
+
+                throw {
+                    status: response.status,
+
+                    message: data.message ||
+                        'Ocurrió un error en la solicitud.',
+
+                    errors: data.errors || {}
+                };
+            }
+
+            return data;
 
         } catch (error) {
-            // Si la petición fue cancelada intencionalmente por AbortController
-            if (error.name === 'AbortError') {
+
+            // Solicitud cancelada con AbortController
+            if (error?.name === 'AbortError') {
                 return { aborted: true };
             }
+
+            // Problemas de conexión
+            if (error instanceof TypeError) {
+
+                throw {
+                    status: 0,
+                    message: 'No se pudo conectar con el servidor.',
+                    errors: {}
+                };
+            }
+
             throw error;
         }
     }
 
-    /**
-     * Respalda los datos digitados en el formulario antes de redirigir al Login.
-     */
+    // Manejar expiración del token y preservar el formulario
     handleUnauthorized() {
-        const formularioActivo = document.querySelector('form');
-        if (formularioActivo) {
-            const formData = new FormData(formularioActivo);
-            const backup = Object.fromEntries(formData.entries());
-            sessionStorage.setItem('form_backup_401', JSON.stringify(backup));
+
+        // Evitar múltiples redirecciones simultáneas
+        if (ApiClient.redirigiendo) {
+            return;
         }
 
-        alert('Su sesión ha expirado. Será redirigido al inicio de sesión.');
-        window.location.href = '/login';
+        ApiClient.redirigiendo = true;
+
+        // Guardar la página actual para regresar después del login
+        const urlActual =
+            window.location.pathname +
+            window.location.search +
+            window.location.hash;
+
+        sessionStorage.setItem(
+            'return_url_401',
+            urlActual
+        );
+
+        // Buscar el formulario activo de crear o editar
+        const formulario = document.querySelector(
+            'form[data-preserve-session], ' +
+            'form.secciones-formulario, ' +
+            'form.formulario-renta'
+        );
+
+        if (formulario) {
+
+            // Obtener los valores introducidos
+            const datos = [
+                ...new FormData(formulario).entries()
+            ].filter(([nombre, valor]) =>
+
+                typeof valor === 'string' &&
+
+                !/password|clave|token|csrf/i.test(nombre)
+            );
+
+            // Respaldar los datos temporalmente
+            sessionStorage.setItem(
+                'form_backup_401',
+                JSON.stringify(
+                    Object.fromEntries(datos)
+                )
+            );
+        }
+
+        // Eliminar el token expirado
+        localStorage.removeItem('auth_token');
+
+        // Redirigir al inicio de sesión
+        window.location.assign('/login');
     }
 
-    // Métodos auxiliares HTTP
+    // Consultar registros
     get(endpoint, options = {}) {
-        return this.request(endpoint, { method: 'GET', ...options });
+
+        return this.request(endpoint, {
+            ...options,
+            method: 'GET'
+        });
     }
 
+    // Crear registros
     post(endpoint, body, options = {}) {
+
         return this.request(endpoint, {
+            ...options,
             method: 'POST',
-            body: JSON.stringify(body),
-            ...options
+            body: JSON.stringify(body)
         });
     }
 
+    // Actualizar registros
     put(endpoint, body, options = {}) {
+
         return this.request(endpoint, {
+            ...options,
             method: 'PUT',
-            body: JSON.stringify(body),
-            ...options
+            body: JSON.stringify(body)
         });
     }
 
+    // Eliminar registros
     delete(endpoint, options = {}) {
-        return this.request(endpoint, { method: 'DELETE', ...options });
+
+        return this.request(endpoint, {
+            ...options,
+            method: 'DELETE'
+        });
     }
 }

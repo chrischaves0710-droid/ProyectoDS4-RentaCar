@@ -169,5 +169,60 @@ selectDisponibilidad?.addEventListener('change', (e) => {
     cargarCatalogo(1);
 });
 
+const botonCerrarSesion = document.querySelector(
+    '.sesion button[type="button"]'
+);
+
+if (botonCerrarSesion) {
+
+    botonCerrarSesion.addEventListener('click', async () => {
+
+        const textoOriginal = botonCerrarSesion.textContent;
+
+        botonCerrarSesion.disabled = true;
+        botonCerrarSesion.textContent = 'Cerrando sesión...';
+
+        try {
+
+            // Revocar el token mediante Laravel
+            await api.post('/logout', {});
+
+            // Eliminar el token del navegador
+            localStorage.removeItem('auth_token');
+
+            // Limpiar respaldos de sesiones anteriores
+            sessionStorage.removeItem('return_url_401');
+            sessionStorage.removeItem('form_backup_401');
+
+            // Regresar al inicio de sesión
+            window.location.replace('/login');
+
+        } catch (error) {
+
+            if (error?.status === 401) {
+
+                // La sesión ya había expirado
+                localStorage.removeItem('auth_token');
+
+                sessionStorage.removeItem('return_url_401');
+                sessionStorage.removeItem('form_backup_401');
+
+                window.location.replace('/login');
+                return;
+            }
+
+            // Mostrar otros errores sin perder el token
+            alert(
+                error?.message ||
+                'No se pudo cerrar la sesión. Intente nuevamente.'
+            );
+
+            botonCerrarSesion.disabled = false;
+            botonCerrarSesion.textContent = textoOriginal;
+        }
+
+    });
+}
+
 // Se inicializa el listado al cargar la vista
 cargarCatalogo(1);

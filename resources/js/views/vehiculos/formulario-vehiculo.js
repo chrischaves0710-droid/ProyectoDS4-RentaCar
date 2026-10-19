@@ -1,6 +1,7 @@
 
 import { ApiClient } from '../../api/ApiClient.js';
 import { AppState } from '../../store/AppState.js';
+import { restoreForm } from '../../ui/FormRecovery.js';
 
 const formulario = document.getElementById('form-vehiculo');
 
@@ -38,7 +39,6 @@ if (formulario) {
         ? '/lab8/admin/vehiculos'
         : '/lab8/gerente/vehiculos';
 
-    // Actualizar la vista cuando cambie el estado
     estado.subscribe((datos) => {
         boton.disabled = !datos.listo || datos.guardando;
 
@@ -52,7 +52,6 @@ if (formulario) {
 
     estado.notify();
 
-    // Iniciar y cargar los datos del formulario
     async function iniciar() {
 
         if (esEdicion && !idVehiculo) {
@@ -104,7 +103,6 @@ if (formulario) {
         }
     }
 
-    // Obtener las categorías desde Laravel
     async function cargarCategorias() {
 
         const select = formulario.elements.namedItem('categoria_id');
@@ -148,7 +146,6 @@ if (formulario) {
         }
     }
 
-    // Colocar valores dentro del formulario
     function rellenarCampos(datos) {
 
         for (const nombre of campos) {
@@ -165,36 +162,11 @@ if (formulario) {
         }
     }
 
-    // Restaurar información guardada ante un error 401
     function restaurarDatos() {
-
-        const respaldo = sessionStorage.getItem('form_backup_401');
-
-        if (!respaldo) return false;
-
-        try {
-            const datos = JSON.parse(respaldo);
-
-            if (
-                !datos ||
-                !campos.some(nombre => Object.hasOwn(datos, nombre))
-            ) {
-                return false;
-            }
-
-            rellenarCampos(datos);
-
-            sessionStorage.removeItem('form_backup_401');
-
-            return true;
-
-        } catch {
-            sessionStorage.removeItem('form_backup_401');
-            return false;
-        }
+        const recovered = restoreForm(formulario);
+        return recovered;
     }
 
-    // Guardar o actualizar un vehículo
     formulario.addEventListener('submit', async (evento) => {
 
         evento.preventDefault();
@@ -257,7 +229,6 @@ if (formulario) {
         }
     });
 
-    // Mostrar errores debajo de cada campo
     function mostrarErrores(errores) {
 
         formulario.querySelectorAll('.mensaje-error').forEach(elemento => {
@@ -292,7 +263,6 @@ if (formulario) {
         formulario.querySelector('[aria-invalid="true"]')?.focus();
     }
 
-    // Mostrar mensajes generales
     function mostrarMensaje(texto) {
 
         let aviso = document.getElementById('mensaje-formulario');

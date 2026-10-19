@@ -1,6 +1,7 @@
 
 import { ApiClient } from '../../api/ApiClient.js';
 import { AppState } from '../../store/AppState.js';
+import { restoreForm } from '../../ui/FormRecovery.js';
 
 const formulario = document.querySelector(
     'form.formulario-renta, form.secciones-formulario'
@@ -28,7 +29,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
 
     const textoBoton = boton?.textContent.trim() || 'Guardar';
 
-    // Estado de la aplicación
     const estado = new AppState({
         listo: false,
         guardando: false,
@@ -51,13 +51,11 @@ if (formulario && location.pathname.includes('/rentas/')) {
     let versionClientes = 0;
     let rentaCreada = false;
 
-    // Limpiar mensajes de ejemplo de las vistas
     formulario.querySelectorAll('.mensaje-error').forEach(elemento => {
         elemento.textContent = '';
         elemento.style.display = 'none';
     });
 
-    // Buscar un campo del formulario
     function campo(nombre) {
 
         if (nombre === 'fecha_fin') {
@@ -75,7 +73,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         return formulario.elements.namedItem(nombre);
     }
 
-    // Mostrar errores 422 debajo de los campos
     function errorPorCampo(errores) {
 
         formulario.querySelectorAll('[data-error-lab9]')
@@ -126,7 +123,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         }
     }
 
-    // Sincronizar estado y vista
     estado.subscribe(datos => {
 
         if (boton) {
@@ -155,7 +151,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
 
     estado.notify();
 
-    // Consultar todas las páginas de un catálogo
     async function consultarPaginas(ruta, parametro, cantidad) {
 
         const resultado = [];
@@ -192,7 +187,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         return resultado;
     }
 
-    // Construir nombre completo del cliente
     function nombreCliente(cliente) {
 
         return [
@@ -205,7 +199,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
             .join(' ');
     }
 
-    // Crear selector de clientes
     function selectorCliente() {
 
         const buscar = formulario.querySelector('#buscar-cliente');
@@ -226,7 +219,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         return { buscar, select };
     }
 
-    // Consultar clientes con búsqueda asíncrona
     async function consultarClientes(texto, select) {
 
         controladorClientes?.abort();
@@ -314,7 +306,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         }
     }
 
-    // Mostrar vehículos desde la API
     function mostrarVehiculos(lista, soloDisponibles) {
 
         const contenedor = formulario.querySelector(
@@ -380,7 +371,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         }
     }
 
-    // Mostrar accesorios desde la API
     function mostrarAccesorios(lista) {
 
         const contenedor = formulario.querySelector(
@@ -447,7 +437,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         }
     }
 
-    // Obtener accesorios seleccionados
     function seleccionAccesorios() {
 
         return accesorios
@@ -472,7 +461,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
             }));
     }
 
-    // Actualizar resumen sin recargar la página
     function actualizarResumen() {
 
         const detalles = formulario.querySelectorAll(
@@ -549,82 +537,12 @@ if (formulario && location.pathname.includes('/rentas/')) {
         }
     }
 
-    // Recuperar formulario después de una sesión expirada
     function restaurar() {
-
-        const guardado = sessionStorage.getItem(
-            'form_backup_401'
-        );
-
-        if (!guardado) return false;
-
-        try {
-
-            const datos = JSON.parse(guardado);
-
-            if (
-                !datos ||
-                typeof datos !== 'object' ||
-                !('fecha_inicio' in datos)
-            ) {
-                return false;
-            }
-
-            for (const [nombre, valor] of Object.entries(datos)) {
-
-                const entrada = formulario.elements.namedItem(nombre);
-
-                if (!entrada) continue;
-
-                if (entrada instanceof RadioNodeList) {
-
-                    for (const nodo of entrada) {
-                        nodo.checked = nodo.value === valor;
-                    }
-
-                } else if (
-                    entrada.type === 'checkbox' ||
-                    entrada.type === 'radio'
-                ) {
-
-                    entrada.checked = entrada.value === valor;
-
-                } else if (
-                    entrada.tagName === 'SELECT' &&
-                    valor &&
-                    ![...entrada.options].some(
-                        opcion => opcion.value === valor
-                    )
-                ) {
-
-                    entrada.add(
-                        new Option(
-                            `Cliente recuperado (ID ${valor})`,
-                            valor
-                        )
-                    );
-
-                    entrada.value = valor;
-
-                } else {
-
-                    entrada.value = valor;
-                }
-            }
-
-            sessionStorage.removeItem('form_backup_401');
-
-            actualizarResumen();
-
-            return true;
-
-        } catch {
-
-            return false;
-        }
+        const recovered = restoreForm(formulario);
+        actualizarResumen();
+        return recovered;
     }
 
-    // Iniciar el formulario de crear renta
     async function iniciarCreacion() {
 
         const { buscar, select } = selectorCliente();
@@ -647,7 +565,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         formulario.querySelector('.seleccion-actual').textContent =
             'Seleccione un cliente de la lista.';
 
-        // Consultar vehículos y accesorios
         const [datosVehiculos, datosAccesorios] =
             await Promise.all([
 
@@ -668,7 +585,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
 
         await consultarClientes('', select);
 
-        // Debounce para buscar clientes
         buscar.addEventListener('input', () => {
 
             clearTimeout(temporizador);
@@ -690,7 +606,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
             }, 350);
         });
 
-        // Seleccionar cliente
         select.addEventListener('change', () => {
 
             const cliente = clientes.find(
@@ -705,7 +620,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
             actualizarResumen();
         });
 
-        // Filtrar vehículos disponibles
         disponibles?.addEventListener('change', () => {
 
             mostrarVehiculos(
@@ -738,7 +652,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         });
     }
 
-    // Iniciar el formulario de editar renta
     async function iniciarEdicion() {
 
         if (!idRenta) {
@@ -771,7 +684,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
             )
         );
 
-        // No permitir cambiar cliente ni vehículo
         cliente.disabled = true;
         vehiculo.disabled = true;
 
@@ -781,7 +693,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         formulario.elements.namedItem('fecha_fin').value =
             `${renta.fecha_fin}T00:00`;
 
-        // Agregar el precio diario requerido por Laravel
         const contenedor = formulario.elements.namedItem(
             'fecha_fin'
         ).closest('.grupo-fechas');
@@ -828,7 +739,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         });
     }
 
-    // Enviar formulario de forma asíncrona
     formulario.addEventListener('submit', async evento => {
 
         evento.preventDefault();
@@ -841,7 +751,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
             return;
         }
 
-        // Validar cantidades de accesorios
         if (
             !esEdicion &&
             seleccionAccesorios().some(
@@ -859,7 +768,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
             return;
         }
 
-        // Preparar datos según la API de Laravel
         const payload = {
 
             fecha_inicio: formulario.elements.namedItem(
@@ -894,7 +802,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
 
             if (esEdicion) {
 
-                // Actualizar renta existente
                 await api.put(
                     `/rentas/${encodeURIComponent(idRenta)}`,
                     payload
@@ -902,7 +809,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
 
             } else {
 
-                // Crear la renta
                 const respuesta = await api.post(
                     '/rentas',
                     payload
@@ -917,10 +823,8 @@ if (formulario && location.pathname.includes('/rentas/')) {
                     );
                 }
 
-                // Evitar crear el mismo contrato nuevamente
                 rentaCreada = true;
 
-                // Asociar accesorios mediante sus endpoints
                 for (const accesorio of seleccionAccesorios()) {
 
                     await api.post(
@@ -932,7 +836,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
                 }
             }
 
-            // Regresar al listado del rol correspondiente
             window.location.assign(rutaListado);
 
         } catch (error) {
@@ -969,7 +872,6 @@ if (formulario && location.pathname.includes('/rentas/')) {
         }
     });
 
-    // Cargar la pantalla correspondiente
     (async () => {
 
         try {

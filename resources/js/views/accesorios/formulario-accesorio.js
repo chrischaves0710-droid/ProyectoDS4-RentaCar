@@ -1,6 +1,7 @@
 
 import { ApiClient } from '../../api/ApiClient.js';
 import { AppState } from '../../store/AppState.js';
+import { restoreForm } from '../../ui/FormRecovery.js';
 
 const formulario = document.querySelector('.secciones-formulario');
 
@@ -24,7 +25,6 @@ if (formulario) {
 
     const textoBoton = botonGuardar?.textContent ?? 'Guardar accesorio';
 
-    // Estado de la aplicación
     const estado = new AppState({
         cargando: true,
         guardando: false,
@@ -33,7 +33,6 @@ if (formulario) {
         errores: {}
     });
 
-    // Contenedor para mensajes generales
     const avisoGeneral = document.createElement('p');
     avisoGeneral.id = 'mensaje-formulario-accesorio';
     avisoGeneral.setAttribute('role', 'status');
@@ -41,7 +40,6 @@ if (formulario) {
 
     formulario.prepend(avisoGeneral);
 
-    // Crear espacios para los errores de cada campo
     function avisoCampo(campo) {
         const id = `error-${campo.name}`;
         let aviso = document.getElementById(id);
@@ -64,7 +62,6 @@ if (formulario) {
 
     [campoNombre, campoPrecio].filter(Boolean).forEach(avisoCampo);
 
-    // Sincronizar estado con el formulario
     estado.subscribe((datos) => {
         const bloqueado =
             !datos.listo || datos.cargando || datos.guardando;
@@ -111,38 +108,10 @@ if (formulario) {
 
     estado.notify();
 
-    // Recuperar datos después de una sesión expirada
     function recuperarDatos() {
-        const respaldo = sessionStorage.getItem('form_backup_401');
-
-        if (!respaldo) return false;
-
-        try {
-            const datos = JSON.parse(respaldo);
-
-            if (
-                !datos ||
-                typeof datos !== 'object' ||
-                !Object.hasOwn(datos, 'nombre') ||
-                !Object.hasOwn(datos, 'precio_unitario')
-            ) {
-                return false;
-            }
-
-            campoNombre.value = datos.nombre ?? '';
-            campoPrecio.value = datos.precio_unitario ?? '';
-
-            sessionStorage.removeItem('form_backup_401');
-
-            return true;
-
-        } catch {
-            sessionStorage.removeItem('form_backup_401');
-            return false;
-        }
+        return restoreForm(formulario);
     }
 
-    // Cargar información al abrir el formulario
     async function iniciar() {
         if (!campoNombre || !campoPrecio || !botonGuardar) return;
 
@@ -188,7 +157,6 @@ if (formulario) {
         }
     }
 
-    // Crear o actualizar un accesorio
     formulario.addEventListener('submit', async (evento) => {
         evento.preventDefault();
 
@@ -218,7 +186,6 @@ if (formulario) {
                 await api.post('/accesorios', datos);
             }
 
-            // Volver al listado del rol correspondiente
             window.location.assign(rutaListado);
 
         } catch (error) {
@@ -246,6 +213,5 @@ if (formulario) {
         }
     });
 
-    // Ejecutar carga inicial
     iniciar();
 }

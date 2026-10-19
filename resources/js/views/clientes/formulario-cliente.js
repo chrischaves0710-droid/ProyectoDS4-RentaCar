@@ -1,6 +1,7 @@
 
 import { ApiClient } from '../../api/ApiClient.js';
 import { AppState } from '../../store/AppState.js';
+import { restoreForm } from '../../ui/FormRecovery.js';
 
 const formulario = document.querySelector('form.secciones-formulario');
 
@@ -16,7 +17,6 @@ if (formulario) {
 
     const rutaListado = '/lab8/gerente/clientes';
 
-    // Campos que utiliza la API de clientes
     const nombres = [
         'cedula',
         'anno_nacimiento',
@@ -38,17 +38,14 @@ if (formulario) {
 
     const textoGuardar = botonGuardar?.textContent ?? 'Guardar cliente';
 
-    // Permitir que Laravel devuelva los errores de validación
     formulario.noValidate = true;
 
-    // Mensaje general del formulario
     const mensaje = document.createElement('p');
     mensaje.id = 'mensaje-formulario-cliente';
     mensaje.setAttribute('role', 'status');
 
     formulario.prepend(mensaje);
 
-    // Estado de la aplicación
     const estado = new AppState({
         listo: false,
         cargando: true,
@@ -57,12 +54,10 @@ if (formulario) {
         mensaje: 'Cargando formulario...'
     });
 
-    // Obtener un campo por su nombre
     function obtenerCampo(nombre) {
         return formulario.elements.namedItem(nombre);
     }
 
-    // Mostrar los errores debajo de cada campo
     function mostrarErrores(errores) {
 
         for (const nombre of nombres) {
@@ -97,7 +92,6 @@ if (formulario) {
         }
     }
 
-    // Sincronizar el estado con la interfaz
     estado.subscribe(datos => {
 
         if (botonGuardar) {
@@ -130,7 +124,6 @@ if (formulario) {
 
     estado.notify();
 
-    // Rellenar los campos con datos existentes
     function rellenarCampos(cliente) {
 
         for (const nombre of nombres) {
@@ -147,38 +140,11 @@ if (formulario) {
         }
     }
 
-    // Recuperar datos guardados tras una respuesta 401
     function recuperarDatos() {
-
-        const respaldo = sessionStorage.getItem('form_backup_401');
-
-        if (!respaldo) return false;
-
-        try {
-            const datos = JSON.parse(respaldo);
-
-            if (
-                !datos ||
-                typeof datos !== 'object' ||
-                !('cedula' in datos) ||
-                !('nombre1' in datos) ||
-                !('apellido1' in datos)
-            ) {
-                return false;
-            }
-
-            rellenarCampos(datos);
-
-            sessionStorage.removeItem('form_backup_401');
-
-            return true;
-
-        } catch {
-            return false;
-        }
+        const recovered = restoreForm(formulario);
+        return recovered;
     }
 
-    // Cargar los datos al abrir el formulario
     async function iniciar() {
 
         if (
@@ -202,7 +168,6 @@ if (formulario) {
 
         try {
 
-            // Consultar el cliente cuando estamos editando
             if (esEdicion) {
 
                 const respuesta = await api.get(
@@ -214,7 +179,6 @@ if (formulario) {
                 rellenarCampos(cliente);
             }
 
-            // Recuperar datos tras una sesión expirada
             const recuperado = recuperarDatos();
 
             estado.setState({
@@ -238,7 +202,6 @@ if (formulario) {
         }
     }
 
-    // Registrar o actualizar un cliente
     formulario.addEventListener('submit', async evento => {
 
         evento.preventDefault();
@@ -250,7 +213,6 @@ if (formulario) {
             return;
         }
 
-        // Recopilar los datos del formulario
         const datos = Object.fromEntries(
             nombres.map(nombre => [
                 nombre,
@@ -268,7 +230,6 @@ if (formulario) {
 
             if (esEdicion) {
 
-                // Actualizar un cliente existente
                 await api.put(
                     `/clientes/${encodeURIComponent(idCliente)}`,
                     datos
@@ -276,18 +237,15 @@ if (formulario) {
 
             } else {
 
-                // Registrar un cliente nuevo
                 await api.post('/clientes', datos);
             }
 
-            // Regresar al directorio de clientes
             window.location.assign(rutaListado);
 
         } catch (error) {
 
             if (error?.status === 422) {
 
-                // Mostrar errores devueltos por Laravel
                 estado.setState({
                     errores: error.errors ?? {},
                     mensaje: 'Revisa los campos marcados.'
@@ -313,11 +271,9 @@ if (formulario) {
         }
     });
 
-    // Funcionamiento del botón Cancelar
     botonCancelar?.addEventListener('click', () => {
         window.location.assign(rutaListado);
     });
 
-    // Iniciar el formulario
     iniciar();
 }

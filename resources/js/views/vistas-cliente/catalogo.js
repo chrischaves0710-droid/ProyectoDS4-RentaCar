@@ -1,228 +1,122 @@
 import { ApiClient } from '../../api/ApiClient.js';
 import { AppState } from '../../store/AppState.js';
+import { escapeHtml as e, paginationOf } from '../../ui/PaginatedListing.js';
 
-// Se instancian los módulos base para la conexión y el estado
+const cards = document.querySelector('.catalogo-vehiculos');
+const pages = document.querySelector('.paginacion');
+const search = document.getElementById('buscar-vehiculo');
+const category = document.getElementById('categoria');
+const availability = document.getElementById('disponibilidad');
+const form = document.querySelector('.formulario-filtros');
 const api = new ApiClient('/api');
-const store = new AppState({
-    data: [],
-    pagination: {},
-    loading: false,
-    error: null,
-    paginaActual: 1,
-    busqueda: '',
-    categoria: '',
-    disponibilidad: ''
-});
+const store = new AppState({ data: [], pagination: {}, loading: false, error: null, page: 1, search: '' });
+let active = null;
+let timer = null;
+let generation = 0;
 
-let debounceTimer = null;
-let currentAbortController = null;
+const dialog = document.createElement('dialog');
+dialog.setAttribute('aria-label', 'Detalle del vehículo');
+dialog.style.cssText = 'max-width:min(30rem,calc(100% - 2rem));border:1px solid #d1d5db;border-radius:1rem;padding:1.5rem';
+document.body.append(dialog);
 
-// Se seleccionan los elementos del DOM
-const contenedorCatalogo = document.querySelector('.catalogo-vehiculos');
-const inputBusqueda = document.getElementById('buscar-vehiculo');
-const selectCategoria = document.getElementById('categoria');
-const selectDisponibilidad = document.getElementById('disponibilidad');
-const navPaginacion = document.querySelector('.paginacion');
-
-// Se suscribe la vista a los cambios de estado
-store.subscribe((state) => {
-    if (state.loading) {
-        if (contenedorCatalogo) {
-            contenedorCatalogo.innerHTML = `<div style="text-align: center; width: 100%; padding: 3rem; color: #64748b;">⏳ Cargando catálogo de vehículos...</div>`;
-        }
+function render(current) {
+    if (!cards || !pages) return;
+    pages.replaceChildren();
+    if (current.loading) {
+        cards.innerHTML = '<p role="status" style="padding:2rem">Cargando vehículos...</p>';
         return;
     }
-
-    if (state.error) {
-        if (contenedorCatalogo) {
-            contenedorCatalogo.innerHTML = `<div style="text-align: center; width: 100%; color: #dc2626; padding: 3rem;">⚠️ ${state.error}</div>`;
-        }
+    if (current.error) {
+        cards.innerHTML = `<div role="alert" style="padding:2rem"><p>${e(current.error)}</p><button type="button" class="boton boton-secundario" data-retry>Reintentar</button></div>`;
+        cards.querySelector('[data-retry]')?.addEventListener('click', () => load(current.page));
         return;
     }
-
-    if (!state.data || state.data.length === 0) {
-        if (contenedorCatalogo) {
-            contenedorCatalogo.innerHTML = `<div style="text-align: center; width: 100%; color: #64748b; padding: 3rem;">🔍 No se encontraron vehículos con estos filtros.</div>`;
-        }
-        if (navPaginacion) navPaginacion.innerHTML = '';
+    if (!current.data.length) {
+        cards.innerHTML = '<p role="status" style="padding:2rem">No se encontraron vehículos con estos filtros.</p>';
         return;
     }
-
-    // Se inyectan las tarjetas y la paginación
-    renderCatalogo(state.data);
-    renderPaginacion(state.pagination);
-});
-
-// Se renderizan las tarjetas de los vehículos en modo consulta (solo lectura)
-function renderCatalogo(vehiculos) {
-    if (!contenedorCatalogo) return;
-
-    const tituloHtml = `<h2 id="titulo-catalogo" class="visualmente-oculto">Listado de vehículos</h2>`;
-
-    const tarjetasHTML = vehiculos.map(v => {
-        let claseEstado = 'estado-disponible';
-        let textoEstado = 'Disponible';
-        
-        if (v.estado && v.estado.nombre) {
-            textoEstado = v.estado.nombre;
-            const estadoMinuscula = textoEstado.toLowerCase();
-            
-            if (estadoMinuscula.includes('alquilado') || estadoMinuscula.includes('curso')) {
-                claseEstado = 'estado-alquilado';
-            } else if (estadoMinuscula.includes('mantenimiento') || estadoMinuscula.includes('inactivo')) {
-                claseEstado = 'estado-mantenimiento';
-            }
-        }
-
-        const categoriaNombre = v.categoria ? v.categoria.nombre : 'General';
-        const kilometraje = v.kilometraje ? v.kilometraje.toLocaleString() : '0';
-
-        return `
-            <article class="tarjeta-vehiculo">
-                <div class="imagen-vehiculo" aria-hidden="true">🚗</div>
-                <div class="contenido-tarjeta-vehiculo">
-                    <div class="encabezado-tarjeta-vehiculo">
-                        <h3>${v.marca || ''} ${v.modelo || ''}</h3>
-                        <span class="estado ${claseEstado}">${textoEstado}</span>
-                    </div>
-                    <p class="datos-catalogo">${v.anio || ''} · ${categoriaNombre} · ${kilometraje} km</p>
-                    <a href="#" aria-label="Ver detalles de ${v.marca || ''} ${v.modelo || ''}" class="boton boton-secundario boton-detalle">Ver detalles</a>
-                </div>
-            </article>
-        `;
+    cards.innerHTML = '<h2 id="titulo-catalogo" class="visualmente-oculto">Listado de vehículos</h2>' + current.data.map(v => {
+        const state = String(v.estado ?? 'Sin estado');
+        const key = state.toLowerCase();
+        const kind = key.includes('mantenimiento') ? 'estado-mantenimiento' : key.includes('disponible') ? 'estado-disponible' : 'estado-alquilado';
+        return `<article class="tarjeta-vehiculo"><div class="imagen-vehiculo" aria-hidden="true">🚗</div><div class="contenido-tarjeta-vehiculo"><div class="encabezado-tarjeta-vehiculo"><h3>${e(v.marca)} ${e(v.modelo)}</h3><span class="estado ${kind}">${e(state)}</span></div><p class="datos-catalogo">${e(v.anno)} · ${e(v.categoria)} · ${e(Number(v.kilometraje ?? 0).toLocaleString('es-CR'))} km</p><button type="button" class="boton boton-secundario boton-detalle" data-detail="${e(v.id)}">Ver detalles</button></div></article>`;
     }).join('');
-
-    contenedorCatalogo.innerHTML = tituloHtml + tarjetasHTML;
+    const { current_page: page, last_page: last } = current.pagination;
+    pages.innerHTML = `<button type="button" class="boton boton-secundario" data-nav="prev" ${page <= 1 ? 'disabled' : ''}>Anterior</button><span aria-current="page">Página ${page} de ${last}</span><button type="button" class="boton boton-secundario" data-nav="next" ${page >= last ? 'disabled' : ''}>Siguiente</button>`;
 }
 
-// Se actualizan los controles de paginación
-function renderPaginacion(meta) {
-    if (!navPaginacion || !meta || !meta.last_page) return;
+store.subscribe(render);
 
-    const { current_page, last_page } = meta;
-
-    navPaginacion.innerHTML = `
-        <button type="button" class="boton boton-secundario" id="btn-prev" ${current_page <= 1 ? 'disabled' : ''}>Anterior</button>
-        <span aria-current="page">Página ${current_page} de ${last_page}</span>
-        <button type="button" class="boton boton-secundario" id="btn-next" ${current_page >= last_page ? 'disabled' : ''}>Siguiente</button>
-    `;
-
-    document.getElementById('btn-prev')?.addEventListener('click', () => {
-        if (current_page > 1) cargarCatalogo(current_page - 1);
-    });
-
-    document.getElementById('btn-next')?.addEventListener('click', () => {
-        if (current_page < last_page) cargarCatalogo(current_page + 1);
-    });
-}
-
-// Se realiza la petición a la API para obtener los vehículos filtrados
-async function cargarCatalogo(pagina = 1) {
-    store.setState({ loading: true, error: null });
-
-    if (currentAbortController) {
-        currentAbortController.abort();
-    }
-    currentAbortController = new AbortController();
-
+async function load(page = 1) {
+    active?.abort();
+    const controller = new AbortController();
+    active = controller;
+    const requestId = ++generation;
+    store.setState({ loading: true, error: null, page });
+    const params = new URLSearchParams({ page: String(page), limit: '10' });
+    if (store.state.search) params.set('q', store.state.search);
+    if (category?.value) params.set('categoria_id', category.value);
+    if (availability?.value) params.set('estado_id', availability.value);
     try {
-        const queryParams = { page: pagina };
-        if (store.state.busqueda) queryParams.buscar = store.state.busqueda;
-        if (store.state.categoria) queryParams.categoria_id = store.state.categoria;
-        if (store.state.disponibilidad) queryParams.estado_id = store.state.disponibilidad;
-
-        const query = new URLSearchParams(queryParams).toString();
-
-        const respuesta = await api.get(`/vehiculos?${query}`, { signal: currentAbortController.signal });
-
-        if (respuesta && !respuesta.aborted) {
-            store.setState({
-                data: respuesta.data || respuesta,
-                pagination: respuesta.meta || { current_page: pagina, last_page: 1 },
-                loading: false,
-                paginaActual: pagina
-            });
-        }
-    } catch (err) {
-        if (err.status !== 401) {
-            store.setState({ loading: false, error: err.message || 'Error al conectar con el servidor.' });
-        }
+        const result = await api.get(`/vehiculos?${params}`, { signal: controller.signal });
+        if (requestId !== generation || controller.signal.aborted || result?.aborted) return;
+        if (!Array.isArray(result?.data)) throw new Error('La API devolvió datos inválidos.');
+        store.setState({ data: result.data, pagination: paginationOf(result, page), loading: false });
+    } catch (error) {
+        if (requestId !== generation || controller.signal.aborted || error?.name === 'AbortError') return;
+        if (error?.status !== 401) store.setState({ loading: false, error: error.message ?? 'No se pudo consultar el catálogo.' });
+    } finally {
+        if (active === controller) active = null;
     }
 }
 
-// Se configuran los escuchadores de eventos para la barra de búsqueda y los selectores
-inputBusqueda?.addEventListener('input', (e) => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        store.setState({ busqueda: e.target.value.trim() });
-        cargarCatalogo(1);
-    }, 400);
-});
-
-selectCategoria?.addEventListener('change', (e) => {
-    store.setState({ categoria: e.target.value });
-    cargarCatalogo(1);
-});
-
-selectDisponibilidad?.addEventListener('change', (e) => {
-    store.setState({ disponibilidad: e.target.value });
-    cargarCatalogo(1);
-});
-
-const botonCerrarSesion = document.querySelector(
-    '.sesion button[type="button"]'
-);
-
-if (botonCerrarSesion) {
-
-    botonCerrarSesion.addEventListener('click', async () => {
-
-        const textoOriginal = botonCerrarSesion.textContent;
-
-        botonCerrarSesion.disabled = true;
-        botonCerrarSesion.textContent = 'Cerrando sesión...';
-
-        try {
-
-            // Revocar el token mediante Laravel
-            await api.post('/logout', {});
-
-            // Eliminar el token del navegador
-            localStorage.removeItem('auth_token');
-
-            // Limpiar respaldos de sesiones anteriores
-            sessionStorage.removeItem('return_url_401');
-            sessionStorage.removeItem('form_backup_401');
-
-            // Regresar al inicio de sesión
-            window.location.replace('/login');
-
-        } catch (error) {
-
-            if (error?.status === 401) {
-
-                // La sesión ya había expirado
-                localStorage.removeItem('auth_token');
-
-                sessionStorage.removeItem('return_url_401');
-                sessionStorage.removeItem('form_backup_401');
-
-                window.location.replace('/login');
-                return;
-            }
-
-            // Mostrar otros errores sin perder el token
-            alert(
-                error?.message ||
-                'No se pudo cerrar la sesión. Intente nuevamente.'
-            );
-
-            botonCerrarSesion.disabled = false;
-            botonCerrarSesion.textContent = textoOriginal;
-        }
-
-    });
+async function loadOptions() {
+    const catalogues = await api.get('/catalogos/vehiculos');
+    if (!Array.isArray(catalogues.categorias) || !Array.isArray(catalogues.estados)) throw new Error('No se pudieron cargar los filtros.');
+    category.replaceChildren(new Option('Todas', ''));
+    availability.replaceChildren(new Option('Todos', ''));
+    for (const item of catalogues.categorias) category.add(new Option(item.nombre, item.id));
+    for (const item of catalogues.estados) availability.add(new Option(item.nombre, item.id));
 }
 
-// Se inicializa el listado al cargar la vista
-cargarCatalogo(1);
+cards?.addEventListener('click', event => {
+    const id = event.target.closest('[data-detail]')?.dataset.detail;
+    if (!id) return;
+    const v = store.state.data.find(item => String(item.id) === id);
+    if (!v) return;
+    dialog.innerHTML = `<h2>${e(v.marca)} ${e(v.modelo)}</h2><p>Placa: ${e(v.placa)}</p><p>Año: ${e(v.anno)}</p><p>Categoría: ${e(v.categoria)}</p><p>Estado: ${e(v.estado)}</p><p>Kilometraje: ${e(Number(v.kilometraje ?? 0).toLocaleString('es-CR'))} km</p><p>Tarifa diaria: $${e(Number(v.precio_diario ?? 0).toFixed(2))}</p><form method="dialog"><button class="boton boton-secundario">Cerrar</button></form>`;
+    dialog.showModal();
+});
+
+pages?.addEventListener('click', event => {
+    const direction = event.target.closest('[data-nav]')?.dataset.nav;
+    if (!direction) return;
+    const { current_page: current, last_page: last } = store.state.pagination;
+    const page = direction === 'prev' ? current - 1 : current + 1;
+    if (page >= 1 && page <= last) load(page);
+});
+
+search?.addEventListener('input', () => {
+    clearTimeout(timer);
+    active?.abort();
+    generation++;
+    store.setState({ search: search.value.trim(), loading: true, error: null, page: 1 });
+    timer = setTimeout(() => load(1), 400);
+});
+
+[category, availability].forEach(select => select?.addEventListener('change', () => load(1)));
+form?.addEventListener('submit', event => {
+    event.preventDefault();
+    clearTimeout(timer);
+    store.setState({ search: search?.value.trim() ?? '' });
+    load(1);
+});
+
+(async () => {
+    try {
+        await loadOptions();
+        await load(1);
+    } catch (error) {
+        if (error?.status !== 401) store.setState({ loading: false, error: error?.message ?? 'No se pudieron cargar los filtros.' });
+    }
+})();

@@ -1,0 +1,74 @@
+{
+  "vehiculos": [
+    {
+      "id": 1,
+      "placa": "ABC-123",
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anno": 2022,
+      "kilometraje": 45000,
+      "categoria_id": 1,
+      "estado_id": 1
+    },
+    {
+      "id": 2,
+      "placa": "XYZ-987",
+      "marca": "Nissan",
+      "modelo": "Sentra",
+      "anno": 2020,
+      "kilometraje": 60000,
+      "categoria_id": 2,
+      "estado_id": 1
+    },
+    {
+      "id": 3,
+      "placa": "LMN-456",
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anno": 2023,
+      "kilometraje": 15000,
+      "categoria_id": 1,
+      "estado_id": 2
+    }
+  ],
+  "categorias": [
+    {
+      "nombre": "Sedán",
+      "id": 1
+    },
+    {
+      "nombre": "Compacto",
+      "id": 2
+    }
+  ],
+  "estados": [
+    {
+      "nombre": "Disponible",
+      "id": 1
+    },
+    {
+      "nombre": "Rentado",
+      "id": 2
+    }
+  ],
+  "rentas": [
+    {
+      "vehiculo_id": 1,
+      "id": 1
+    }
+  ],
+  "usuarios": [
+    {
+      "email": "inventario@example.test",
+      "role": "Admin_Inventarios",
+      "id": 1,
+      "password": "RentaCar-Ficticio-2026!"
+    },
+    {
+      "email": "cliente@example.test",
+      "role": "Cliente",
+      "id": 2,
+      "password": "RentaCar-Ficticio-2026!"
+    }
+  ]
+}

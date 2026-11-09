@@ -14,8 +14,8 @@ class UpdateVehiculoRequest extends FormRequest
 
     public function rules(): array
     {
-        // Se obtiene el ID del vehículo desde la ruta para ignorar su propia placa en el unique
-        $vehiculoId = $this->route('vehiculo')?->id ?? $this->route('vehiculo');
+        // Obtenemos el ID del vehículo que se está actualizando desde la ruta
+        $vehiculoId = $this->route('vehiculo') ? $this->route('vehiculo')->id : null;
 
         return [
             'placa' => [
@@ -28,8 +28,8 @@ class UpdateVehiculoRequest extends FormRequest
             'modelo' => 'required|string|max:50',
             'anno' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'kilometraje' => 'required|integer|min:0',
-            'precio_diario' => 'required|numeric|min:0',
             'categoria_id' => 'required|integer|exists:categorias,id',
+            'estado_id' => 'required|integer|exists:estados,id',
         ];
     }
 
@@ -39,7 +39,7 @@ class UpdateVehiculoRequest extends FormRequest
             'placa.required' => 'La placa es obligatoria.',
             'placa.string' => 'La placa debe ser una cadena de texto.',
             'placa.max' => 'La placa no puede exceder los 20 caracteres.',
-            'placa.unique' => 'La placa ya se encuentra asignada a otro vehículo.',
+            'placa.unique' => 'La placa ya se encuentra registrada en otro vehículo.',
 
             'marca.required' => 'La marca es obligatoria.',
             'marca.string' => 'La marca debe ser una cadena de texto.',
@@ -58,13 +58,13 @@ class UpdateVehiculoRequest extends FormRequest
             'kilometraje.integer' => 'El kilometraje debe ser un número entero.',
             'kilometraje.min' => 'El kilometraje no puede ser negativo.',
 
-            'precio_diario.required' => 'El precio diario es obligatorio.',
-            'precio_diario.numeric' => 'El precio diario debe ser un valor numérico.',
-            'precio_diario.min' => 'El precio diario no puede ser menor a 0.',
-
             'categoria_id.required' => 'La categoría es obligatoria.',
             'categoria_id.integer' => 'El ID de la categoría debe ser un número entero.',
             'categoria_id.exists' => 'La categoría seleccionada no existe en la base de datos.',
+
+            'estado_id.required' => 'El estado es obligatorio.',
+            'estado_id.integer' => 'El ID del estado debe ser un número entero.',
+            'estado_id.exists' => 'El estado seleccionado no existe en la base de datos.',
         ];
     }
 }

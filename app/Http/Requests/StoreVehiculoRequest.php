@@ -19,7 +19,6 @@ class StoreVehiculoRequest extends FormRequest
             'modelo' => 'required|string|max:50',
             'anno' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'kilometraje' => 'required|integer|min:0',
-            'precio_diario' => 'required|numeric|min:0',
             'categoria_id' => 'required|integer|exists:categorias,id',
         ];
     }
@@ -48,10 +47,6 @@ class StoreVehiculoRequest extends FormRequest
             'kilometraje.required' => 'El kilometraje es obligatorio.',
             'kilometraje.integer' => 'El kilometraje debe ser un número entero.',
             'kilometraje.min' => 'El kilometraje no puede ser negativo.',
-
-            'precio_diario.required' => 'El precio diario es obligatorio.',
-            'precio_diario.numeric' => 'El precio diario debe ser un valor numérico.',
-            'precio_diario.min' => 'El precio diario no puede ser menor a 0.',
 
             'categoria_id.required' => 'La categoría es obligatoria.',
             'categoria_id.integer' => 'El ID de la categoría debe ser un número entero.',

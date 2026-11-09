@@ -17,13 +17,11 @@ class VehiculoController extends Controller
     public function index(Request $request)
     {
         // se agrupan los filtros para pasarlos limpiamente al servicio
-     
-    $filtros = [
-    'categoria_id' => $request->input('categoria_id'),
-    'estado_id' => $request->input('estado_id'),
-    'q' => $request->input('q')
-    ];
-
+        $filtros = [
+            'categoria_id' => $request->input('categoria_id'),
+            'estado_id' => $request->input('estado_id'),
+            'q' => $request->input('q')
+        ];
         
         $sortBy = $request->input('sort_by', 'created_at');
         $order = $request->input('order', 'desc');
@@ -37,7 +35,14 @@ class VehiculoController extends Controller
 
     public function store(StoreVehiculoRequest $request)
     {
-        $vehiculo = $this->vehiculoService->crear($request->validated());
+        // 1. Extraer los datos validados del formulario
+        $datos = $request->validated();
+
+        // 2. Asignar el estado "Disponible" por defecto (asumiendo ID 1)
+        $datos['estado_id'] = 1;
+
+        // 3. Pasar el arreglo modificado a la capa de servicio
+        $vehiculo = $this->vehiculoService->crear($datos);
 
         return (new VehiculoResource($vehiculo))
             ->response()

@@ -4,18 +4,20 @@ Porción vertical del Hito 2. La API usa EF Core 8 con SQLite y tokens Bearer op
 
 ## Ejecutar y comprobar
 
-Desde la raíz de la solución, con el SDK .NET 8 x64 disponible:
+En Windows, instala el **SDK .NET 8 x64** desde [Microsoft](https://dotnet.microsoft.com/download/dotnet/8.0) o ejecuta `winget install --id Microsoft.DotNet.SDK.8 -e --architecture x64`. Abre PowerShell 7 y confirma que `dotnet --list-sdks` muestra una versión 8.0.x. La restauración inicial requiere acceso a NuGet.
+
+Desde la raíz de la solución:
 
 ```powershell
 dotnet restore
 dotnet build --no-restore
 dotnet test --no-build
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
-$env:ConnectionStrings__RentaCar = "Data Source=$PWD\rentacar-benchmark.sqlite"
+$env:ConnectionStrings__RentaCar = "Data Source=$PWD\rentacar-benchmark-$([guid]::NewGuid().ToString("N")).sqlite"
 dotnet run --project Api --no-build --no-launch-profile --urls http://127.0.0.1:5182
 ```
 
-En otra consola:
+En otra consola de PowerShell 7, desde la misma raíz, ejecuta `.\smoke.ps1` para comprobar los seis endpoints y OpenAPI. El script modifica la base de prueba. Para un sondeo de solo lectura después del login:
 
 ```powershell
 $base = 'http://127.0.0.1:5182'
@@ -32,19 +34,10 @@ Swagger UI en http://127.0.0.1:5182/swagger y OpenAPI en http://127.0.0.1:5182/s
 
 El archivo Api/fixtures/comparativo.json conserva los tres vehículos del contrato e incluye sus catálogos, una renta que impide eliminar el vehículo 1 y dos usuarios ficticios. Para Laravel y NestJS, importar catálogos y usuarios antes de insertar vehículos y rentas con IDs explícitos. Generar los hashes de contraseña mediante las herramientas de cada framework. Si un esquema requiere columnas adicionales, como precio_diario en Laravel, acordar valores fijos antes de medir y registrar esa diferencia.
 
-Antes de cada corrida, detener el servidor y arrancar con una ruta nueva de SQLite dedicada al benchmark. Cambiar ConnectionStrings__RentaCar a esa ruta. Se aplicará la migración y se cargará el mismo JSON. Usar una instancia a la vez, en la misma máquina y con el mismo escenario. Excluir la preparación de la base y el inicio de sesión del escenario de carga si el equipo mide solo operaciones de vehículos.
+Antes de cada corrida, detener el servidor y arrancar con una ruta nueva de SQLite dedicada al benchmark. Cambiar ConnectionStrings__RentaCar a esa ruta. Se aplicará la migración y se cargará el mismo JSON. Para las comprobaciones individuales cada framework puede usar una base descartable. Para el comparativo oficial, acordar una base común dedicada, restaurar el mismo estado inicial antes de medir cada implementación y ejecutar en la misma máquina con el mismo escenario. Excluir la preparación de la base y el inicio de sesión del escenario de carga si el equipo mide solo operaciones de vehículos.
 
 ## Decisiones provisionales del contrato
 
 El contrato congelado quedó en su repositorio original. Esta API usa 401 para credenciales incorrectas, 422 con errores por campo para entradas inválidas, 204 al eliminar y 409 si el vehículo tiene una renta asociada. El listado acepta page, per_page y q, ordena por ID y devuelve data y meta. Las respuestas de detalle y escritura contienen data con los ocho campos acordados. El alta incluye Location.
 
 Laravel devuelve 422 para credenciales incorrectas y 204 al eliminar, usa limit y añade links, alias y precio_diario. Su validación exige precio_diario y su servicio aplica reglas adicionales de kilometraje y estado. En esta porción el estado se envía como una clave válida y la eliminación se restringe por cualquier renta asociada. Los roles reproducen los grupos de lectura y escritura de Laravel. La equivalencia entre frameworks sigue pendiente de una verificación HTTP común.
-
-## SDK instalado en esta sesión
-
-El SDK se instaló de forma aislada. En esta máquina se puede usar anteponiéndolo al PATH de la consola:
-
-```powershell
-$env:PATH = 'C:\Users\1\Documents\Codex\2026-11-09\te-d\work\dotnet;' + $env:PATH
-dotnet --list-sdks
-```

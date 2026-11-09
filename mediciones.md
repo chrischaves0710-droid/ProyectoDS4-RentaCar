@@ -11,9 +11,11 @@ Segundos: 4.4702299
 Comandos: dotnet new sln -n RentaCar; dotnet new webapi -n Api --no-openapi --no-restore; dotnet sln add Api; dotnet build -p:NuGetAudit=false; dotnet Api/bin/Debug/net8.0/Api.dll --urls http://127.0.0.1:5184; GET /weatherforecast.
 La medición incluye generación, compilación, arranque y sondeo. El endpoint medido pertenece a la plantilla. SDK 8.0.427 x64; ASP.NET Core 8.0.33.
 
-## Código propio y dependencias
+## Conteos medidos de código propio
 
 Se contaron líneas físicas no vacías de archivos C# escritos para el proyecto, incluidas declaraciones e importaciones. Se excluyeron bin, obj, la migración generada y su snapshot, configuración, scripts, datos y documentación. Resultado: 11 archivos C# y 473 líneas, distribuidos en 10 archivos de API (396 líneas) y 1 archivo de pruebas (77 líneas).
+
+## Estimaciones de esfuerzo por área
 
 | Área | Archivos y líneas | Alcance del conteo |
 |---|---|---|
@@ -22,7 +24,7 @@ Se contaron líneas físicas no vacías de archivos C# escritos para el proyecto
 | OpenAPI | 3 archivos, 62 líneas de configuración específica | ContractDocumentation completo (53), registro y middleware en Program (8) y referencia de paquete en Api.csproj (1). Los atributos de respuesta se mantienen junto a los endpoints. |
 | Pruebas de integración | 1 archivo, 77 líneas | ContractTests.cs. Tres escenarios xUnit con WebApplicationFactory y SQLite temporal por caso. |
 
-Las áreas funcionales pueden compartir líneas. Los conteos por área sirven como indicador del tamaño del código, sin medición separada de minutos de autoría.
+Los conteos por área son estimaciones de esfuerzo basadas en la selección manual de código. Las áreas pueden compartir líneas. No se midieron minutos de autoría por área.
 
 SDK .NET 8.0.427 x64, ASP.NET Core y runtime .NET 8.0.33, EF Core SQLite y Design 8.0.28, dotnet-ef 8.0.28, Swashbuckle.AspNetCore 6.6.2, Microsoft.AspNetCore.Mvc.Testing 8.0.28, Microsoft.NET.Test.Sdk 17.11.1, xUnit 2.9.2 y runner Visual Studio 2.8.2. La autenticación usa ASP.NET Core Authentication e Identity PasswordHasher del framework compartido y criptografía de .NET. Reutiliza EF Core SQLite para persistir los hashes de tokens.
 
@@ -46,4 +48,6 @@ El SDK se instaló mediante el script oficial de Microsoft en una carpeta aislad
 
 Restauración y compilación completadas en C:\proyectos\rentacar-aspnet, con cero errores y cero advertencias. xUnit ejecutó 3 pruebas de integración, con 3 aprobadas, 0 fallidas y 0 omitidas. Las solicitudes HTTP a Kestrel confirmaron las seis operaciones, los códigos esperados, Location, los errores por campo y la lectura posterior a escritura en SQLite. El documento OpenAPI respondió 200 y se comprobaron su versión 3, el esquema Bearer y las respuestas declaradas de las seis operaciones. La equivalencia HTTP con Laravel y NestJS queda pendiente.
 
-El tiempo de puesta en marcha de 4,47 s corresponde al primer 200 de la plantilla en la repetición documentada. Rendimiento, latencia p95 y memoria se medirán por el integrante 3.
+## Mediciones pendientes del integrante 3
+
+Peticiones por segundo, latencia p95, memoria residente en reposo y tamaño del artefacto desplegable. La comprobación smoke valida funcionalidad y no genera métricas de rendimiento.

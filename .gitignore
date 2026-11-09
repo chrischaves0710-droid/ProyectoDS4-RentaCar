@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.log

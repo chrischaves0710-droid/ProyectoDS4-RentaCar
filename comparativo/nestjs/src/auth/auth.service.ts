@@ -3,21 +3,18 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   login(email: string, password: string) {
-    // se valida un usuario estático para cumplir con el Hito
-    if (email === 'admin@rentacar.com' && password === '123456') {
-    const payload = {
-  email: email,
-  sub: 1,
-  role: 'admin',
-};
-      return {
-        access_token: this.jwtService.sign(payload),
-      };
+    const expected = process.env.BENCHMARK_PASSWORD;
+    const writer = process.env.BENCHMARK_WRITER;
+    const reader = process.env.BENCHMARK_READER;
+    if (!expected || password !== expected || !email || (email !== writer && email !== reader)) {
+      throw new UnauthorizedException('Credenciales inválidas');
     }
-    
-    throw new UnauthorizedException('Credenciales inválidas');
+
+    const isWriter = email === writer;
+    const role = isWriter ? 'Admin_Inventarios' : 'Cliente';
+    return { token: this.jwtService.sign({ sub: isWriter ? 1 : 2, role }) };
   }
 }

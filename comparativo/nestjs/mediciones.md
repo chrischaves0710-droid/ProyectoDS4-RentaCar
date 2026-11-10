@@ -26,3 +26,6 @@ Archivos principales modificados/creados:
 - La suite de pruebas de Jest ejecutó 4 pruebas (incluyendo el AppController base), con **4 aprobadas y 0 fallidas** en ~3.62 segundos.
 - Se validaron los 6 endpoints requeridos mediante una colección de **Postman** (exportada y adjunta en el repositorio), confirmando la creación exitosa en SQLite, las respuestas JSON correctas y la generación del JWT.
 - Queda pendiente que el Integrante 3 realice las pruebas de estrés (latencia, peticiones por segundo y consumo de RAM).
+## Perfil reproducible actual
+
+Los resultados anteriores describen una configuración histórica. El perfil vigente de comparación usa SQLite nueva y el fixture canónico. La configuración Jest usa ESM. Ver README.md y comparativo/evidencias/homologado para reproducir la verificación y distinguir las corridas nuevas.

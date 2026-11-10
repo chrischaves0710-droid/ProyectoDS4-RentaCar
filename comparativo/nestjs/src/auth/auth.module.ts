@@ -5,9 +5,15 @@ import { AuthController } from './auth.controller';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: 'clave-secreta-rentacar', // en un proyecto real esto va en variables de entorno (.env)
-      signOptions: { expiresIn: '1h' },
+    JwtModule.registerAsync({
+      useFactory: () => {
+        const secret = process.env.NEST_BENCHMARK_JWT_SECRET;
+        if (!secret || Buffer.byteLength(secret) < 32) {
+          throw new Error('NEST_BENCHMARK_JWT_SECRET debe contener al menos 32 bytes');
+        }
+        return { secret, signOptions: { expiresIn: '30m', algorithm: 'HS256' },
+          verifyOptions: { algorithms: ['HS256'] } };
+      },
     }),
   ],
   controllers: [AuthController],

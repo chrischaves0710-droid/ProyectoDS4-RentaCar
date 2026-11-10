@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { VehiculosService } from './vehiculos.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -37,7 +38,7 @@ describe('VehiculosService', () => {
       data: [{ id: 1, placa: 'ABC-123', marca: 'Toyota' }],
       meta: {
         total: 1,
-        page: 1,
+        current_page: 1,
         per_page: 10,
         last_page: 1
       }

@@ -1,18 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { configureApi } from './configure-api';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
-  // Agrega el prefijo /api a todas las rutas
-  app.setGlobalPrefix('api');
-
-  // Cambia el código de error de validación de 400 a 422
-  app.useGlobalPipes(new ValidationPipe({
-    errorHttpStatusCode: 422,
-  }));
-
-  await app.listen(process.env.PORT ?? 3000);
+  configureApi(app);
+  await app.listen(Number(process.env.PORT ?? 3000), process.env.HOST ?? '127.0.0.1');
 }
-bootstrap();
+void bootstrap();

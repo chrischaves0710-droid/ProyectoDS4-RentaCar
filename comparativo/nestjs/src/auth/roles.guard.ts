@@ -7,7 +7,11 @@ export class RolesGuard implements CanActivate {
     const user = request.user;
     
     // Si el usuario no tiene rol admin, lanza 403
-    if (!user || user.role !== 'admin') {
+    const read = request.method === 'GET';
+    const allowed = read
+      ? ['Admin_General', 'Admin_Inventarios', 'Gestor_Rentas', 'Cliente']
+      : ['Admin_General', 'Admin_Inventarios'];
+    if (!user || !allowed.includes(user.role)) {
       throw new ForbiddenException('Acceso denegado. Permisos insuficientes.');
     }
     return true;

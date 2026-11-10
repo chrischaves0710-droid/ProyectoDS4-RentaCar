@@ -1,0 +1,5 @@
+﻿"Framework","Prueba","HTTP_Esperado","HTTP_Obtenido","Resultado"
+"Laravel","Crear vehiculo valido","201","201","APROBADO"
+"Laravel","Actualizar vehiculo","200","200","APROBADO"
+"Laravel","Eliminar vehiculo","200","204","DIFERENCIA"
+"Laravel","Consultar vehiculo eliminado","404","404","APROBADO"

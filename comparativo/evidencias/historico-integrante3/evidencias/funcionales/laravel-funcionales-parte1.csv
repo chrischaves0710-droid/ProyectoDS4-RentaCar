@@ -1,0 +1,6 @@
+﻿"Framework","Prueba","HTTP_Esperado","HTTP_Obtenido","Resultado"
+"Laravel","Listar vehiculos","200","200","APROBADO"
+"Laravel","Consultar vehiculo existente","200","200","APROBADO"
+"Laravel","Consultar vehiculo inexistente","404","404","APROBADO"
+"Laravel","Crear vehiculo invalido","422","422","APROBADO"
+"Laravel","Login incorrecto","401","422","DIFERENCIA"

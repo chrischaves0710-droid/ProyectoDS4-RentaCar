@@ -1,0 +1,4 @@
+﻿Framework,P95_ms,Latencia_media_ms,Solicitudes,HTTP_200,Tasa_errores,Evidencia_JSON
+Laravel,253.24,106.49,300,300,0.0000,laravel-ram-carga-k6.json
+NestJS,8.08,4.49,301,301,0.0000,nestjs-ram-carga-k6.json
+ASP.NET Core,16.18,6.87,301,301,0.0000,aspnet-ram-carga-k6.json

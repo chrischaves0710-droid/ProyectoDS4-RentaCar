@@ -1,0 +1,187 @@
+{
+  "framework": "aspnet",
+  "results": [
+    {
+      "test": "login v\u00e1lido",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "token"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "contrase\u00f1a incorrecta",
+      "expected": 401,
+      "actual": 401,
+      "json_keys": [
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "entrada incompleta",
+      "expected": 422,
+      "actual": 422,
+      "json_keys": [
+        "errors",
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "sin token",
+      "expected": 401,
+      "actual": 401,
+      "json_keys": [
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "token inv\u00e1lido",
+      "expected": 401,
+      "actual": 401,
+      "json_keys": [
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "login de lectura",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "token"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "rol de lectura sin escritura",
+      "expected": 403,
+      "actual": 403,
+      "json_keys": [
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "p\u00e1gina y b\u00fasqueda",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "data",
+        "meta"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "detalle",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "data"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "detalle inexistente",
+      "expected": 404,
+      "actual": 404,
+      "json_keys": [
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "alta inv\u00e1lida",
+      "expected": 422,
+      "actual": 422,
+      "json_keys": [
+        "errors",
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "alta",
+      "expected": 201,
+      "actual": 201,
+      "json_keys": [
+        "data"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "placa duplicada",
+      "expected": 422,
+      "actual": 422,
+      "json_keys": [
+        "errors",
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "actualizaci\u00f3n",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "data"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "lectura posterior",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "data"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "eliminaci\u00f3n",
+      "expected": 204,
+      "actual": 204,
+      "json_keys": null,
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "consulta del eliminado",
+      "expected": 404,
+      "actual": 404,
+      "json_keys": [
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "eliminaci\u00f3n con dependencia",
+      "expected": 409,
+      "actual": 409,
+      "json_keys": [
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    }
+  ]
+}

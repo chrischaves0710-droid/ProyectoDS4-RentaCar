@@ -1,0 +1,4 @@
+﻿Framework,RAM_reposo_media_MB,RAM_reposo_max_MB,RAM_carga_media_MB,RAM_carga_max_MB,Muestras_reposo,Muestras_carga,P95_k6_simultaneo_ms,Peticiones_k6_simultaneo,Errores_k6_simultaneo
+Laravel,18.26,18.26,46.99,47.41,30,30,253.24,300,0
+NestJS,12.96,12.96,38.77,40.93,30,30,8.08,301,0
+ASP.NET Core,6.68,6.73,64.39,69.52,30,30,16.18,301,0

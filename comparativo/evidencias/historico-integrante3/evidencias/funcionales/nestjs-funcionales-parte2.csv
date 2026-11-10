@@ -1,0 +1,6 @@
+﻿"Framework","Prueba","HTTP_Esperado","HTTP_Obtenido","Resultado"
+"NestJS","Login incorrecto","401","401","APROBADO"
+"NestJS","Crear vehiculo valido","201","201","APROBADO"
+"NestJS","Actualizar vehiculo","200","200","APROBADO"
+"NestJS","Eliminar vehiculo","200","204","DIFERENCIA"
+"NestJS","Consultar vehiculo eliminado","404","404","APROBADO"

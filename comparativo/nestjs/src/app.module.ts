@@ -9,10 +9,14 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'better-sqlite3',
-      database: 'rentacar.sqlite',
-      autoLoadEntities: true,
-      synchronize: true, // Crea la tabla automáticamente al arrancar
+     type: 'mysql',
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: Number(process.env.DB_PORT || 3306),
+  username: process.env.DB_USERNAME || 'nestjs_pruebas',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_DATABASE || 'rentacar_comparativo_nestjs',
+  autoLoadEntities: true,
+  synchronize: false, 
     }),
     VehiculosModule,
     AuthModule,

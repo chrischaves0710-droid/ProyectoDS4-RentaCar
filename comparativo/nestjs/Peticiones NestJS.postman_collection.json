@@ -2,9 +2,7 @@
   "info": {
     "_postman_id": "8105df0f-6a63-4d95-9cf5-d3f0634855f3",
     "name": "Peticiones NestJS",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "57883453",
-    "_collection_link": "https://go.postman.co/collection/57883453-8105df0f-6a63-4d95-9cf5-d3f0634855f3?source=collection_link"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
@@ -14,7 +12,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"placa\": \"ABC-123\",\r\n  \"marca\": \"Toyota\",\r\n  \"modelo\": \"Yaris\",\r\n  \"anno\": 2022,\r\n  \"kilometraje\": 15000,\r\n  \"categoria_id\": 1,\r\n  \"estado_id\": 1\r\n}",
+          "raw": "{\n  \"placa\": \"ABC-123\",\n  \"marca\": \"Toyota\",\n  \"modelo\": \"Corolla\",\n  \"anno\": 2022,\n  \"kilometraje\": 45000,\n  \"categoria_id\": 1,\n  \"estado_id\": 1\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -22,15 +20,11 @@
           }
         },
         "url": {
-          "raw": "http://localhost:3000/vehiculos",
+          "raw": "http://localhost:3000/api/vehiculos",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "vehiculos"
-          ]
+          "path": ["api", "vehiculos"]
         }
       },
       "response": []
@@ -41,15 +35,50 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:3000/vehiculos",
+          "raw": "http://localhost:3000/api/vehiculos",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "vehiculos"
-          ]
+          "path": ["api", "vehiculos"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get One",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/vehiculos/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "vehiculos", "1"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"placa\": \"XYZ-987\",\n  \"marca\": \"Nissan\",\n  \"modelo\": \"Sentra\",\n  \"anno\": 2020,\n  \"kilometraje\": 65000,\n  \"categoria_id\": 2,\n  \"estado_id\": 2\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/vehiculos/2",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "vehiculos", "2"]
         }
       },
       "response": []
@@ -60,16 +89,11 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "http://localhost:3000/vehiculos/1",
+          "raw": "http://localhost:3000/api/vehiculos/3",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "vehiculos",
-            "1"
-          ]
+          "path": ["api", "vehiculos", "3"]
         }
       },
       "response": []
@@ -81,7 +105,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"email\": \"admin@rentacar.com\",\r\n  \"password\": \"123456\"\r\n}",
+          "raw": "{\n  \"email\": \"admin@rentacar.com\",\n  \"password\": \"123456\"\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -89,16 +113,11 @@
           }
         },
         "url": {
-          "raw": "http://localhost:3000/auth/login",
+          "raw": "http://localhost:3000/api/login",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "auth",
-            "login"
-          ]
+          "path": ["api", "login"]
         }
       },
       "response": []

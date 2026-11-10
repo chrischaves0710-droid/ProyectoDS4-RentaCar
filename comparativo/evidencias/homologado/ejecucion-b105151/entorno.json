@@ -1,0 +1,21 @@
+{
+  "node": "24.22.2",
+  "windows": "Microsoft Windows NT 10.0.26200.0",
+  "php": "8.4.27",
+  "cores": 10,
+  "python": "3.13.0",
+  "cpu": "12th Gen Intel(R) Core(TM) i5-1235U",
+  "k6": "2.3.0",
+  "laravel": "13.31.0",
+  "commit": "b1051510a37ddb9e68a6cab38d8f78cc4c6efc05",
+  "physical_memory_bytes": 16869548032,
+  "logical_processors": 12,
+  "composer": "2.10.2",
+  "aspnet": "8.0.33",
+  "sqlite": {
+    "laravel": "3.53.4",
+    "nestjs": "3.53.2",
+    "aspnet": "3.41.2"
+  },
+  "dotnet_sdk": "8.0.427"
+}

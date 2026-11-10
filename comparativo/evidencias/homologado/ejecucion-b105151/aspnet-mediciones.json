@@ -1,0 +1,58 @@
+{
+  "k6": "k6.exe v2.3.0 (commit/e088784614, go1.26.8, windows/amd64)",
+  "runtime": "8.0.427",
+  "duration_seconds": 30,
+  "modified_tracked_files": false,
+  "warmup_requests": 10,
+  "preallocated_vus": 5,
+  "framework": "aspnet",
+  "requested_rate": 10,
+  "max_vus": 20,
+  "runs": [
+    {
+      "errors": 0,
+      "avg_ms": 3.5862696666666665,
+      "rps": 9.999745806461599,
+      "success": 300,
+      "name": "principal-1",
+      "requests": 300,
+      "p95_ms": 8.524065000000006
+    },
+    {
+      "errors": 0,
+      "avg_ms": 3.1040122923588043,
+      "rps": 10.031437926575233,
+      "success": 301,
+      "name": "principal-2",
+      "requests": 301,
+      "p95_ms": 5.8017
+    },
+    {
+      "errors": 0,
+      "avg_ms": 2.263858,
+      "rps": 9.999831202849297,
+      "success": 300,
+      "name": "principal-3",
+      "requests": 300,
+      "p95_ms": 4.441935
+    },
+    {
+      "errors": 0,
+      "avg_ms": 2.4210189368770774,
+      "rps": 10.031281434715861,
+      "success": 301,
+      "name": "memoria",
+      "requests": 301,
+      "p95_ms": 4.0765
+    }
+  ],
+  "fixture_sha256": "84F19727FB2B76D2B4718DC58C82E76B0E65DBB0950D3DD43BCB5B934F0110AD",
+  "engine": "SQLite",
+  "load_avg_bytes": 210697420.8,
+  "idle_max_bytes": 210272256.0,
+  "idle_avg_bytes": 210169173.33333334,
+  "timestamp_utc": "2026-11-10T15:41:45.4195706+00:00",
+  "load_max_bytes": 211369984.0,
+  "commit": "b1051510a37ddb9e68a6cab38d8f78cc4c6efc05",
+  "host_os": "Microsoft Windows NT 10.0.26200.0"
+}

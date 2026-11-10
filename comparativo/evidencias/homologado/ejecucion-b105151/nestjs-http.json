@@ -1,0 +1,209 @@
+{
+  "passed": 18,
+  "failed": 0,
+  "results": [
+    {
+      "test": "login válido",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "token"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "contraseña incorrecta",
+      "expected": 401,
+      "actual": 401,
+      "json_keys": [
+        "error",
+        "message",
+        "statusCode"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "entrada incompleta",
+      "expected": 422,
+      "actual": 422,
+      "json_keys": [
+        "errors",
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "sin token",
+      "expected": 401,
+      "actual": 401,
+      "json_keys": [
+        "error",
+        "message",
+        "statusCode"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "token inválido",
+      "expected": 401,
+      "actual": 401,
+      "json_keys": [
+        "error",
+        "message",
+        "statusCode"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "login de lectura",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "token"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "rol de lectura sin escritura",
+      "expected": 403,
+      "actual": 403,
+      "json_keys": [
+        "error",
+        "message",
+        "statusCode"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "página y búsqueda",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "data",
+        "meta"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "detalle",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "data"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "detalle inexistente",
+      "expected": 404,
+      "actual": 404,
+      "json_keys": [
+        "error",
+        "message",
+        "statusCode"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "alta inválida",
+      "expected": 422,
+      "actual": 422,
+      "json_keys": [
+        "errors",
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "alta",
+      "expected": 201,
+      "actual": 201,
+      "json_keys": [
+        "data"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "placa duplicada",
+      "expected": 422,
+      "actual": 422,
+      "json_keys": [
+        "errors",
+        "message"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "actualización",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "data"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "lectura posterior",
+      "expected": 200,
+      "actual": 200,
+      "json_keys": [
+        "data"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "eliminación",
+      "expected": 204,
+      "actual": 204,
+      "json_keys": null,
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "consulta del eliminado",
+      "expected": 404,
+      "actual": 404,
+      "json_keys": [
+        "error",
+        "message",
+        "statusCode"
+      ],
+      "shape_ok": true,
+      "passed": true
+    },
+    {
+      "test": "eliminación con dependencia",
+      "expected": 409,
+      "actual": 409,
+      "json_keys": [
+        "error",
+        "message",
+        "statusCode"
+      ],
+      "shape_ok": true,
+      "passed": true
+    }
+  ],
+  "fixture_sha256": "84F19727FB2B76D2B4718DC58C82E76B0E65DBB0950D3DD43BCB5B934F0110AD",
+  "framework": "nestjs",
+  "engine": "SQLite",
+  "timestamp_utc": "2026-11-10T15:33:03.4175131+00:00",
+  "modified_tracked_files": false,
+  "runtime": "v24.22.2",
+  "commit": "b1051510a37ddb9e68a6cab38d8f78cc4c6efc05"
+}

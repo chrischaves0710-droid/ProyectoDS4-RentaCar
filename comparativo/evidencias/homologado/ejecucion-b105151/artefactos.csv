@@ -1,0 +1,13 @@
+framework,categoria,archivos,bytes
+aspnet,configuracion y datos,5,32789
+aspnet,dependencias,20,9886176
+aspnet,generado propio,3,284212
+laravel,configuracion y datos,52,587638
+laravel,dependencias,6542,26406634
+laravel,fuente propia,163,599763
+nestjs,configuracion y datos,3,370085
+nestjs,dependencias,12491,106286303
+nestjs,generado propio,60,91556
+laravel,total,6757,27594035
+nestjs,total,12554,106747944
+aspnet,total,28,10203177

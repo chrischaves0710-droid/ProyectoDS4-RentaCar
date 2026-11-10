@@ -1,0 +1,58 @@
+{
+  "commit": "b1051510a37ddb9e68a6cab38d8f78cc4c6efc05",
+  "idle_max_bytes": 96452608.0,
+  "host_os": "Microsoft Windows NT 10.0.26200.0",
+  "timestamp_utc": "2026-11-10T15:39:12.0293827+00:00",
+  "warmup_requests": 10,
+  "load_avg_bytes": 96576443.73333333,
+  "runs": [
+    {
+      "errors": 0,
+      "avg_ms": 2.7615790697674414,
+      "p95_ms": 4.2075,
+      "rps": 10.032515616427157,
+      "requests": 301,
+      "success": 301,
+      "name": "principal-1"
+    },
+    {
+      "errors": 0,
+      "avg_ms": 3.4517112956810627,
+      "p95_ms": 6.2989,
+      "rps": 10.03194434375931,
+      "requests": 301,
+      "success": 301,
+      "name": "principal-2"
+    },
+    {
+      "errors": 0,
+      "avg_ms": 2.488422259136214,
+      "p95_ms": 4.5864,
+      "rps": 10.032364976024631,
+      "requests": 301,
+      "success": 301,
+      "name": "principal-3"
+    },
+    {
+      "errors": 0,
+      "avg_ms": 2.54143488372093,
+      "p95_ms": 4.3674,
+      "rps": 10.031928094285647,
+      "requests": 301,
+      "success": 301,
+      "name": "memoria"
+    }
+  ],
+  "engine": "SQLite",
+  "duration_seconds": 30,
+  "fixture_sha256": "84F19727FB2B76D2B4718DC58C82E76B0E65DBB0950D3DD43BCB5B934F0110AD",
+  "preallocated_vus": 5,
+  "modified_tracked_files": false,
+  "max_vus": 20,
+  "idle_avg_bytes": 96452608.0,
+  "framework": "nestjs",
+  "runtime": "v24.22.2",
+  "requested_rate": 10,
+  "load_max_bytes": 97378304.0,
+  "k6": "k6.exe v2.3.0 (commit/e088784614, go1.26.8, windows/amd64)"
+}

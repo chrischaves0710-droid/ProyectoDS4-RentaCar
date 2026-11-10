@@ -1,0 +1,58 @@
+{
+  "host_os": "Microsoft Windows NT 10.0.26200.0",
+  "modified_tracked_files": false,
+  "warmup_requests": 10,
+  "timestamp_utc": "2026-11-10T15:36:38.2757992+00:00",
+  "load_max_bytes": 53821440.0,
+  "framework": "laravel",
+  "runs": [
+    {
+      "requests": 300,
+      "avg_ms": 51.32394366666668,
+      "name": "principal-1",
+      "rps": 9.999792404309687,
+      "p95_ms": 85.39679000000001,
+      "success": 300,
+      "errors": 0
+    },
+    {
+      "requests": 301,
+      "avg_ms": 28.380020930232554,
+      "name": "principal-2",
+      "rps": 10.007792978621552,
+      "p95_ms": 50.6935,
+      "success": 301,
+      "errors": 0
+    },
+    {
+      "requests": 301,
+      "avg_ms": 56.309558803986704,
+      "name": "principal-3",
+      "rps": 10.008329623518193,
+      "p95_ms": 81.5068,
+      "success": 301,
+      "errors": 0
+    },
+    {
+      "requests": 300,
+      "avg_ms": 48.94390233333332,
+      "name": "memoria",
+      "rps": 9.99996690010956,
+      "p95_ms": 83.02167500000002,
+      "success": 300,
+      "errors": 0
+    }
+  ],
+  "runtime": "PHP 8.4.27 (cli) (built: Oct 26 2026 09:50:21) (NTS Visual C++ 2022 x64) Copyright (c) The PHP Group Built by The PHP Group Zend Engine v4.4.27, Copyright (c) Zend Technologies     with Zend OPcache v8.4.27, Copyright (c), by Zend Technologies",
+  "preallocated_vus": 5,
+  "requested_rate": 10,
+  "engine": "SQLite",
+  "load_avg_bytes": 53821166.93333333,
+  "max_vus": 20,
+  "idle_avg_bytes": 53813248.0,
+  "idle_max_bytes": 53813248.0,
+  "duration_seconds": 30,
+  "commit": "b1051510a37ddb9e68a6cab38d8f78cc4c6efc05",
+  "fixture_sha256": "84F19727FB2B76D2B4718DC58C82E76B0E65DBB0950D3DD43BCB5B934F0110AD",
+  "k6": "k6.exe v2.3.0 (commit/e088784614, go1.26.8, windows/amd64)"
+}

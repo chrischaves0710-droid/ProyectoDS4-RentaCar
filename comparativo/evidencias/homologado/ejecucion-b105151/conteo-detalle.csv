@@ -1,0 +1,40 @@
+framework,scope,path,physical,nonblank
+Laravel,source,app/Http/Controllers/Api/ComparativoController.php,128,114
+Laravel,source,config/comparativo.php,7,6
+Laravel,source,routes/api.php,6,6
+Laravel,source,comparativo/evidencias/homologado/preparar-sqlite.py,53,51
+NestJS,source,comparativo/nestjs/src/app.module.ts,19,18
+NestJS,source,comparativo/nestjs/src/auth/auth.controller.ts,14,12
+NestJS,source,comparativo/nestjs/src/auth/auth.guard.ts,25,21
+NestJS,source,comparativo/nestjs/src/auth/auth.module.ts,23,22
+NestJS,source,comparativo/nestjs/src/auth/auth.service.ts,20,17
+NestJS,source,comparativo/nestjs/src/auth/dto/login.dto.ts,12,10
+NestJS,source,comparativo/nestjs/src/auth/roles.guard.ts,19,17
+NestJS,source,comparativo/nestjs/src/configure-api.ts,12,11
+NestJS,source,comparativo/nestjs/src/database-profile.ts,68,66
+NestJS,source,comparativo/nestjs/src/main.ts,10,9
+NestJS,source,comparativo/nestjs/src/openapi.controller.ts,76,74
+NestJS,source,comparativo/nestjs/src/vehiculos/dto/create-vehiculo.dto.ts,24,17
+NestJS,source,comparativo/nestjs/src/vehiculos/dto/update-vehiculo.dto.ts,4,3
+NestJS,source,comparativo/nestjs/src/vehiculos/entities/renta.entity.ts,12,10
+NestJS,source,comparativo/nestjs/src/vehiculos/entities/vehiculo.entity.ts,28,20
+NestJS,source,comparativo/nestjs/src/vehiculos/vehiculos.controller.ts,52,46
+NestJS,source,comparativo/nestjs/src/vehiculos/vehiculos.module.ts,13,12
+NestJS,source,comparativo/nestjs/src/vehiculos/vehiculos.service.ts,91,81
+ASP.NET Core,source,comparativo/aspnet/Api/Application/Errors.cs,12,9
+ASP.NET Core,source,comparativo/aspnet/Api/Application/VehiculoInput.cs,32,28
+ASP.NET Core,source,comparativo/aspnet/Api/Application/VehiculoService.cs,56,51
+ASP.NET Core,source,comparativo/aspnet/Api/Controllers/AuthController.cs,31,27
+ASP.NET Core,source,comparativo/aspnet/Api/Controllers/ContractDocumentation.cs,58,53
+ASP.NET Core,source,comparativo/aspnet/Api/Controllers/VehiculosController.cs,69,60
+ASP.NET Core,source,comparativo/aspnet/Api/Domain/Models.cs,18,17
+ASP.NET Core,source,comparativo/aspnet/Api/Infrastructure/Database.cs,48,43
+ASP.NET Core,source,comparativo/aspnet/Api/Program.cs,57,53
+ASP.NET Core,source,comparativo/aspnet/Api/Security/Bearer.cs,62,55
+Laravel,test,tests/Feature/VehiculoApiTest.php,121,94
+Laravel,test,tests/Feature/VehiculoServiceTest.php,275,215
+NestJS,test,comparativo/nestjs/src/app.controller.spec.ts,22,18
+NestJS,test,comparativo/nestjs/src/vehiculos/vehiculos.service.spec.ts,60,52
+NestJS,test,comparativo/nestjs/test/app.e2e-spec.ts,80,72
+ASP.NET Core,test,comparativo/aspnet/Tests/ContractTests.cs,86,77
+Común,test,comparativo/evidencias/contrato-http.py,117,107

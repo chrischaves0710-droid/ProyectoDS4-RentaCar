@@ -1,0 +1,28 @@
+framework,area,archivo,inicio,fin,lineas_no_vacias
+Laravel,validacion,app/Http/Controllers/Api/ComparativoController.php,14,17,4
+Laravel,validacion,app/Http/Controllers/Api/ComparativoController.php,39,42,4
+Laravel,validacion,app/Http/Controllers/Api/ComparativoController.php,116,128,13
+Laravel,autenticacion,app/Http/Controllers/Api/ComparativoController.php,12,34,20
+Laravel,autenticacion,app/Http/Controllers/Api/ComparativoController.php,106,115,9
+Laravel,autenticacion,config/comparativo.php,1,7,6
+NestJS,validacion,comparativo/nestjs/src/configure-api.ts,1,12,11
+NestJS,validacion,comparativo/nestjs/src/auth/dto/login.dto.ts,1,12,10
+NestJS,validacion,comparativo/nestjs/src/vehiculos/dto/create-vehiculo.dto.ts,1,24,17
+NestJS,validacion,comparativo/nestjs/src/vehiculos/dto/update-vehiculo.dto.ts,1,4,3
+NestJS,validacion,comparativo/nestjs/src/vehiculos/vehiculos.controller.ts,27,33,7
+NestJS,validacion,comparativo/nestjs/src/vehiculos/vehiculos.service.ts,62,78,16
+NestJS,autenticacion,comparativo/nestjs/src/auth/auth.controller.ts,1,14,12
+NestJS,autenticacion,comparativo/nestjs/src/auth/auth.guard.ts,1,25,21
+NestJS,autenticacion,comparativo/nestjs/src/auth/auth.module.ts,1,23,22
+NestJS,autenticacion,comparativo/nestjs/src/auth/auth.service.ts,1,20,17
+NestJS,autenticacion,comparativo/nestjs/src/auth/roles.guard.ts,1,19,17
+NestJS,OpenAPI,comparativo/nestjs/src/openapi.controller.ts,1,76,74
+ASP.NET Core,validacion,comparativo/aspnet/Api/Application/VehiculoInput.cs,1,32,28
+ASP.NET Core,validacion,comparativo/aspnet/Api/Application/Errors.cs,1,12,9
+ASP.NET Core,validacion,comparativo/aspnet/Api/Program.cs,21,28,8
+ASP.NET Core,validacion,comparativo/aspnet/Api/Application/VehiculoService.cs,27,34,8
+ASP.NET Core,autenticacion,comparativo/aspnet/Api/Security/Bearer.cs,1,62,55
+ASP.NET Core,autenticacion,comparativo/aspnet/Api/Controllers/AuthController.cs,1,31,27
+ASP.NET Core,autenticacion,comparativo/aspnet/Api/Program.cs,15,18,4
+ASP.NET Core,OpenAPI,comparativo/aspnet/Api/Controllers/ContractDocumentation.cs,1,58,53
+ASP.NET Core,OpenAPI,comparativo/aspnet/Api/Program.cs,29,35,6

@@ -8,7 +8,11 @@ export class AuthService {
   login(email: string, password: string) {
     // se valida un usuario estático para cumplir con el Hito
     if (email === 'admin@rentacar.com' && password === '123456') {
-      const payload = { email: email, sub: 1 };
+    const payload = {
+  email: email,
+  sub: 1,
+  role: 'admin',
+};
       return {
         access_token: this.jwtService.sign(payload),
       };

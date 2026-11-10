@@ -12,8 +12,8 @@ $fixture = "$repo/comparativo/aspnet/Api/fixtures/comparativo.json"
 $fixtureHash = (Get-FileHash $fixture).Hash
 $users = (Get-Content -Raw $fixture | ConvertFrom-Json).usuarios
 $runtime = @{laravel='php'; nestjs='node'; aspnet='dotnet'}[$Framework]
-$exe = (Get-Command $runtime -CommandType Application).Source
-$python = (Get-Command python -CommandType Application).Source
+$exe = (Get-Command $runtime -CommandType Application | Select-Object -First 1).Source
+$python = (Get-Command python -CommandType Application | Select-Object -First 1).Source
 $sha = & git -C $repo rev-parse HEAD
 if ($LASTEXITCODE) { throw 'No se pudo identificar el commit.' }
 $dirty = @(git -C $repo status --porcelain --untracked-files=no).Count -gt 0
@@ -27,7 +27,7 @@ if ($Benchmark) {
             throw "Falta una verificación 18/18 reproducible del commit y fixture actuales para $target."
         }
     }
-    $k6 = (Get-Command k6 -CommandType Application).Source
+    $k6 = (Get-Command k6 -CommandType Application | Select-Object -First 1).Source
 }
 $root = (Resolve-Path ([IO.Path]::GetTempPath())).Path
 $temp = Join-Path $root ('rentacar-contract-' + [guid]::NewGuid().ToString('N'))

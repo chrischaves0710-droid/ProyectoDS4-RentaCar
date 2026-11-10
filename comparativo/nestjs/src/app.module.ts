@@ -9,14 +9,10 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-    type: 'mysql',
-    host: 'localhost',
-    port: 3306,
-    username: 'nestjs_pruebas',
-    password: process.env.DB_PASSWORD ?? '',
-    database: 'rentacar_comparativo_nestjs',
-    entities: [Vehiculo],
-    synchronize: true, // crea la tabla automáticamente
+      type: 'better-sqlite3',
+      database: 'rentacar.sqlite',
+      autoLoadEntities: true,
+      synchronize: true, // Crea la tabla automáticamente al arrancar
     }),
     VehiculosModule,
     AuthModule,

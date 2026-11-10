@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { CreateVehiculoDto } from './dto/create-vehiculo.dto';
 import { UpdateVehiculoDto } from './dto/update-vehiculo.dto';
 import { Vehiculo } from './entities/vehiculo.entity';
@@ -17,11 +17,20 @@ export class VehiculosService {
     return this.vehiculosRepository.save(nuevoVehiculo);
   }
 
-  async findAll(page: number, limit: number) {
-    const skip = (page - 1) * limit;
+  async findAll(page: number, per_page: number, q?: string) {
+    const skip = (page - 1) * per_page;
+    
+    // Configura la búsqueda si existe el parámetro 'q'
+    const where = q ? [
+      { placa: Like(`%${q}%`) },
+      { marca: Like(`%${q}%`) },
+      { modelo: Like(`%${q}%`) }
+    ] : {};
+
     const [data, total] = await this.vehiculosRepository.findAndCount({
+      where,
       skip,
-      take: limit,
+      take: per_page,
     });
     
     return {
@@ -29,7 +38,8 @@ export class VehiculosService {
       meta: {
         total,
         page,
-        last_page: Math.ceil(total / limit)
+        per_page,
+        last_page: Math.ceil(total / per_page)
       }
     };
   }
@@ -43,14 +53,21 @@ export class VehiculosService {
   }
 
   async update(id: number, updateVehiculoDto: UpdateVehiculoDto) {
-    await this.findOne(id); // Lanza 404 automáticamente si no existe
+    await this.findOne(id); 
     await this.vehiculosRepository.update(id, updateVehiculoDto);
     return this.findOne(id);
   }
 
   async remove(id: number) {
-    await this.findOne(id); // Lanza 404 automáticamente si no existe
-    await this.vehiculosRepository.delete(id);
-    return { mensaje: `Vehículo eliminado exitosamente` };
+    await this.findOne(id); 
+    try {
+      await this.vehiculosRepository.delete(id);
+    } catch (error:any) {
+      // Retorna 409 si hay error de llave foránea (dependencias)
+      if (error.message.includes('FOREIGN KEY') || error.message.includes('CONSTRAINT')) {
+        throw new ConflictException('El vehículo tiene dependencias asociadas (409 Conflict)');
+      }
+      throw error;
+    }
   }
 }

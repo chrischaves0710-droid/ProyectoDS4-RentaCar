@@ -2,17 +2,19 @@
   "info": {
     "_postman_id": "8105df0f-6a63-4d95-9cf5-d3f0634855f3",
     "name": "Peticiones NestJS",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57883453",
+    "_collection_link": "https://go.postman.co/collection/57883453-8105df0f-6a63-4d95-9cf5-d3f0634855f3?source=collection_link"
   },
   "item": [
     {
       "name": "Created",
       "request": {
-        "method": "POST",
+        "method": "GET",
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"placa\": \"ABC-123\",\n  \"marca\": \"Toyota\",\n  \"modelo\": \"Corolla\",\n  \"anno\": 2022,\n  \"kilometraje\": 45000,\n  \"categoria_id\": 1,\n  \"estado_id\": 1\n}",
+          "raw": "{\r\n  \"placa\": \"LMN-456\",\r\n  \"marca\": \"Honda\",\r\n  \"modelo\": \"Civic\",\r\n  \"anno\": 2023,\r\n  \"kilometraje\": 15000,\r\n  \"categoria_id\": 1,\r\n  \"estado_id\": 2\r\n}\r\n",
           "options": {
             "raw": {
               "language": "json"
@@ -20,11 +22,17 @@
           }
         },
         "url": {
-          "raw": "http://localhost:3000/api/vehiculos",
+          "raw": "http://localhost:3000/api/vehiculos/1",
           "protocol": "http",
-          "host": ["localhost"],
+          "host": [
+            "localhost"
+          ],
           "port": "3000",
-          "path": ["api", "vehiculos"]
+          "path": [
+            "api",
+            "vehiculos",
+            "1"
+          ]
         }
       },
       "response": []
@@ -35,50 +43,17 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:3000/api/vehiculos",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3000",
-          "path": ["api", "vehiculos"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get One",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
           "raw": "http://localhost:3000/api/vehiculos/1",
           "protocol": "http",
-          "host": ["localhost"],
+          "host": [
+            "localhost"
+          ],
           "port": "3000",
-          "path": ["api", "vehiculos", "1"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Update",
-      "request": {
-        "method": "PUT",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"placa\": \"XYZ-987\",\n  \"marca\": \"Nissan\",\n  \"modelo\": \"Sentra\",\n  \"anno\": 2020,\n  \"kilometraje\": 65000,\n  \"categoria_id\": 2,\n  \"estado_id\": 2\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://localhost:3000/api/vehiculos/2",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3000",
-          "path": ["api", "vehiculos", "2"]
+          "path": [
+            "api",
+            "vehiculos",
+            "1"
+          ]
         }
       },
       "response": []
@@ -91,9 +66,15 @@
         "url": {
           "raw": "http://localhost:3000/api/vehiculos/3",
           "protocol": "http",
-          "host": ["localhost"],
+          "host": [
+            "localhost"
+          ],
           "port": "3000",
-          "path": ["api", "vehiculos", "3"]
+          "path": [
+            "api",
+            "vehiculos",
+            "3"
+          ]
         }
       },
       "response": []
@@ -105,7 +86,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"admin@rentacar.com\",\n  \"password\": \"123456\"\n}",
+          "raw": "{\r\n  \"email\": \"admin@rentacar.com\",\r\n  \"password\": \"123456\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -113,11 +94,46 @@
           }
         },
         "url": {
-          "raw": "http://localhost:3000/api/login",
+          "raw": "http://localhost:3000/auth/login",
           "protocol": "http",
-          "host": ["localhost"],
+          "host": [
+            "localhost"
+          ],
           "port": "3000",
-          "path": ["api", "login"]
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"placa\": \"XYZ-987\",\r\n  \"marca\": \"Nissan\",\r\n  \"modelo\": \"Sentra\",\r\n  \"anno\": 2020,\r\n  \"kilometraje\": 65000,\r\n  \"categoria_id\": 2,\r\n  \"estado_id\": 2\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/vehiculos/2",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "vehiculos",
+            "2"
+          ]
         }
       },
       "response": []

@@ -1,0 +1,107 @@
+{
+  "info": {
+    "_postman_id": "8105df0f-6a63-4d95-9cf5-d3f0634855f3",
+    "name": "Peticiones NestJS",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57883453",
+    "_collection_link": "https://go.postman.co/collection/57883453-8105df0f-6a63-4d95-9cf5-d3f0634855f3?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Created",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"placa\": \"ABC-123\",\r\n  \"marca\": \"Toyota\",\r\n  \"modelo\": \"Yaris\",\r\n  \"anno\": 2022,\r\n  \"kilometraje\": 15000,\r\n  \"categoria_id\": 1,\r\n  \"estado_id\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/vehiculos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "vehiculos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/vehiculos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "vehiculos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Deleted",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/vehiculos/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "vehiculos",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "login",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"admin@rentacar.com\",\r\n  \"password\": \"123456\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

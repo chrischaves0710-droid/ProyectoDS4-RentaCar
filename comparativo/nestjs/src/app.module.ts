@@ -14,7 +14,7 @@ import { AuthModule } from './auth/auth.module';
       port: 3306,
       username: 'root',
       password: 'Noviembre.04', 
-      database: 'rentacar',
+      database: 'rentacar_comparativo_nestjs',
       entities: [Vehiculo],
       synchronize: true, // crea la tabla automáticamente
     }),

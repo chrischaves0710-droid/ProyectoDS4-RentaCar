@@ -13,6 +13,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Resources\UserResource;
 
+if (app()->environment('benchmark')) {
+    Route::post('login', [\App\Http\Controllers\Api\ComparativoController::class, 'login']);
+    Route::apiResource('vehiculos', \App\Http\Controllers\Api\ComparativoController::class)
+        ->parameters(['vehiculos' => 'id']);
+    return;
+}
+
 Route::post('/login', LoginController::class)->middleware('throttle:5,1');
 Route::post('/register', [AuthController::class, 'register']);
 

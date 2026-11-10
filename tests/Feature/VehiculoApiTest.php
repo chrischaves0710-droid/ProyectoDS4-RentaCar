@@ -51,7 +51,7 @@ it('API 2: Devuelve código 422 y la estructura de errores de validación si los
 
     // Verificamos el error 422 (Unprocessable Entity) y que diga qué campos fallaron
     $response->assertStatus(422)
-             ->assertJsonValidationErrors(['placa', 'marca', 'modelo', 'precio_diario', 'categoria_id']);
+             ->assertJsonValidationErrors(['placa', 'marca', 'modelo', 'anno', 'kilometraje', 'categoria_id']);
 });
 
 it('API 3: Devuelve 404 Not Found al solicitar un vehículo que no existe', function () {

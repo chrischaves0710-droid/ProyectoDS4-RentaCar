@@ -574,7 +574,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VehiculoInput'
+              $ref: '#/components/schemas/VehiculoUpdateInput'
       responses:
         '200':
           description: Vehículo actualizado
@@ -1040,7 +1040,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
+      bearerFormat: Sanctum
   schemas:
     LoginInput:
       type: object
@@ -1328,7 +1328,6 @@ components:
       - modelo
       - anno
       - kilometraje
-      - precio_diario
       - categoria_id
       properties:
         placa:
@@ -1346,16 +1345,19 @@ components:
         kilometraje:
           type: integer
           example: 2000
-        precio_diario:
-          type: number
-          format: float
-          example: 45.0
         categoria_id:
           type: integer
           example: 1
-        estado_id:
-          type: integer
-          example: 1
+    VehiculoUpdateInput:
+      allOf:
+      - $ref: '#/components/schemas/VehiculoInput'
+      - type: object
+        required:
+        - estado_id
+        properties:
+          estado_id:
+            type: integer
+            example: 1
     VehiculoResponse:
       type: object
       properties:

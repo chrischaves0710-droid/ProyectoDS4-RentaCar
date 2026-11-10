@@ -3,82 +3,9 @@
     "_postman_id": "8105df0f-6a63-4d95-9cf5-d3f0634855f3",
     "name": "Peticiones NestJS",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "57883453",
-    "_collection_link": "https://go.postman.co/collection/57883453-8105df0f-6a63-4d95-9cf5-d3f0634855f3?source=collection_link"
+    "_exporter_id": "57883453"
   },
   "item": [
-    {
-      "name": "Created",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"placa\": \"LMN-456\",\r\n  \"marca\": \"Honda\",\r\n  \"modelo\": \"Civic\",\r\n  \"anno\": 2023,\r\n  \"kilometraje\": 15000,\r\n  \"categoria_id\": 1,\r\n  \"estado_id\": 2\r\n}\r\n",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "http://localhost:3000/api/vehiculos/1",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "3000",
-          "path": [
-            "api",
-            "vehiculos",
-            "1"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Get",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:3000/api/vehiculos/1",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "3000",
-          "path": [
-            "api",
-            "vehiculos",
-            "1"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Deleted",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:3000/api/vehiculos/3",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "3000",
-          "path": [
-            "api",
-            "vehiculos",
-            "3"
-          ]
-        }
-      },
-      "response": []
-    },
     {
       "name": "login",
       "request": {
@@ -94,15 +21,95 @@
           }
         },
         "url": {
-          "raw": "http://localhost:3000/auth/login",
+          "raw": "http://localhost:3000/api/login",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "3000",
           "path": [
-            "auth",
+            "api",
             "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Created (POST)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"placa\": \"ABC-123\",\r\n  \"marca\": \"Toyota\",\r\n  \"modelo\": \"Corolla\",\r\n  \"anno\": 2022,\r\n  \"kilometraje\": 45000,\r\n  \"categoria_id\": 1,\r\n  \"estado_id\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/vehiculos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "vehiculos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All (Paginado)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/vehiculos?page=1&per_page=10",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "vehiculos"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "per_page",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get One",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/vehiculos/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "vehiculos",
+            "1"
           ]
         }
       },
@@ -133,6 +140,27 @@
             "api",
             "vehiculos",
             "2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Deleted",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/vehiculos/3",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "vehiculos",
+            "3"
           ]
         }
       },

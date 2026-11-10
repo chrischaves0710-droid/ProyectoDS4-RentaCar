@@ -6,9 +6,10 @@ import { Vehiculo } from './entities/vehiculo.entity';
 describe('VehiculosService', () => {
   let service: VehiculosService;
 
-  // 1. Simulamos el comportamiento de la base de datos (Mock)
+  // simulacion del comportamiento de la base de datos (Mock)
   const mockVehiculosRepository = {
-    find: jest.fn().mockResolvedValue([{ id: 1, placa: 'ABC-123', marca: 'Toyota' }]),
+    // evuelve el arreglo de datos y el total de registros (1)
+    findAndCount: jest.fn().mockResolvedValue([[{ id: 1, placa: 'ABC-123', marca: 'Toyota' }], 1]),
     findOneBy: jest.fn().mockResolvedValue({ id: 1, placa: 'ABC-123', marca: 'Toyota' }),
     create: jest.fn().mockImplementation((dto) => dto),
     save: jest.fn().mockImplementation((vehiculo) => Promise.resolve({ id: 1, ...vehiculo })),
@@ -28,10 +29,19 @@ describe('VehiculosService', () => {
     service = module.get<VehiculosService>(VehiculosService);
   });
 
-  // Prueba 1
-  it('debería retornar un arreglo de vehículos (findAll)', async () => {
-    const result = await service.findAll();
-    expect(result).toEqual([{ id: 1, placa: 'ABC-123', marca: 'Toyota' }]);
+  // Prueba 1 
+  it('debería retornar un arreglo paginado de vehículos (findAll)', async () => {
+    const result = await service.findAll(1, 10);
+    
+    expect(result).toEqual({
+      data: [{ id: 1, placa: 'ABC-123', marca: 'Toyota' }],
+      meta: {
+        total: 1,
+        page: 1,
+        per_page: 10,
+        last_page: 1
+      }
+    });
   });
 
   // Prueba 2

@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Body, Put, Param, Delete, Query, UseGuards, Res, HttpCode } from '@nestjs/common';
-import { Response } from 'express';
 import { VehiculosService } from './vehiculos.service';
 import { CreateVehiculoDto } from './dto/create-vehiculo.dto';
 import { UpdateVehiculoDto } from './dto/update-vehiculo.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import { RolesGuard } from '../auth/roles.guard'; 
 
-@UseGuards(AuthGuard) // Protege todos los endpoints de vehículos
+@UseGuards(AuthGuard, RolesGuard) //valida 401 (Auth) y luego 403 (Roles)
 @Controller('vehiculos')
 export class VehiculosController {
   constructor(private readonly vehiculosService: VehiculosService) {}

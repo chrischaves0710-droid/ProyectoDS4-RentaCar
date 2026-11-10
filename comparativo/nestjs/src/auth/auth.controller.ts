@@ -1,13 +1,14 @@
 import { Controller, Post, Body, HttpCode } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
 
-@Controller() 
+@Controller('api')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @HttpCode(200) 
-  login(@Body() body: Record<string, string>) {
-    return this.authService.login(body.email, body.password);
+  @HttpCode(200)
+  login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto.email, loginDto.password); // Lanza 401 en el servicio si falla
   }
 }

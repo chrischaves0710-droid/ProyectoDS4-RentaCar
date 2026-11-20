@@ -1,0 +1,538 @@
+{
+  "timestamp_utc": "2026-11-20T00:56:59.311402+00:00",
+  "image": "rentacar-lab14:local",
+  "image_id": "sha256:9bdc86c383fa6e6b5a18ad70ef5a3f8f1a9e88fa0eac4009b6853f3ca46a60d1",
+  "image_bytes": 331397015,
+  "image_user": "10001:10001",
+  "artifacts": {
+    "frontend": {
+      "bytes": 284751,
+      "files": 36
+    },
+    "vendor": {
+      "bytes": 27691734,
+      "files": 6537
+    }
+  },
+  "assertions": [
+    {
+      "name": "Migraciones explícitas en SQLite descartable",
+      "passed": true
+    },
+    {
+      "name": "HTTP /up",
+      "passed": true,
+      "status": 200,
+      "bytes": 1827
+    },
+    {
+      "name": "HTTP /",
+      "passed": true,
+      "status": 200,
+      "bytes": 36347
+    },
+    {
+      "name": "HTTP /login",
+      "passed": true,
+      "status": 200,
+      "bytes": 11323
+    },
+    {
+      "name": "HTTP /docs/openapi.yaml",
+      "passed": true,
+      "status": 200,
+      "bytes": 47332
+    },
+    {
+      "name": "HTTP /api/vehiculos",
+      "passed": true,
+      "status": 401,
+      "bytes": 74
+    },
+    {
+      "name": "Login Sanctum sobre SQLite descartable",
+      "passed": true
+    },
+    {
+      "name": "API autenticada y paginada",
+      "passed": true
+    },
+    {
+      "name": "Revocación Sanctum",
+      "passed": true
+    },
+    {
+      "name": "HTTP /login",
+      "passed": true,
+      "status": 200,
+      "bytes": 11323
+    },
+    {
+      "name": "Blade utiliza la entrada Vite de login",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/ApiClient-DCCxuImm.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 2890
+    },
+    {
+      "name": "Recurso compilado assets/ApiClient-DCCxuImm.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/ApiClient-DCCxuImm.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/AppState-BANczeEP.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 310
+    },
+    {
+      "name": "Recurso compilado assets/AppState-BANczeEP.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/AppState-BANczeEP.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/CrudForm-BYL6GrEe.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 2431
+    },
+    {
+      "name": "Recurso compilado assets/CrudForm-BYL6GrEe.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/CrudForm-BYL6GrEe.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/PaginatedListing-BbSj6rth.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 2781
+    },
+    {
+      "name": "Recurso compilado assets/PaginatedListing-BbSj6rth.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/PaginatedListing-BbSj6rth.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/accesorios-yUjLhd0R.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 512
+    },
+    {
+      "name": "Recurso compilado assets/accesorios-yUjLhd0R.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/accesorios-yUjLhd0R.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/app-BtlaFgYt.css",
+      "passed": true,
+      "status": 200,
+      "bytes": 62647
+    },
+    {
+      "name": "Recurso compilado assets/app-BtlaFgYt.css",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/app-BtlaFgYt.css",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/app-BvRk9kiK.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 0
+    },
+    {
+      "name": "Recurso compilado assets/app-BvRk9kiK.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/app-BvRk9kiK.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/catalogo-CY4ccadQ.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 4742
+    },
+    {
+      "name": "Recurso compilado assets/catalogo-CY4ccadQ.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/catalogo-CY4ccadQ.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/consultar-accesorios-yUjLhd0R.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 512
+    },
+    {
+      "name": "Recurso compilado assets/consultar-accesorios-yUjLhd0R.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/consultar-accesorios-yUjLhd0R.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/consultar-clientes-CtR1Xi1S.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 552
+    },
+    {
+      "name": "Recurso compilado assets/consultar-clientes-CtR1Xi1S.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/consultar-clientes-CtR1Xi1S.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/consultar-vehiculos-BhFQ7dbR.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 575
+    },
+    {
+      "name": "Recurso compilado assets/consultar-vehiculos-BhFQ7dbR.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/consultar-vehiculos-BhFQ7dbR.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/fonts-C9MNnjVw.css",
+      "passed": true,
+      "status": 200,
+      "bytes": 2352
+    },
+    {
+      "name": "Recurso compilado assets/fonts-C9MNnjVw.css",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/fonts-C9MNnjVw.css",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/formulario-accesorio-BFw1uqsB.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 2727
+    },
+    {
+      "name": "Recurso compilado assets/formulario-accesorio-BFw1uqsB.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/formulario-accesorio-BFw1uqsB.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/formulario-categoria-Btn0PDoq.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 59
+    },
+    {
+      "name": "Recurso compilado assets/formulario-categoria-Btn0PDoq.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/formulario-categoria-Btn0PDoq.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/formulario-cliente-DFUtx9XL.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 2786
+    },
+    {
+      "name": "Recurso compilado assets/formulario-cliente-DFUtx9XL.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/formulario-cliente-DFUtx9XL.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/formulario-estado-BQRofo8-.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 56
+    },
+    {
+      "name": "Recurso compilado assets/formulario-estado-BQRofo8-.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/formulario-estado-BQRofo8-.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/formulario-renta-hxbDfXcf.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 9503
+    },
+    {
+      "name": "Recurso compilado assets/formulario-renta-hxbDfXcf.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/formulario-renta-hxbDfXcf.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/formulario-vehiculo-Bi_chSQA.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 3188
+    },
+    {
+      "name": "Recurso compilado assets/formulario-vehiculo-Bi_chSQA.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/formulario-vehiculo-Bi_chSQA.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/instrument-sans-400-normal-D1W7dsQl.woff",
+      "passed": true,
+      "status": 200,
+      "bytes": 21240
+    },
+    {
+      "name": "HTTP /build/assets/instrument-sans-400-normal-DRC__1Mx.woff2",
+      "passed": true,
+      "status": 200,
+      "bytes": 16860
+    },
+    {
+      "name": "HTTP /build/assets/instrument-sans-500-normal-Dk9ku72i.woff2",
+      "passed": true,
+      "status": 200,
+      "bytes": 17232
+    },
+    {
+      "name": "HTTP /build/assets/instrument-sans-500-normal-Z6ESRlEs.woff",
+      "passed": true,
+      "status": 200,
+      "bytes": 21652
+    },
+    {
+      "name": "HTTP /build/assets/instrument-sans-600-normal-B7fBEWYG.woff2",
+      "passed": true,
+      "status": 200,
+      "bytes": 17408
+    },
+    {
+      "name": "HTTP /build/assets/instrument-sans-600-normal-B9e8oLYv.woff",
+      "passed": true,
+      "status": 200,
+      "bytes": 21676
+    },
+    {
+      "name": "HTTP /build/assets/lab8-CO-mC_W6.css",
+      "passed": true,
+      "status": 200,
+      "bytes": 16565
+    },
+    {
+      "name": "Recurso compilado assets/lab8-CO-mC_W6.css",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/lab8-CO-mC_W6.css",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/listado-accesorios-CgG9XEy6.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 5238
+    },
+    {
+      "name": "Recurso compilado assets/listado-accesorios-CgG9XEy6.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/listado-accesorios-CgG9XEy6.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/listado-categorias-BLbl672V.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 5235
+    },
+    {
+      "name": "Recurso compilado assets/listado-categorias-BLbl672V.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/listado-categorias-BLbl672V.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/listado-clientes-BWJsEKZI.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 6778
+    },
+    {
+      "name": "Recurso compilado assets/listado-clientes-BWJsEKZI.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/listado-clientes-BWJsEKZI.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/listado-estados-7WxT7BGo.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 5379
+    },
+    {
+      "name": "Recurso compilado assets/listado-estados-7WxT7BGo.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/listado-estados-7WxT7BGo.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/listado-rentas-B-lIbViC.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 5731
+    },
+    {
+      "name": "Recurso compilado assets/listado-rentas-B-lIbViC.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/listado-rentas-B-lIbViC.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/listado-vehiculos-Dc9ucqRy.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 6522
+    },
+    {
+      "name": "Recurso compilado assets/listado-vehiculos-Dc9ucqRy.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/listado-vehiculos-Dc9ucqRy.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/login-Dg9NZyJd.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 3159
+    },
+    {
+      "name": "Recurso compilado assets/login-Dg9NZyJd.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/login-Dg9NZyJd.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/mi-perfil-Dzo0dpjK.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 739
+    },
+    {
+      "name": "Recurso compilado assets/mi-perfil-Dzo0dpjK.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/mi-perfil-Dzo0dpjK.js",
+      "passed": true
+    },
+    {
+      "name": "HTTP /build/assets/mis-rentas-DsG1_88l.js",
+      "passed": true,
+      "status": 200,
+      "bytes": 665
+    },
+    {
+      "name": "Recurso compilado assets/mis-rentas-DsG1_88l.js",
+      "passed": true
+    },
+    {
+      "name": "Sin origen de desarrollo assets/mis-rentas-DsG1_88l.js",
+      "passed": true
+    },
+    {
+      "name": "UID sin privilegios",
+      "passed": true,
+      "uid": "10001"
+    },
+    {
+      "name": "FrankenPHP activo como app",
+      "passed": true
+    },
+    {
+      "name": "Imagen sin secretos locales ni dependencias de desarrollo",
+      "passed": true
+    },
+    {
+      "name": "Rechazo de configuración APP_KEY",
+      "passed": true
+    },
+    {
+      "name": "Rechazo de configuración APP_DEBUG",
+      "passed": true
+    },
+    {
+      "name": "Rechazo de configuración DB_CONNECTION",
+      "passed": true
+    },
+    {
+      "name": "HEALTHCHECK Docker",
+      "passed": true,
+      "state": "healthy"
+    },
+    {
+      "name": "Apagado por SIGTERM",
+      "passed": true,
+      "exit_code": "0"
+    }
+  ]
+}

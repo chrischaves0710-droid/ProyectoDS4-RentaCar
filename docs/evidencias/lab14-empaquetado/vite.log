@@ -1,0 +1,40 @@
+#27 8.258 added 95 packages in 8s
+#31 [frontend 8/8] RUN npm run build && test -s public/build/manifest.json
+#31 0.857 vite v8.2.2 building client environment for production...
+#31 3.873 public/build/fonts-manifest.json                                5.74 kB │ gzip:  0.71 kB
+#31 3.873 public/build/manifest.json                                      8.30 kB │ gzip:  1.09 kB
+#31 3.873 public/build/assets/instrument-sans-400-normal-DRC__1Mx.woff2  16.86 kB
+#31 3.873 public/build/assets/instrument-sans-500-normal-Dk9ku72i.woff2  17.23 kB
+#31 3.873 public/build/assets/instrument-sans-600-normal-B7fBEWYG.woff2  17.40 kB
+#31 3.873 public/build/assets/instrument-sans-400-normal-D1W7dsQl.woff   21.24 kB
+#31 3.873 public/build/assets/instrument-sans-500-normal-Z6ESRlEs.woff   21.65 kB
+#31 3.873 public/build/assets/instrument-sans-600-normal-B9e8oLYv.woff   21.67 kB
+#31 3.873 public/build/assets/fonts-C9MNnjVw.css                          2.35 kB │ gzip:  0.38 kB
+#31 3.873 public/build/assets/lab8-CO-mC_W6.css                          16.56 kB │ gzip:  3.28 kB
+#31 3.873 public/build/assets/app-BtlaFgYt.css                           62.64 kB │ gzip: 12.82 kB
+#31 3.873 public/build/assets/app-BvRk9kiK.js                             0.00 kB │ gzip:  0.02 kB
+#31 3.873 public/build/assets/formulario-estado-BQRofo8-.js               0.05 kB │ gzip:  0.07 kB
+#31 3.873 public/build/assets/formulario-categoria-Btn0PDoq.js            0.05 kB │ gzip:  0.07 kB
+#31 3.873 public/build/assets/AppState-BANczeEP.js                        0.31 kB │ gzip:  0.19 kB
+#31 3.873 public/build/assets/accesorios-yUjLhd0R.js                      0.51 kB │ gzip:  0.33 kB
+#31 3.873 public/build/assets/consultar-accesorios-yUjLhd0R.js            0.51 kB │ gzip:  0.33 kB
+#31 3.873 public/build/assets/consultar-clientes-CtR1Xi1S.js              0.55 kB │ gzip:  0.33 kB
+#31 3.873 public/build/assets/consultar-vehiculos-BhFQ7dbR.js             0.57 kB │ gzip:  0.36 kB
+#31 3.873 public/build/assets/mis-rentas-DsG1_88l.js                      0.66 kB │ gzip:  0.41 kB
+#31 3.873 public/build/assets/mi-perfil-Dzo0dpjK.js                       0.73 kB │ gzip:  0.39 kB
+#31 3.873 public/build/assets/CrudForm-BYL6GrEe.js                        2.43 kB │ gzip:  1.23 kB
+#31 3.873 public/build/assets/formulario-accesorio-BFw1uqsB.js            2.72 kB │ gzip:  1.31 kB
+#31 3.873 public/build/assets/PaginatedListing-BbSj6rth.js                2.78 kB │ gzip:  1.41 kB
+#31 3.873 public/build/assets/formulario-cliente-DFUtx9XL.js              2.78 kB │ gzip:  1.30 kB
+#31 3.873 public/build/assets/ApiClient-DCCxuImm.js                       2.89 kB │ gzip:  1.41 kB
+#31 3.873 public/build/assets/login-Dg9NZyJd.js                           3.15 kB │ gzip:  1.38 kB
+#31 3.873 public/build/assets/formulario-vehiculo-Bi_chSQA.js             3.18 kB │ gzip:  1.53 kB
+#31 3.873 public/build/assets/catalogo-CY4ccadQ.js                        4.74 kB │ gzip:  2.05 kB
+#31 3.873 public/build/assets/listado-categorias-BLbl672V.js              5.23 kB │ gzip:  1.89 kB
+#31 3.873 public/build/assets/listado-accesorios-CgG9XEy6.js              5.23 kB │ gzip:  1.90 kB
+#31 3.873 public/build/assets/listado-estados-7WxT7BGo.js                 5.37 kB │ gzip:  1.94 kB
+#31 3.873 public/build/assets/listado-rentas-B-lIbViC.js                  5.73 kB │ gzip:  2.00 kB
+#31 3.873 public/build/assets/listado-vehiculos-Dc9ucqRy.js               6.52 kB │ gzip:  2.29 kB
+#31 3.873 public/build/assets/listado-clientes-BWJsEKZI.js                6.77 kB │ gzip:  2.34 kB
+#31 3.873 public/build/assets/formulario-renta-hxbDfXcf.js                9.50 kB │ gzip:  3.54 kB
+#31 3.874 ✓ built in 3.01s

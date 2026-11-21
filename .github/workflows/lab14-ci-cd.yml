@@ -81,8 +81,10 @@ jobs:
       - name: Instalar dependencias del frontend
         run: npm ci
 
+      
       - name: Ejecutar pruebas JavaScript
-        run: node --test tests/js/lab9.test.mjs
+        run: node --test tests/js/*.test.mjs
+
 
       - name: Compilar frontend con Vite
         run: npm run build

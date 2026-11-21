@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\EstadoController;
 use App\Http\Controllers\Api\RentaController;
 use App\Http\Controllers\Api\ReporteController;
 use App\Http\Controllers\Api\VehiculoController;
+use App\Http\Controllers\WebSessionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,11 +21,28 @@ Route::get('/', function () {
 Route::view('/login', 'auth.login')
     ->name('login');
 
+    // Inicio de sesión web con protección CSRF y límite de intentos
+Route::post('/web/login', [WebSessionController::class, 'login'])
+    ->middleware('throttle:5,1')
+    ->name('web.login');
+
+
+// Registro de clientes con sesión web
+Route::post('/web/register', [WebSessionController::class, 'register'])
+    ->middleware('throttle:5,1')
+    ->name('web.register');
+
+
+Route::post('/web/logout', [WebSessionController::class, 'logout'])
+    ->middleware('auth:web')
+    ->name('web.logout');
+
 // ==========================================
 // 1. Vistas del Gerente General (Admin_General)
 // ==========================================
 
 // Módulo de Vehículos
+Route::middleware(['auth:web', 'role:Admin_General'])->group(function () {
 Route::view('/lab8/gerente/vehiculos', 'lab8.Vistas_Gerente_General.Vehiculos.gestion-vehiculos')->name('gerente.gestion-vehiculos');
 Route::view('/lab8/gerente/vehiculos/crear', 'lab8.Vistas_Gerente_General.Vehiculos.crear-vehiculo')->name('gerente.crear-vehiculo');
 Route::view('/lab8/gerente/vehiculos/editar', 'lab8.Vistas_Gerente_General.Vehiculos.editar-vehiculo')->name('gerente.editar-vehiculo');
@@ -54,11 +72,12 @@ Route::view('/lab8/gerente/categorias/editar', 'lab8.Vistas_Gerente_General.Cate
 Route::view('/lab8/gerente/estados', 'lab8.Vistas_Gerente_General.Estados.gestion-estados')->name('gerente.gestion-estados');
 Route::view('/lab8/gerente/estados/crear', 'lab8.Vistas_Gerente_General.Estados.crear-estado')->name('gerente.crear-estado');
 Route::view('/lab8/gerente/estados/editar', 'lab8.Vistas_Gerente_General.Estados.editar-estado')->name('gerente.editar-estado');
+});
 
 // ==========================================
 // 2. Vistas del Admin de Inventarios
 // ==========================================
-
+Route::middleware(['auth:web', 'role:Admin_Inventarios'])->group(function () {
 // Módulo de Vehículos
 Route::view('/lab8/admin/vehiculos', 'lab8.Vistas_Admin_Inventarios.Vehiculos.gestion-vehiculos')->name('admin.gestion-vehiculos');
 Route::view('/lab8/admin/vehiculos/crear', 'lab8.Vistas_Admin_Inventarios.Vehiculos.crear-vehiculo')->name('admin.crear-vehiculo');
@@ -78,11 +97,12 @@ Route::view('/lab8/admin/categorias/editar', 'lab8.Vistas_Admin_Inventarios.Cate
 Route::view('/lab8/admin/estados', 'lab8.Vistas_Admin_Inventarios.Estados.gestion-estados')->name('admin.gestion-estados');
 Route::view('/lab8/admin/estados/crear', 'lab8.Vistas_Admin_Inventarios.Estados.crear-estado')->name('admin.crear-estado');
 Route::view('/lab8/admin/estados/editar', 'lab8.Vistas_Admin_Inventarios.Estados.editar-estado')->name('admin.editar-estado');
+});
 
 // ==========================================
 // 3. Vistas del Gestor de Rentas
 // ==========================================
-
+Route::middleware(['auth:web', 'role:Gestor_Rentas'])->group(function () {
 // Módulo de Rentas
 Route::view('/lab8/gestor/rentas', 'lab8.Vistas_Gestor_Rentas.gestion-rentas')->name('gestor.gestion-rentas');
 Route::view('/lab8/gestor/rentas/nueva', 'lab8.Vistas_Gestor_Rentas.nueva-renta')->name('gestor.nueva-renta');
@@ -93,16 +113,18 @@ Route::view('/lab8/gestor/rentas/editar', 'lab8.Vistas_Gestor_Rentas.editar-rent
 Route::view('/lab8/gestor/consultar/vehiculos', 'lab8.Vistas_Gestor_Rentas.Vistas_Consultas.consultar-vehiculos')->name('gestor.consultar-vehiculos');
 Route::view('/lab8/gestor/consultar/accesorios', 'lab8.Vistas_Gestor_Rentas.Vistas_Consultas.consultar-accesorios')->name('gestor.consultar-accesorios');
 Route::view('/lab8/gestor/consultar/clientes', 'lab8.Vistas_Gestor_Rentas.Vistas_Consultas.consultar-clientes')->name('gestor.consultar-clientes');
+});
 
 // ==========================================
 // 4. Vistas del Cliente
 // ==========================================
-
+Route::middleware(['auth:web', 'role:Cliente'])->group(function () {
 // Vistas de solo lectura y perfil
 Route::view('/lab8/cliente/catalogo', 'lab8.Vistas_Cliente.catalogo')->name('cliente.catalogo');
 Route::view('/lab8/cliente/mis-rentas', 'lab8.Vistas_Cliente.mis-rentas')->name('cliente.mis-rentas');
 Route::view('/lab8/cliente/mi-perfil', 'lab8.Vistas_Cliente.mi-perfil')->name('cliente.mi-perfil');
 Route::view('/lab8/cliente/accesorios', 'lab8.Vistas_Cliente.accesorios')->name('cliente.accesorios');
+});
 
 // ==========================================
 // 5. Documentación Swagger
@@ -122,31 +144,32 @@ Route::get('/docs/openapi.yaml', function () {
 // ==========================================
 // 6. Rutas CRUD
 // ==========================================
+Route::middleware(['auth:web'])->group(function () {
+    Route::resource('vehiculos', VehiculoController::class)->middleware('role:Admin_General|Admin_Inventarios');
+    Route::resource('accesorios', AccesorioController::class)->middleware('role:Admin_General|Admin_Inventarios');
+    Route::resource('rentas', RentaController::class)->middleware('role:Admin_General|Gestor_Rentas');
+    Route::resource('estados', EstadoController::class)->middleware('role:Admin_General|Admin_Inventarios');
+    Route::resource('categorias', CategoriaController::class)->middleware('role:Admin_General|Admin_Inventarios');
 
-Route::resource('vehiculos', VehiculoController::class);
-Route::resource('accesorios', AccesorioController::class);
-Route::resource('rentas', RentaController::class);
-Route::resource('estados', EstadoController::class);
-Route::resource('categorias', CategoriaController::class);
+    // ==========================================
+    // 7. Rutas de reportes y consultas
+    // ==========================================
 
-// ==========================================
-// 7. Rutas de reportes y consultas
-// ==========================================
+    Route::prefix('reportes')->middleware('role:Admin_General')->group(function () {
 
-Route::prefix('reportes')->group(function () {
+        Route::get(
+            '/scopes',
+            [ReporteController::class, 'obtenerRentasVigentesPorMonto']
+        );
 
-    Route::get(
-        '/scopes',
-        [ReporteController::class, 'obtenerRentasVigentesPorMonto']
-    );
+        Route::get(
+            '/group-by',
+            [ReporteController::class, 'obtenerIngresosYTotalesPorVehiculo']
+        );
 
-    Route::get(
-        '/group-by',
-        [ReporteController::class, 'obtenerIngresosYTotalesPorVehiculo']
-    );
-
-    Route::get(
-        '/pivote',
-        [ReporteController::class, 'obtenerEstadisticasAccesoriosRenta']
-    );
+        Route::get(
+            '/pivote',
+            [ReporteController::class, 'obtenerEstadisticasAccesoriosRenta']
+        );
+    });
 });

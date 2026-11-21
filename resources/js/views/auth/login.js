@@ -229,11 +229,21 @@ if (formLogin && formRegistro && tabLogin && tabRegistro) {
 
         try {
 
-            // Consumir la API correspondiente
-            const respuesta = await api.post(
+
+            const csrfToken = document.querySelector(
+                'meta[name="csrf-token"]'
+            )?.content;
+
+            const respuesta = await new ApiClient('/web').post(
                 esRegistro ? '/register' : '/login',
-                datos
+                datos,
+                {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                }
             );
+
 
             // Comprobar el token recibido
             if (

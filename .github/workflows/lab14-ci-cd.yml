@@ -89,3 +89,34 @@ jobs:
       - name: Compilar frontend con Vite
         run: npm run build
 
+
+  deploy:
+    name: Desplegar en Railway
+    runs-on: ubuntu-24.04
+
+    needs:
+      - backend-tests
+      - frontend-tests
+
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.RAILWAY_DEPLOY_ENABLED == 'true'
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Instalar Railway CLI
+        run: npm install --global @railway/cli
+
+      - name: Desplegar aplicacion
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
+        run: railway up --service "$RAILWAY_SERVICE_ID" --environment production

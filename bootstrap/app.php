@@ -29,13 +29,22 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
 
+
     ->withMiddleware(function (Middleware $middleware): void {
+
+        // Reconocer HTTPS detrás del proxy de Railway
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_PROTO
+        );
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
     })
+
 
     ->withExceptions(function (Exceptions $exceptions): void {
 

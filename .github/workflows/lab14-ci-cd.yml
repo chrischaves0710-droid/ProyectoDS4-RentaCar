@@ -1,0 +1,89 @@
+
+name: Laboratorio 14 - CI/CD RentaCar
+
+on:
+  push:
+    branches:
+      - main
+      - lab14/integrante4-ci
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+
+jobs:
+  backend-tests:
+    name: Pruebas de Laravel
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, pdo_sqlite, sqlite3, bcmath, intl, zip
+          coverage: none
+
+      
+      - name: Preparar archivo de entorno
+        run: cp .env.example .env
+
+      - name: Instalar dependencias de Laravel
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+
+      - name: Generar clave de aplicacion
+        run: php artisan key:generate --force
+
+      - name: Limpiar configuracion
+        run: php artisan config:clear
+
+      - name: Ejecutar pruebas de Laravel
+        run: php artisan test
+
+
+  frontend-tests:
+    name: Pruebas y compilacion del frontend
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      
+      - name: Preparar archivo de entorno
+        run: cp .env.example .env
+
+
+      - name: Instalar dependencias de Laravel
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Instalar dependencias del frontend
+        run: npm ci
+
+      - name: Ejecutar pruebas JavaScript
+        run: node --test tests/js/lab9.test.mjs
+
+      - name: Compilar frontend con Vite
+        run: npm run build
+

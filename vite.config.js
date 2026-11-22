@@ -16,6 +16,9 @@ export default defineConfig({
                 // Autenticación - Laboratorio 9
                 'resources/js/views/auth/login.js',
 
+                // Cierre de sesión web compartido
+                'resources/js/ui/web-logout.js',
+
                 // Categorías
                 'resources/js/views/categorias/listado-categorias.js',
                 'resources/js/views/categorias/formulario-categoria.js',

@@ -2,10 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    @include('partials.web-auth-assets')
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de vehículos | RentaCar</title>
     
-    // Vincular los archivos CSS y JS utilizando Vite
+    <!-- Vincular los archivos CSS y JS utilizando Vite -->
     @vite(['resources/css/lab8.css', 'resources/js/views/vehiculos/listado-vehiculos.js'])
 </head>
 <body>

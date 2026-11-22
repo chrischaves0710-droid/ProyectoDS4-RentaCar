@@ -1,0 +1,123 @@
+
+name: Laboratorio 14 - CI/CD RentaCar
+
+on:
+  push:
+    branches:
+      - main
+      - lab14/integrante4-ci
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+
+jobs:
+  backend-tests:
+    name: Pruebas de Laravel
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v6
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, pdo_sqlite, sqlite3, bcmath, intl, zip
+          coverage: none
+
+      
+      - name: Preparar archivo de entorno
+        run: cp .env.example .env
+
+      - name: Instalar dependencias de Laravel
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+
+      - name: Generar clave de aplicacion
+        run: php artisan key:generate --force
+
+      - name: Limpiar configuracion
+        run: php artisan config:clear
+
+      - name: Ejecutar pruebas de Laravel
+        run: php artisan test
+
+
+  frontend-tests:
+    name: Pruebas y compilacion del frontend
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      
+      - name: Preparar archivo de entorno
+        run: cp .env.example .env
+
+
+      - name: Instalar dependencias de Laravel
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Instalar dependencias del frontend
+        run: npm ci
+
+      
+      - name: Ejecutar pruebas JavaScript
+        run: node --test tests/js/*.test.mjs
+
+
+      - name: Compilar frontend con Vite
+        run: npm run build
+
+
+  deploy:
+    name: Desplegar en Railway
+    runs-on: ubuntu-24.04
+
+    needs:
+      - backend-tests
+      - frontend-tests
+
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.RAILWAY_DEPLOY_ENABLED == 'true'
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Instalar Railway CLI
+        run: npm install --global @railway/cli
+
+      - name: Desplegar aplicacion
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+          RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
+        run: railway up --project "$RAILWAY_PROJECT_ID" --service "$RAILWAY_SERVICE_ID" --environment production

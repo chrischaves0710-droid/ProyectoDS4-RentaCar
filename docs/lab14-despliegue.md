@@ -1,214 +1,131 @@
-
-# Laboratorio 14 — Configuración, seguridad y despliegue de RentaCar
+# Laboratorio 14 — Configuración, Seguridad y Despliegue de RentaCar
 
 ## 1. Introducción
 
-El objetivo de este laboratorio es preparar la aplicación RentaCar para su funcionamiento en un entorno de producción, aplicando medidas de seguridad, separación de configuraciones, empaquetado, automatización del despliegue y publicación móvil.
+El objetivo de este laboratorio fue preparar el ecosistema de **RentaCar** (aplicación web, API REST y aplicación móvil) para su operación en un entorno de producción real[cite: 1]. Se aplicaron controles de seguridad, separación estricta de entornos, empaquetado optimizado mediante contenedores, despliegue continuo en la nube y firma criptográfica para distribución móvil[cite: 1].
 
-El trabajo se distribuyó entre cinco integrantes, con responsabilidades específicas para cada etapa.
+---
 
-## 2. Arquitectura general
+## 2. Arquitectura general del sistema
 
-La solución está compuesta por:
+La solución en producción está integrada por los siguientes componentes[cite: 1]:
 
-- Backend desarrollado con Laravel 13.
-- Frontend web compilado mediante Vite.
-- Base de datos MySQL alojada en Railway.
-- Contenedor Docker basado en FrankenPHP y PHP 8.4.
-- Automatización CI/CD mediante GitHub Actions.
-- Aplicación móvil desarrollada con Ionic Vue y Capacitor.
-- Comunicación con la API mediante HTTPS.
+- **Backend y API REST:** Desarrollados en Laravel 13 (PHP 8.4) con autenticación basada en sesiones web y tokens Laravel Sanctum (`expiration: 120` minutos), además de control de acceso basado en roles y permisos mediante Spatie Permission[cite: 1].
+- **Frontend Web:** Vistas Blade y módulos JavaScript compilados y optimizados con Vite[cite: 1].
+- **Servidor de Aplicaciones y Contenedor:** Imagen Docker multietapa basada en FrankenPHP sobre Alpine Linux, ejecutada bajo un usuario sin privilegios[cite: 1].
+- **Base de Datos:** Instancia MySQL persistente alojada en Railway (con 14 migraciones ejecutadas y datos iniciales cargados)[cite: 1].
+- **Integración y Despliegue Continuo (CI/CD):** Flujo automatizado en GitHub Actions (`.github/workflows/lab14-ci-cd.yml`) conectado a Railway[cite: 1].
+- **Aplicación Móvil:** Cliente híbrido desarrollado en Ionic Vue + Capacitor para Android, compilado con firma de producción (`release`) y comunicación exclusiva por HTTPS[cite: 1].
 
-### Direcciones de producción
+### Enlaces y repositorios del proyecto
 
-Aplicación web:
-https://rentacar-web-production.up.railway.app
-
-Repositorio backend:
-https://github.com/chrischaves0710-droid/ProyectoDS4-RentaCar
-
-Repositorio móvil:
-https://github.com/alexlascarez0411/rentacar-movil
-
-## 3. Separación de entornos
-
-Se establecieron configuraciones independientes para desarrollo y producción.
-
-En desarrollo se utilizan variables locales, conexión de pruebas y direcciones de localhost.
-
-En producción se utilizan variables administradas por Railway, una dirección pública HTTPS y una conexión persistente a MySQL.
-
-La aplicación móvil utiliza archivos de ejemplo independientes:
-
-- .env.development.example
-- .env.production.example
-
-Los archivos con valores reales no deben almacenarse en los repositorios.
-
-## 4. Configuración de variables de entorno
-
-Laravel utiliza variables de entorno para administrar los parámetros de funcionamiento.
-
-Entre las principales se encuentran:
-
-| Variable | Función |
+| Recurso | Ubicación |
 |---|---|
-| APP_ENV | Identifica el entorno de ejecución. |
-| APP_DEBUG | Controla la exposición de errores detallados. |
-| APP_KEY | Clave de cifrado de Laravel. |
-| APP_URL | Dirección principal de la aplicación. |
-| DB_CONNECTION | Motor de base de datos. |
-| DB_HOST | Servidor de base de datos. |
-| DB_DATABASE | Base de datos utilizada. |
-| DB_USERNAME | Usuario de conexión. |
-| DB_PASSWORD | Contraseña de conexión. |
-| CORS_ALLOWED_ORIGINS | Orígenes autorizados. |
-| SESSION_SECURE_COOKIE | Protección de cookies mediante HTTPS. |
+| **Aplicación Web y API (Producción)** | https://rentacar-web-production.up.railway.app[cite: 1] |
+| **Healthcheck del Servicio** | https://rentacar-web-production.up.railway.app/up[cite: 1] |
+| **Repositorio Backend / Web / CI-CD** | https://github.com/chrischaves0710-droid/ProyectoDS4-RentaCar[cite: 1] |
+| **Repositorio Aplicación Móvil** | https://github.com/alexlascarez0411/rentacar-movil[cite: 1] |
 
-El archivo .env.example funciona como plantilla y no contiene credenciales reales.
+---
 
-Las variables de producción se administran desde Railway.
+## 3. Configuración y seguridad
 
-## 5. Protección de credenciales
+### 3.1 Separación de entornos (Desarrollo vs. Producción)
 
-Se reforzó el archivo .gitignore para impedir que se publiquen archivos sensibles.
+Se definieron perfiles independientes para evitar que configuraciones de depuración o bases de datos locales afecten el entorno productivo[cite: 1]:
 
-Se contemplan:
+- **Entorno de desarrollo (`local`):** Utiliza `.env` local (no rastreado en Git), `APP_DEBUG=true`, conexión `sqlite` (`database/database.sqlite`), cookies sin requerimiento de HTTPS (`SESSION_SECURE_COOKIE=false`) y orígenes locales (`http://localhost:8000`, `http://localhost:8100`)[cite: 1].
+- **Entorno de producción (`production`):** Administrado mediante variables de entorno en Railway con `APP_ENV=production`, `APP_DEBUG=false`, URL pública `https://rentacar-web-production.up.railway.app`, base de datos MySQL persistente y cookies seguras (`SESSION_SECURE_COOKIE=true`)[cite: 1].
+- **Aplicación móvil:** Utiliza plantillas separadas (`.env.development.example` y `.env.production.example`) sin exponer claves ni entornos reales en el repositorio[cite: 1].
 
-- Archivos .env.
-- Contraseñas y credenciales.
-- Certificados y llaves privadas.
-- Keystores de Android.
-- Archivos de configuración locales.
-- Dependencias y artefactos generados.
+### 3.2 Administración de variables de entorno
 
-También se debe comprobar el historial del repositorio para detectar posibles credenciales publicadas anteriormente.
+El archivo `.env.example` fue actualizado como plantilla limpia sin credenciales reales, documentando todas las variables críticas del sistema[cite: 1]:
 
-## 6. Configuración CORS
+| Variable | Propósito | Valor en Producción |
+|---|---|---|
+| `APP_ENV` | Define el entorno de ejecución de Laravel | `production`[cite: 1] |
+| `APP_DEBUG` | Controla la exposición de trazas de error detalladas | `false`[cite: 1] |
+| `APP_KEY` | Llave maestra de cifrado y firma de sesiones | Generada y persistente en Railway[cite: 1] |
+| `APP_URL` | URL base pública de la aplicación | `https://rentacar-web-production.up.railway.app`[cite: 1] |
+| `DB_CONNECTION` | Motor de base de datos activo | `mysql`[cite: 1] |
+| `DB_HOST` / `DB_PORT` | Host y puerto del servidor MySQL | Proveídos por Railway[cite: 1] |
+| `DB_DATABASE` | Nombre de la base de datos productiva | Proveído por Railway[cite: 1] |
+| `DB_USERNAME` / `DB_PASSWORD` | Credenciales de acceso a MySQL | Secretos en Railway[cite: 1] |
+| `CORS_ALLOWED_ORIGINS` | Lista blanca de orígenes autorizados | Dominio Railway + orígenes Capacitor[cite: 1] |
+| `SESSION_SECURE_COOKIE` | Restringe el envío de cookies únicamente a HTTPS | `true`[cite: 1] |
+| `SESSION_HTTP_ONLY` | Impide el acceso a cookies desde JavaScript (`XSS`) | `true`[cite: 1] |
+| `SESSION_SAME_SITE` | Mitiga ataques de falsificación de peticiones (`CSRF`) | `lax`[cite: 1] |
 
-Se modificó config/cors.php para administrar los orígenes autorizados mediante CORS_ALLOWED_ORIGINS.
+### 3.3 Protección de credenciales y auditoría del repositorio
 
-Se contemplan los orígenes necesarios para desarrollo local y para la aplicación móvil.
+Se reforzó `.gitignore` para bloquear la subida accidental de secretos, archivos locales y artefactos compilados[cite: 1]:
 
-La configuración evita autorizar indiscriminadamente cualquier dominio.
+- **Variables y respaldos:** `.env`, `.env.*` (exceptuando `.env.example` y `.env.testing.example`), `.env.local`, `.env.production`, `.env.backup`[cite: 1].
+- **Llaves y certificados:** `*.pem`, `*.key`, `*.p12`, `*.pfx`, `*.jks`, `*.keystore`, `/storage/*.key`, `auth.json`, `credentials.json`, `secrets.json`, `service-account*.json`[cite: 1].
+- **Bases locales y artefactos:** `/*.sqlite`, `/*.sqlite-journal`, `/vendor`, `/node_modules`, `/public/build`, `/public/hot`, `/bootstrap/cache/*.php` y `/storage/logs/*`[cite: 1].
 
-Los orígenes de producción se administran mediante las variables configuradas en Railway.
+Mediante `git check-ignore` y búsqueda de patrones de secretos en el código fuente (`app/`, `config/`, `database/`, `docker/`, `resources/`), se verificó que no existan credenciales expuestas[cite: 1].
 
-## 7. Seguridad del entorno de producción
+### 3.4 Configuración CORS y seguridad de red
 
-Se establecieron las siguientes medidas:
+- **CORS (`config/cors.php`):** Se parametrizó `allowed_origins` mediante la variable `CORS_ALLOWED_ORIGINS` (eliminando configuraciones abiertas indiscriminadas) para autorizar exclusivamente el dominio de producción en Railway y los esquemas de Ionic/Capacitor (`https://localhost`, `capacitor://localhost`, `http://localhost:8100`)[cite: 1].
+- **Proxy inverso y HTTPS (`bootstrap/app.php`):** Se configuró `trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_PROTO)` para que Laravel reconozca correctamente el cifrado TLS terminado en el balanceador de Railway[cite: 1].
+- **Sesiones (`config/session.php`):** Se estableció serialización `json` (evitando vulnerabilidades de deserialización de objetos PHP) y fallback automático de `SESSION_SECURE_COOKIE` a `true` cuando `APP_ENV=production`[cite: 1].
+- **Validaciones de arranque (`app/Providers/AppServiceProvider.php` y `docker/validate-runtime.php`):** Se implementaron verificaciones para forzar el esquema `https` en producción y bloquear el inicio del contenedor si faltan variables obligatorias (`APP_KEY`, `APP_URL`, parámetros de conexión `DB_*`) o si `APP_DEBUG` permanece activo en producción[cite: 1].
 
-- APP_DEBUG desactivado en producción.
-- APP_KEY obligatoria y persistente.
-- Uso de HTTPS.
-- Validación de la URL de producción.
-- Cookies de sesión seguras.
-- Validación de configuraciones obligatorias.
-- Protección de las rutas privadas.
-- Comprobación del endpoint /up.
+---
 
-Se incorporaron comprobaciones adicionales en AppServiceProvider.php.
+## 4. Docker y empaquetado
 
-También se utiliza docker/validate-runtime.php para validar la configuración necesaria antes del inicio del contenedor.
+- **Construcción multietapa (`Dockerfile`):** Se diseñó una imagen optimizada que separa la compilación de activos frontend (Node + Vite) y la instalación de dependencias PHP (Composer sin paquetes de desarrollo) de la imagen final de ejecución basada en FrankenPHP y PHP 8.4 sobre Alpine Linux[cite: 1].
+- **Seguridad y optimización:** Se configuró la ejecución mediante un usuario sin privilegios (`non-root`), se excluyeron archivos innecesarios mediante `.dockerignore` y se incorporaron scripts de inicialización y validación en `docker/` (`entrypoint.sh`, `validate-runtime.php`, `smoke-test.py`, `regression-test.sh`)[cite: 1].
+- **Documentación y métricas:** Detalladas en `docs/lab14-empaquetado.md` y `docs/evidencias/lab14-empaquetado/`[cite: 1].
 
-## 8. Empaquetado Docker
+---
 
-El Integrante 2 preparó el empaquetado de Laravel mediante un Dockerfile multietapa.
+## 5. Despliegue en Railway
 
-La solución utiliza FrankenPHP, PHP sobre Alpine, Composer y Node para compilar el frontend.
+- **Infraestructura en Railway:** Se desplegó el contenedor Docker de Laravel junto con un servicio MySQL con almacenamiento persistente[cite: 1].
+- **Inicialización de datos:** Se ejecutaron las 14 migraciones de esquema, los seeders iniciales y la creación del usuario administrador[cite: 1].
+- **Verificación funcional y de seguridad:** Se validó el certificado HTTPS, el endpoint de salud `/up` (`200 OK`), el inicio y cierre de sesión web/API, la protección de rutas privadas y la aprobación de 128 pruebas generales más 6 pruebas de seguridad[cite: 1].
 
-Se configuró un usuario sin privilegios para ejecutar la aplicación y se excluyeron archivos innecesarios mediante .dockerignore.
+---
 
-La documentación técnica se encuentra en:
+## 6. Automatización CI/CD
 
-docs/lab14-empaquetado.md
+- **Flujo en GitHub Actions (`.github/workflows/lab14-ci-cd.yml`):** Automatiza la ejecución de pruebas y el despliegue hacia Railway utilizando secretos cifrados en GitHub[cite: 1].
+- **Control de calidad (Quality Gate):** El despliegue automático hacia `main` solo se ejecuta cuando aprueban todas las verificaciones; ante cualquier fallo, el despliegue queda bloqueado[cite: 1].
+- **Resultados y evidencias:** 134 pruebas de Laravel aprobadas, 7 pruebas de JavaScript aprobadas y compilación de Vite exitosa[cite: 1]. Capturas almacenadas en `docs/evidencias/lab14-ci-cd/`[cite: 1].
 
-## 9. Despliegue en Railway
+---
 
-El Integrante 3 realizó el despliegue de RentaCar en Railway.
+## 7. Publicación móvil
 
-Se configuraron:
+- **Configuración de entornos y API:** Se separaron los entornos de desarrollo y producción en `rentacar-movil`, apuntando la aplicación productiva exclusivamente a `https://rentacar-web-production.up.railway.app`[cite: 1].
+- **Seguridad en Android:** Se desactivó el tráfico HTTP sin cifrar (`cleartext`) para producción y se configuró la firma `release` en `build.gradle` protegiendo el archivo `keystore` y sus credenciales fuera del control de versiones[cite: 1].
+- **Compilación y pruebas:** Se compiló el proyecto Ionic Vue, se sincronizó con Capacitor Android, se generó el APK firmado y se comprobó su funcionamiento en dispositivo Android (inicio de sesión, registro de vehículos, consulta de detalles y persistencia en MySQL)[cite: 1]. Documentación detallada en `docs/Lab-14/publicacion-movil.md`[cite: 1].
 
-- Aplicación Laravel.
-- Base de datos MySQL.
-- Almacenamiento persistente.
-- Variables de producción.
-- HTTPS.
-- Migraciones y datos iniciales.
+---
 
-La aplicación quedó publicada en:
+## 8. Evidencias de configuración y seguridad
 
-https://rentacar-web-production.up.railway.app
+Las evidencias técnicas y capturas correspondientes a configuración y seguridad se encuentran en `docs/evidencias/lab14-seguridad/`[cite: 1]:
 
-Se reportó el funcionamiento del inicio y cierre de sesión, junto con las pruebas de seguridad.
+1. **Plantilla de entorno (`.env.example`):** Separación documentada entre desarrollo local y producción sin credenciales reales[cite: 1].
+2. **Protección del repositorio (`.gitignore` y `verificacion-repositorio.txt`):** Confirmación mediante `git status` y `git check-ignore` de que `.env*`, bases SQLite, llaves y certificados están excluidos del repositorio, y auditoría de código sin secretos expuestos[cite: 1].
+3. **Configuración CORS (`config/cors.php` y `verificacion-https-endpoint.txt`):** Prueba de petición `OPTIONS` verificando respuesta `204` y cabeceras `Vary: Origin, Access-Control-Request-Method`[cite: 1].
+4. **Validaciones de arranque (`app/Providers/AppServiceProvider.php` y `verificacion-entorno-seguro.txt`):** Ejecución de `docker/validate-runtime.php` validando configuración correcta en producción y bloqueo explícito ante `APP_DEBUG=true`[cite: 1].
+5. **Servicio activo en Railway (`docs/evidencias/lab14-ci-cd/Railway_Servicios_Online.png`):** Evidencia de los servicios web y MySQL operando en línea en producción[cite: 1].
+6. **Modo debug desactivado (`docs/evidencias/lab14-seguridad/debug-desactivado.png`):** Captura en producción ante una ruta inexistente mostrando respuesta HTTP 404 limpia sin trazas internas ni variables expuestas[cite: 1].
+7. **Certificado HTTPS válido (`docs/evidencias/lab14-seguridad/https-certificado.png`):** Captura del navegador verificando conexión cifrada TLS válida sobre `rentacar-web-production.up.railway.app`[cite: 1].
+8. **Healthcheck `/up` operativo (`verificacion-https-endpoint.txt`):** Respuesta `StatusCode: 200 OK` desde `https://rentacar-web-production.up.railway.app/up`[cite: 1].
+9. **Suite de pruebas automatizadas (`verificacion-validaciones-prod.txt`):** Ejecución completa de `php artisan test` con **134 pruebas aprobadas (371 aserciones)**[cite: 1].
 
-## 10. Automatización CI/CD
+---
 
-El Integrante 4 configuró GitHub Actions para automatizar las pruebas y el despliegue.
+## 9. Conclusiones
 
-El proceso incluye:
+La ejecución del Laboratorio 14 permitió llevar **RentaCar** desde un entorno de desarrollo local hacia una arquitectura productiva segura, automatizada y multiplataforma[cite: 1]. La separación de variables de entorno, el endurecimiento de `.gitignore`, el control estricto de CORS, las cookies seguras sobre HTTPS y las validaciones de arranque eliminaron riesgos de exposición de credenciales o fallos de configuración silenciosos[cite: 1].
 
-- Pruebas de Laravel.
-- Pruebas de JavaScript.
-- Compilación de Vite.
-- Integración con Railway.
-- Uso de secretos de GitHub.
-- Despliegue condicionado al resultado satisfactorio de las pruebas.
-
-Resultados reportados por el integrante:
-
-- 134 pruebas de Laravel aprobadas.
-- 7 pruebas de JavaScript aprobadas.
-- Compilación de Vite exitosa.
-- Despliegue automático ejecutado correctamente.
-
-Las evidencias se encuentran en:
-
-docs/evidencias/lab14-ci-cd/
-
-## 11. Publicación móvil
-
-El Integrante 5 preparó la aplicación móvil mediante Ionic Vue y Capacitor.
-
-Se realizaron:
-
-- Separación de entornos.
-- Configuración de la API pública HTTPS.
-- Protección de variables de entorno.
-- Protección de keystores.
-- Desactivación de HTTP sin cifrar en producción.
-- Compilación de producción.
-- Sincronización con Capacitor.
-- Firma del APK.
-- Instalación y pruebas en Android.
-
-Se comprobó el inicio de sesión, el registro de vehículos, la consulta de detalles y la persistencia de los datos.
-
-La documentación específica se encuentra en:
-
-docs/Lab-14/publicacion-movil.md
-
-## 12. Evidencias del Integrante 1
-
-Se incorporarán las siguientes evidencias:
-
-1. Archivo .env.example.
-2. Protección mediante .gitignore.
-3. Configuración CORS.
-4. Validaciones de AppServiceProvider.
-5. Variables de producción configuradas.
-6. APP_DEBUG desactivado.
-7. Certificado HTTPS.
-8. Funcionamiento del endpoint /up.
-9. Verificación de credenciales y archivos ignorados.
-10. Pruebas de funcionamiento de las configuraciones.
-
-## 13. Conclusiones
-
-La implementación del Laboratorio 14 permitió preparar RentaCar para su funcionamiento en producción, integrando medidas de seguridad, administración de configuraciones, empaquetado Docker, despliegue en Railway, automatización CI/CD y publicación móvil.
-
-La separación de entornos permite administrar independientemente las configuraciones locales y las de producción.
-
-La protección de credenciales, el uso de HTTPS, la validación de parámetros obligatorios y la automatización de pruebas contribuyen a reducir errores y riesgos durante las actualizaciones de la aplicación.
-
-
+Asimismo, la integración entre el contenedor Docker basado en FrankenPHP, el despliegue persistente en Railway, el pipeline de CI/CD en GitHub Actions y el APK firmado en Android garantizan que cada actualización futura pase por pruebas automatizadas antes de llegar a los usuarios finales[cite: 1].

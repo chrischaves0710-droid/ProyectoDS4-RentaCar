@@ -1,0 +1,223 @@
+﻿=== 1. PRUEBA DE VALIDACION OBLIGATORIA EN PRODUCCION (SIN APP_KEY) ===
+
+  Environment ........................................................................................................  
+  Application Name ........................................................................................... Laravel  
+  Laravel Version ............................................................................................ 13.31.0  
+  PHP Version ................................................................................................. 8.5.10  
+  Composer Version ............................................................................................ 2.10.2  
+  Environment ............................................................................................. production  
+  Debug Mode ................................................................................................. ENABLED  
+  URL ................................................................................................. inseguro.local  
+  Maintenance Mode ............................................................................................... OFF  
+  Timezone ....................................................................................................... UTC  
+  Locale .......................................................................................................... en  
+
+  Cache ..............................................................................................................  
+  Config .................................................................................................. NOT CACHED  
+  Events .................................................................................................. NOT CACHED  
+  Routes .................................................................................................. NOT CACHED  
+  Views ....................................................................................................... CACHED  
+
+  Drivers ............................................................................................................  
+  Broadcasting ................................................................................................... log  
+  Cache ..................................................................................................... database  
+  Database .................................................................................................... sqlite  
+  Logs ................................................................................................ stack / single  
+  Mail ........................................................................................................... log  
+  Queue ..................................................................................................... database  
+  Session ................................................................................................... database  
+
+  Storage ............................................................................................................  
+  C:\Users\sgabr\ProyectoDS4-RentaCar\public\storage ...................................................... NOT LINKED  
+
+  Spatie Permissions .................................................................................................  
+  Features Enabled ........................................................................................... Default  
+  Version ...................................................................................................... 8.3.0  
+
+
+
+=== 2. EJECUCION DE PRUEBAS LARAVEL ===
+
+  [44;1m INFO [49;22m Warning: The use statement with non-compound name 'Mockery' has no effect in C:\Users\sgabr\ProyectoDS4-RentaCar\tests\Unit\RentaPolicyTest.php on line 7.
+
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Unit\ExampleTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mthat true is true[39m[90m                                                                                           [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Unit\RentaAutorizacionTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza crear una renta sin rol de gesti├│n[39m[90m                                                               [39m [90m0.42s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza actualizar una renta sin rol de gesti├│n[39m[90m                                                          [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza eliminar una renta sin rol de gesti├│n[39m[90m                                                            [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza finalizar una renta sin rol de gesti├│n[39m[90m                                                           [39m [90m0.02s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Unit\RentaPolicyTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit permite consultar una renta cuando el correo corresponde al cliente[39m[90m                                      [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit compara los correos sin distinguir may├║sculas[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza consultar la renta de otro cliente[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza una renta sin cliente asociado[39m
+
+
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\AccesorioServiceApiTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Gestor_Rentas puede listar accesorios y recibe la estructura correcta[39m[90m                                    [39m [90m0.50s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Admin_Inventarios puede crear un accesorio y recibe 201[39m[90m                                                  [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Gestor_Rentas no puede crear accesorios[39m[90m                                                                  [39m [90m0.05s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\AccesorioServiceTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit no permite eliminar un accesorio con rentas asociadas[39m[90m                                                    [39m [90m0.08s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit no permite agregar un accesorio a una renta finalizada[39m[90m                                                   [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit no permite agregar dos veces el mismo accesorio a una renta[39m[90m                                              [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit congela el precio calcula subtotal y actualiza la renta dentro de la operacion[39m[90m                           [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit revierte la transaccion si ocurre un fallo despues de insertar la pivote[39m[90m                                 [39m [90m0.06s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza una invocacion directa para crear un accesorio con un rol no autorizado[39m[90m                          [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit crea un accesorio utilizando un doble del modelo[39m[90m                                                         [39m [90m0.06s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit actualiza un accesorio utilizando un doble[39m[90m                                                               [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit elimina un accesorio sin rentas utilizando dobles[39m[90m                                                        [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza eliminar un accesorio con rentas utilizando dobles[39m[90m                                               [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza una renta finalizada usando un doble de Renta[39m[90m                                                    [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza un accesorio duplicado utilizando dobles[39m[90m                                                         [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit agrega un accesorio a una renta utilizando dobles[39m[90m                                                        [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza mediante doble un usuario sin permisos para crear accesorios[39m[90m                                     [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit limita per page a 25 utilizando un doble de consulta[39m[90m                                                     [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit corrige sort y direction invalidos al listar accesorios[39m[90m                                                  [39m [90m0.03s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\CategoriaApiTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 1. [GET /api/v1/categorias] Retorna codigo 200, la estructura JSON de paginacion y permite el acceso a u[39m[90mÔÇª[39m [90m0.06s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 2. [POST /api/v1/categorias] Retorna codigo 201 y la estructura JSON de la entidad creada cuando el usua[39m[90mÔÇª[39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 3. [POST /api/v1/categorias] Retorna codigo 403 Forbidden cuando un usuario con rol Cliente intenta crea[39m[90mÔÇª[39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 4. [POST /api/v1/categorias] Retorna codigo 422 y la estructura JSON con los errores de validacion si el[39m[90mÔÇª[39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 5. [PUT /api/v1/categorias/{id}] Retorna codigo 401 Unauthorized al intentar modificar un recurso sin to[39m[90mÔÇª[39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 6. [DELETE /api/v1/categorias/{id}] Retorna codigo exitoso (200/204) al eliminar una categoria si el usu[39m[90mÔÇª[39m [90m0.05s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\CategoriaServiceTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 1. [Camino Feliz] listarConFiltros: retorna la lista paginada procesada correctamente[39m[90m                    [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 2. [Camino Feliz] crear: registra exitosamente una categoria cuando no existe duplicada[39m[90m                  [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 3. [Camino Feliz] actualizar: modifica la categoria correctamente cuando no hay rentas activas[39m[90m           [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 4. [Camino Feliz] eliminar: elimina la categoria si cumple las condiciones[39m[90m                               [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 5. [Regla 1] crear: lanza excepcion al intentar registrar un nombre duplicado (case-insensitive)[39m[90m         [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 6. [Regla 2] actualizar: lanza excepcion si la categoria tiene vehiculos en rentas activas[39m[90m               [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 7. [Regla 3] eliminar: lanza excepcion si la categoria tiene vehiculos asociados[39m[90m                         [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 8. [Regla 4] eliminar: lanza excepcion al intentar eliminar la categoria protegida ID 1[39m[90m                  [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 9. [Caso L├¡mite 1] listarConFiltros: sanea perPage negativo (-10) ajustandolo al minimo de 1[39m[90m             [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 10. [Caso L├¡mite 2] listarConFiltros: acota perPage excesivo (100) al limite maximo de 50[39m[90m                [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 11. [Caso L├¡mite 3] listarConFiltros: realiza fallback seguro a created_at ante un sortBy invalido[39m[90m       [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit 12. [Caso L├¡mite 4] crear: remueve espacios laterales (trim) en el nombre antes de procesar[39m[90m              [39m [90m0.03s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\ClienteNegocioTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 1: Impide registrar un cliente menor de edad[39m[90m                                                       [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 2: Impide eliminar un cliente que tiene rentas asociadas[39m[90m                                           [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit permite crear un cliente correctamente[39m[90m                                                                   [39m [90m0.07s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit permite actualizar un cliente correctamente[39m[90m                                                              [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit permite eliminar un cliente sin rentas asociadas[39m[90m                                                         [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit permite listar clientes con paginaci├│n y l├¡mite m├íximo[39m[90m                                                   [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit impide actualizar un cliente para convertirlo en menor de edad[39m[90m                                           [39m [90m0.03s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\DatabaseIsolationTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit ejecuta las pruebas en ambiente testing[39m[90m                                                                  [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit utiliza sqlite como conexion de base de datos durante las pruebas[39m[90m                                        [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit utiliza una base de datos sqlite en memoria[39m[90m                                                              [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit puede escribir datos dentro de la base aislada de pruebas[39m[90m                                                [39m [90m0.03s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\EstadoServiceApiTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Admin_General puede listar estados y recibe la estructura correcta[39m[90m                                       [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Admin_General puede crear un estado y recibe 201 con Location[39m[90m                                            [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Gestor_Rentas no puede acceder a los endpoints de estados[39m[90m                                                [39m [90m0.03s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\EstadoServiceTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit puede crear un estado[39m[90m                                                                                    [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit puede actualizar un estado existente[39m[90m                                                                     [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit permite eliminar un estado si no tiene vehiculos asociados[39m[90m                                               [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit lanza una excepcion si se intenta eliminar un estado con vehiculos asociados[39m[90m                             [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza una invocacion directa al servicio de estado sin un rol autorizado[39m[90m                               [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit crea un estado utilizando un doble del modelo Estado[39m[90m                                                     [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit actualiza un estado utilizando un doble del recurso[39m[90m                                                      [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit elimina un estado sin vehiculos usando un doble de Vehiculo[39m[90m                                              [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza eliminar un estado con vehiculos usando un doble[39m[90m                                                 [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza mediante doble un usuario con rol no permitido[39m[90m                                                   [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza la operacion cuando no existe usuario autenticado[39m[90m                                                [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit limita per page a 50 cuando recibe un valor superior[39m[90m                                                     [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit corrige sort y direction invalidos al listar estados[39m[90m                                                     [39m [90m0.03s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\ExampleTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mthe application returns a successful response[39m[90m                                                               [39m [90m0.09s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\PolicyAuthorizationTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Admin_General puede consultar cualquier cliente[39m[90m                                                          [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Gestor_Rentas puede consultar clientes[39m[90m                                                                   [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Cliente puede consultar su propio registro[39m[90m                                                               [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Cliente no puede consultar el registro de otro cliente[39m[90m                                                   [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Cliente no puede listar todos los clientes[39m[90m                                                               [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Cliente puede consultar una renta que le pertenece[39m[90m                                                       [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Cliente no puede consultar una renta de otro cliente[39m[90m                                                     [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Admin_Inventarios no puede acceder a los endpoints de clientes[39m[90m                                           [39m [90m0.04s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\RentaApiTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit devuelve 401 al consultar rentas sin token[39m[90m                                                               [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit crea una renta con un veh├¡culo disponible y devuelve 201[39m[90m                                                 [39m [90m0.06s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit devuelve 409 al intentar alquilar un veh├¡culo ocupado[39m[90m                                                    [39m [90m0.08s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit devuelve 422 y errores por campo cuando faltan datos[39m[90m                                                     [39m [90m0.05s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\RentaFinalizarApiTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit permite a un gestor finalizar una renta y libera el veh├¡culo[39m[90m                                             [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit impide que un cliente finalice una renta[39m[90m                                                                 [39m [90m0.05s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\RentaServiceTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 1: No permite alquilar un veh├¡culo que no est├í disponible[39m[90m                                          [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 2: No permite una renta con duraci├│n menor a un d├¡a[39m[90m                                                [39m [90m0.06s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 3: Calcula autom├íticamente el monto total de la renta[39m[90m                                              [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 4: Cambia el veh├¡culo de Disponible a Alquilado al crear la renta[39m[90m                                  [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 5: No permite actualizar una renta con fecha final anterior a la inicial[39m[90m                           [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit recalcula el monto total al actualizar las fechas de una renta[39m[90m                                           [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit hace rollback si no existe el estado Alquilado[39m[90m                                                           [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit lanza una excepci├│n al buscar una renta inexistente[39m[90m                                                      [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit elimina correctamente una renta existente[39m[90m                                                                [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit finaliza una renta y cambia el veh├¡culo de Alquilado a Disponible[39m[90m                                        [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit no permite que un Cliente finalice una renta[39m[90m                                                             [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit conserva el costo de los accesorios al actualizar una renta[39m[90m                                              [39m [90m0.06s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit libera el veh├¡culo al eliminar una renta[39m[90m                                                                 [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit rechaza cambiar el veh├¡culo de una renta existente[39m[90m                                                       [39m [90m0.05s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\ServiceAuthorizationTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mcliente no puede listar todos los clientes llamando directamente al service[39m[90m                                 [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mgestor rentas no puede crear clientes llamando directamente al service[39m[90m                                      [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mcliente puede obtener directamente su propio registro mediante el service[39m[90m                                   [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mcliente no puede obtener directamente el registro de otro cliente[39m[90m                                           [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mcliente no puede actualizar su registro llamando directamente al service[39m[90m                                    [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mcliente no puede eliminar su registro llamando directamente al service[39m[90m                                      [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90madmin inventarios no puede listar clientes llamando directamente al service[39m[90m                                 [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mgestor rentas puede listar clientes llamando directamente al service[39m[90m                                        [39m [90m0.03s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\VehiculoApiTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit API 1: Devuelve c├│digo 200 y una estructura JSON v├ílida al listar veh├¡culos[39m[90m                              [39m [90m0.06s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit API 2: Devuelve c├│digo 422 y la estructura de errores de validaci├│n si los datos son malos[39m[90m               [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit API 3: Devuelve 404 Not Found al solicitar un veh├¡culo que no existe[39m[90m                                     [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit API 4: Bloquea el acceso y devuelve 401 Unauthorized si no se env├¡a un Token[39m[90m                             [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit API 5: Deniega el acceso y devuelve 403 Forbidden si el rol no tiene permisos[39m[90m                            [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit API 6: Permite el acceso y devuelve 201 Created si el usuario tiene el rol correcto[39m[90m                      [39m [90m0.05s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\VehiculoServiceTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 1: Rechaza el registro inicial si el kilometraje supera los 5,000 km[39m[90m                               [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 2: Asigna autom├íticamente el estado Para Venta si tiene 10 o m├ís a├▒os de antig├╝edad[39m[90m                [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 3: Asigna autom├íticamente el estado Disponible en un registro nuevo est├índar[39m[90m                       [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 4: No permite actualizar el veh├¡culo con un kilometraje menor al hist├│rico registrado[39m[90m              [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Regla 5: Bloquea la eliminaci├│n si el veh├¡culo tiene contratos de alquiler activos[39m[90m                       [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit aumenta el total de veh├¡culos en 1 tras una creaci├│n exitosa[39m[90m                                             [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit registra una entrada en la tabla de auditor├¡a dentro de la transacci├│n al crear[39m[90m                          [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Capa 2: Rechaza una invocaci├│n directa al servicio si el usuario no tiene permisos administrativos[39m[90m       [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Mock 1: Verifica que el servicio lanza error si Auth devuelve un usuario nulo (Doble de Auth)[39m[90m            [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Mock 2: Simula un usuario sin permisos usando un Mock del modelo User (Doble de Modelo)[39m[90m                  [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Mock 3: Camino feliz de actualizaci├│n usando un doble de Auth (Doble de dependencia)[39m[90m                     [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit Mock 4: Verifica los permisos de lectura simulando un Gestor (Caso l├¡mite)[39m[90m                               [39m [90m0.05s[39m  
+
+  [30;42;1m PASS [39;49;22m[39m Tests\Feature\WebSessionSecurityTest[39m
+  [32;1mÔ£ô[39;22m[90m [39m[90mit impide abrir el panel de gerente sin una sesion web[39m[90m                                                      [39m [90m0.05s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit impide usar rutas CRUD web sin iniciar sesion[39m[90m                                                            [39m [90m0.03s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit impide que un cliente abra las paginas del gerente[39m[90m                                                       [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit permite al gerente autenticado abrir su pagina[39m[90m                                                           [39m [90m0.04s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit inicia sesion web y entrega un token de Sanctum[39m[90m                                                          [39m [90m0.07s[39m  
+  [32;1mÔ£ô[39;22m[90m [39m[90mit revoca el token y cierra la sesion web al salir[39m[90m                                                          [39m [90m0.04s[39m  
+
+  [90mTests:[39m    [32;1m134 passed[39;22m[90m (371 assertions)[39m
+  [90mDuration:[39m [39m6.82s[39m
+
+

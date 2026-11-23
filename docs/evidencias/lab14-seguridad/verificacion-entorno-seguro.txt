@@ -1,0 +1,17 @@
+﻿=== 1. VALIDACION DE RUNTIME EN PRODUCCION (docker/validate-runtime.php) ===
+php : Configuraci├│n del contenedor inv├ílida: PORT debe ser un puerto entre 1024 y 65535.
+En línea: 12 Carácter: 3
++   php docker/validate-runtime.php 2>&1
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Configuraci├│n ...e 1024 y 65535.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+=== 2. PRUEBA DE BLOQUEO ANTE APP_DEBUG=true EN PRODUCCION ===
+php : Configuraci├│n del contenedor inv├ílida: APP_DEBUG debe ser false o 0.
+En línea: 16 Carácter: 3
++   php docker/validate-runtime.php 2>&1
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Configuraci├│n ... ser false o 0.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

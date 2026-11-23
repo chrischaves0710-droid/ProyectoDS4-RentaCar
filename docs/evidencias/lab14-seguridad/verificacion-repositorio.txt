@@ -1,0 +1,36 @@
+﻿=== 1. ESTADO DE GIT ===
+ M .env.example
+ M .gitignore
+ M app/Providers/AppServiceProvider.php
+ M config/cors.php
+ M config/session.php
+?? docs/evidencias/lab14-seguridad/
+?? docs/lab14-despliegue.md
+
+=== 2. ARCHIVOS RASTREADOS DE CONFIGURACION ===
+.env.example
+.gitignore
+app/Providers/AppServiceProvider.php
+config/app.php
+config/auth.php
+config/cache.php
+config/comparativo.php
+config/cors.php
+config/database.php
+config/filesystems.php
+config/logging.php
+config/mail.php
+config/permission.php
+config/queue.php
+config/sanctum.php
+config/services.php
+config/session.php
+
+=== 3. VERIFICACION DE IGNORADOS ===
+.gitignore:5:.env	.env
+.gitignore:12:.env.production	.env.production
+database/.gitignore:1:*.sqlite*	database/database.sqlite
+.gitignore:45:/storage/*.key	storage/oauth-private.key
+
+=== 4. BUSQUEDA DE SECRETOS EN CODIGO ===
+OK: Sin secretos expuestos en el codigo fuente.

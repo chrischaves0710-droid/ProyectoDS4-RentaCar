@@ -1,18 +1,46 @@
 /vendor
 /node_modules
+
+# Variables de entorno y secretos
 .env
+.env.*
+!.env.example
+!.env.testing.example
+
+# Archivos de respaldo de variables
 .env.backup
 .env.production
+.env.local
+
+# Credenciales y certificados
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+auth.json
+credentials.json
+secrets.json
+service-account*.json
+
+# Archivos locales
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
-auth.json
 npm-debug.log
 yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Archivos generados
 /*.sqlite
 /*.sqlite-journal
 /public/build
 /public/hot
+
+# Cachés y registros
+/bootstrap/cache/*.php
+/storage/*.key
+/storage/logs/*

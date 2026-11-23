@@ -1,0 +1,24 @@
+﻿=== 1. RESPUESTA HTTPS Y /up EN RAILWAY ===
+StatusCode: 200 OK
+vary: Accept-Encoding
+x-railway-request-id: lSyhIeCeT62H5uVCO8poTA
+Transfer-Encoding: chunked
+x-hikari-trace: mia1.nv6z
+x-railway-edge: mia1
+Connection: keep-alive
+Cache-Control: no-cache, private
+Content-Type: text/html; charset=utf-8
+Date: Mon, 23 Nov 2026 03:00:31 GMT
+Server: railway-hikari
+
+=== 2. PRUEBA OPTIONS / CORS ===
+OPTIONS StatusCode: 204
+vary: Origin, Access-Control-Request-Method
+x-railway-request-id: 8nTkDlQPQB6RK6IlBT7zVQ
+x-hikari-trace: mia1.nv6z
+x-railway-edge: mia1
+Connection: keep-alive
+Cache-Control: no-cache, private
+Content-Type: text/html; charset=UTF-8
+Date: Mon, 23 Nov 2026 03:00:31 GMT
+Server: railway-hikari
